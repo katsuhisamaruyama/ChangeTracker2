@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: changetrackerCore
+Bundle-SymbolicName: org.jtool.changetracker.core;singleton:=true
+Bundle-Version: 1.0
+Bundle-Activator: org.jtool.changetracker.core.Activator
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources;bundle-version="3.11.0",
+ org.eclipse.jdt.core;bundle-version="3.12.0",
+ org.eclipse.ui,
+ org.apache.commons.io;bundle-version="2.2.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Export-Package: org.jtool.changetracker.operation,
+ org.jtool.changetracker.repository
