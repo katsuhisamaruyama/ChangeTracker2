@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -15,20 +15,29 @@ import java.time.ZonedDateTime;
 public interface ICodeOperation {
     
     /**
+     * The action of a document operation.
+     */
+    public enum Action {
+        EDIT, CUT, COPY, PASTE, UNDO, REDO, CONTENT_CHANGE,
+        REFACTOING, REFACTOING_UNDO, REFACTOING_REDO,
+        QUICK_ASSIST, CONTENT_ASSIST;
+    }
+    
+    /**
      * Returns the time when this change operation was performed.
      * @return the time of the change operation
      */
     public ZonedDateTime getTime();
     
     /**
-     * Returns the path name of the file on which this change operation was performed.
-     * @return the path name of the change operation
+     * Returns the path of the file on which this change operation was performed.
+     * @return the path of the change operation
      */
     public String getPath();
     
     /**
-     * The name of the branch of a resource on which this macro was performed.
-     * @return the branch name of the change operation
+     * The branch of the file on which this macro was performed.
+     * @return the branch of the change operation
      */
     public String getBranch();
     
@@ -63,19 +72,25 @@ public interface ICodeOperation {
     public String getCutOrCopiedText();
     
     /**
-     * Tests this document change operation cuts the text.
+     * Tests this change operation edits the text.
+     * @return <code>true</code> if the change operation edits the text, otherwise <code>false</code>
+     */
+    public boolean isGeneralEdit();
+    
+    /**
+     * Tests this change operation cuts the text.
      * @return <code>true</code> if the change operation cuts the text, otherwise <code>false</code>
      */
     public boolean isCut();
     
     /**
-     * Tests this document change operation copies the text.
+     * Tests this change operation copies the text.
      * @return <code>true</code> if the change operation copies the text, otherwise <code>false</code>
      */
     public boolean isCopy();
     
     /**
-     * Tests this document change operation pastes the text.
+     * Tests this change operation pastes the text.
      * @return <code>true</code> if the change operation pastes the text, otherwise <code>false</code>
      */
     public boolean isPaste();

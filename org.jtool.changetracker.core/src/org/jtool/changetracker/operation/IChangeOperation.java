@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -15,16 +15,11 @@ import java.time.ZonedDateTime;
 public interface IChangeOperation {
     
     /**
-     * The sort of an operation.
+     * The type of a change operation.
      */
     public enum Type {
-        DOCUMENT, COPY, COMMAND, FILE, RESOURCE, GIT;
+        DOCUMENT, COPY, FILE;
     }
-    
-    /**
-     * The string that indicates global path.
-     */
-    public static final String GLOBAL_PATH = "/";
     
     /**
      * Returns the time when this change operation was performed.
@@ -34,7 +29,7 @@ public interface IChangeOperation {
     
     /**
      * Returns the time when this change operation was performed.
-     * @return the time of the change operation
+     * @return the <code>long</code> value that represents the time of the change operation
      */
     public long getTimeAsLong();
     
@@ -45,22 +40,21 @@ public interface IChangeOperation {
     public Type getType();
     
     /**
-     * Returns the path name of the file on which this change operation was performed.
-     * @return the path name of the change operation
+     * Returns the path of the file on which this change operation was performed.
+     * @return the path of the change operation
      */
     public String getPath();
     
     /**
-     * The name of the branch of a resource on which this macro was performed.
-     * @return the branch name of the change operation
+     * The branch of the file on which this macro was performed.
+     * @return the branch of the change operation
      */
     public String getBranch();
     
     /**
-     * Returns the action type of this change operation.
-     * @return the action type of the change operation
+     * Returns the action of this change operation.
+     * @return the action of the change operation
      */
-    
     public String getAction();
     
     /**
@@ -76,10 +70,16 @@ public interface IChangeOperation {
     public String getDescription();
     
     /**
-     * Tests if this code change operations can be bundled.
-     * @return <code>true</code> if this code change operations can be bundled, otherwise <code>false</code>
+     * Tests if this code change operations is compounded.
+     * @return <code>true</code> if this code change operations is compounded, otherwise <code>false</code>
      */
-    public boolean canBeBundled();
+    public boolean isCompounded();
+    
+    /**
+     * Returns the identification number for compounded change operations.
+     * @return the identification number for the compounded change operations
+     */
+    public long getCompoundId();
     
     /**
      * Tests if this change operation edits any text of code.
@@ -94,46 +94,28 @@ public interface IChangeOperation {
     public boolean isCopy();
     
     /**
-     * Tests if this change operation represents any commend.
-     * @return <code>true</code> if the change operation represents any commend, otherwise <code>false</code>
-     */
-    public boolean isCommand();
-    
-    /**
-     * Tests if this change operation operates any file.
-     * @return <code>true</code> if the change operation operates any file, otherwise <code>false</code>
+     * Tests if this change operation is related to a file.
+     * @return <code>true</code> if the change operation is related to a file, otherwise <code>false</code>
      */
     public boolean isFile();
     
     /**
-     * Tests if this change operation changes any resource.
-     * @return <code>true</code> if the change operation changes any resource, otherwise <code>false</code>
-     */
-    public boolean isResource();
-    
-    /**
-     * Tests if this change operation represents any git command.
-     * @return <code>true</code> if the change operation represents any git command, otherwise <code>false</code>
-     */
-    public boolean isGit();
-    
-    /**
-     * Tests if this change operation is performed on a resource that exists in a path of a branch.
-     * @param branch the branch of the resource
-     * @param path the path of the resource
-     * @return <code>true</code> if this change operation is performed on the specified resource, otherwise <code>false</code>
+     * Tests if this change operation is performed on a file represented by a branch and a path.
+     * @param branch the branch of the file
+     * @param path the path of the file
+     * @return <code>true</code> if this change operation is performed on the specified file, otherwise <code>false</code>
      */
     public boolean isPerformedOn(String branch, String path);
     
     /**
-     * Tests if this operation is the same as a given one.
-     * @param op the given operation
-     * @return <code>true</code> if the two operations are the same, otherwise <code>false</code>
+     * Tests if this change operation is the same as a given one.
+     * @param op the change operation
+     * @return <code>true</code> if the two change operations are the same, otherwise <code>false</code>
      */
     public boolean equals(IChangeOperation op);
     
     /**
-     * Returns the string for printing, which does not contain a new line character at its end. 
+     * Returns the string for printing.
      * @return the string for printing
      */
     public String toString();
