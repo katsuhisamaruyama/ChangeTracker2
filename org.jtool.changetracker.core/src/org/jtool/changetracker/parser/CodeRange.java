@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -7,7 +7,7 @@
 package org.jtool.changetracker.parser;
 
 /**
- * Stores information on the range of code.
+ * Stores information about the range of code.
  * @author Katsuhisa Maruyama
  */
 public class CodeRange {
