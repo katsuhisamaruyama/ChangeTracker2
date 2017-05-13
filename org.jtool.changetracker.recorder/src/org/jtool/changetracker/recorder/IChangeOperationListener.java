@@ -1,21 +1,21 @@
 /*
- *  Copyright 2016
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.operationrecorder.recorder;
+package org.jtool.changetracker.recorder;
 
 import org.jtool.changetracker.operation.IChangeOperation;
 
 /**
- * Defines a listener interface for receiving a code change operation.
+ * Defines a listener interface for receiving a change operation.
  * @author Katsuhisa Maruyama
  */
-public interface IOperationListener {
+public interface IChangeOperationListener {
     
     /**
-     * Receives a code change operation when it is added.
+     * Receives a change operation when it is added.
      * @param operation the code change operation
      */
     public void operationAdded(IChangeOperation operation);

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.jtool.changetracker.PreferencePage"
+            class="org.jtool.changetracker.recorder.ChangeOperationRecorderPreferencePage"
+            id="org.jtool.changerecorder.PreferencePage"
+            name="ChangeOperationRecorder">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.jtool.changetracker.recorder.ChangeOperationRecorderPreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.jtool.changetracker.recorder.Activator">
+      </startup>
+   </extension>
+</plugin>
