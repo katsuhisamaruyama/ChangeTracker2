@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -16,7 +16,10 @@ public class RepositoryChangedEvent {
      * Defines the type of a repository changed event.
      */
     public enum Type {
-        CLEAR, UPDATE, DEFAULT;
+        OPERATION_ADDED,
+        OPENED, CLOSED, ABOUT_TO_CLOSE,
+        LOCATION_CHANGED, ABOUT_TO_LOCATION_CHANGE,
+        REFRESHED, ABOUT_TO_REFRESH;
     }
     
     /**
@@ -32,35 +35,27 @@ public class RepositoryChangedEvent {
     /**
      * The type of this event.
      */
-    private Type type = RepositoryChangedEvent.Type.DEFAULT;
-    
-    /**
-     * Creates an instance containing information on a repository information.
-     * @param repository the source of this event
-     */
-    public RepositoryChangedEvent(Repository repository) {
-        this.repository = repository;
-    }
+    private Type type;
     
     /**
      * Creates an instance containing information on a changed event.
-     * @param repository the source of this event
+     * @param repo the source of this event
      * @param type the type of this event
      */
-    public RepositoryChangedEvent(Repository repository, Type type) {
-        this(repository);
+    public RepositoryChangedEvent(Repository repo, Type type) {
+        this.repository = repo;
         this.type = type;
     }
     
     /**
      * Creates an instance containing information on a changed event.
-     * @param repository the source of this event
+     * @param repo the source of this event
      * @param type the type of this event
-     * @param object the object sent by this event
+     * @param obj the object sent by this event
      */
-    public RepositoryChangedEvent(Repository repository, Type type, Object object) {
-        this(repository, type);
-        this.object = object;
+    public RepositoryChangedEvent(Repository repo, Type type, Object obj) {
+        this(repo, type);
+        this.object = obj;
     }
     
     /**

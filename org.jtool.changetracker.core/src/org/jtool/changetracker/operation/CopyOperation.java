@@ -6,6 +6,10 @@
 
 package org.jtool.changetracker.operation;
 
+import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
+import org.jtool.changetracker.repository.ChangeTrackerPath;
+
+import java.util.List;
 import java.time.ZonedDateTime;
 
 /**
@@ -22,22 +26,21 @@ public class CopyOperation extends CodeOperation implements ICodeOperation {
     /**
      * Creates an instance storing information about this copy operation.
      * @param time the time when the copy operation was performed
-     * @param path the path of a file on which the copy operation was performed
-     * @param branch the branch of a file on which the copy operation was performed
+     * @param pathinfo information about path of a resource on which the copy operation was performed
      * @param author the author's name
      */
-    public CopyOperation(ZonedDateTime time, String path, String branch, String author) {
-        super(time, Type.COPY, path, branch, Action.COPY.toString(), author);
+    public CopyOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String author) {
+        super(time, Type.COPY, pathinfo, Action.COPY.toString(), author);
     }
     
     /**
      * Creates an instance storing information about this copy operation.
      * @param time the time when the copy operation was performed
-     * @param branch the branch of a file on which the copy operation was performed
+     * @param pathinfo information about path of a resource on which the copy operation was performed
      * @param path the path of a file on which the copy operation was performed
      */
-    public CopyOperation(ZonedDateTime time, String path, String branch) {
-        super(time, Type.COPY, path, branch, Action.COPY.toString());
+    public CopyOperation(ZonedDateTime time, ChangeTrackerPath pathinfo) {
+        super(time, Type.COPY, pathinfo,  Action.COPY.toString());
     }
     
     /**
@@ -77,12 +80,45 @@ public class CopyOperation extends CodeOperation implements ICodeOperation {
     }
     
     /**
-     * Returns the contents of the text cut or copied by this change operation.
-     * @return the contents of the copied text, or the empty string
+     * Tests if this copy operation depends on a given change operation.
+     * @param op the change operation that might affect this copy operation
+     * @return <code>true</code> if this copy operation depends on the given operation, otherwise <code>false</code>
      */
     @Override
-    public String getCutOrCopiedText() {
-        return getCopiedText();
+    public boolean dependsOn(IChangeOperation op) {
+        List<CodeOperation> ops = CodeOperation.getOperations(fileInfo, op.getTime(), getTime());
+        if (isDocument()) {
+            return dependsOnForCopy((DocumentOperation)op, ops);
+        }
+        return false;
+    }
+    
+    /**
+     * Tests if this copy operation depends on a given document operation.
+     * @param op the document operation that might affect this copy operation
+     * @param ops the collection of change operations for offset adjustment
+     * @return <code>true</code> if this copy operation depends on, otherwise <code>false</code>
+     */
+    private boolean dependsOnForCopy(DocumentOperation op, List<CodeOperation> ops) {
+        if (op.getInsertedText().length() > 0) {
+            for (int o = getStart(); o <= getStart() + getCopiedText().length(); o++) {
+                int offset = DependencyDetector.adjustBackwardOffset(o, ops);
+                if (op.getStart() <= offset && offset < op.getStart() + op.getInsertedText().length()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (op.getDeletedText().length() > 0) {
+            int soffset = DependencyDetector.adjustBackwardOffset(getStart(), ops);
+            int eoffset = DependencyDetector.adjustBackwardOffset(getStart() + op.getCopiedText().length(), ops);
+            if (soffset< op.getStart() && op.getStart() + op.getDeletedText().length() < eoffset) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
     
     /**

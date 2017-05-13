@@ -6,6 +6,12 @@
 
 package org.jtool.changetracker.operation;
 
+import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
+import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.ChangeTrackerPath;
+
+import java.util.List;
+import java.util.ArrayList;
 import java.time.ZonedDateTime;
 
 /**
@@ -20,28 +26,44 @@ public abstract class CodeOperation extends ChangeOperation implements ICodeOper
     protected int start = -1;
     
     /**
-     * Creates an instance storing information about this change operation.
-     * @param time the time when the change operation was performed
-     * @param type the type of the change operation
-     * @param path the path of a file on which the change operation was performed
-     * @param branch the branch of a file on which the change operation was performed
-     * @param action the action of the change operation
+     * The collection of Java constructs that this change operation backward affects.
+     */
+    protected List<JavaConstruct> backwardJavaConstructs;
+    
+    /**
+     * The collection of Java constructs that this change operation forward affects.
+     */
+    protected List<JavaConstruct> forwardJavaConstructs;
+    
+    /**
+     * Creates an instance storing information about this code change operation.
+     * @param time the time when the code change operation was performed
+     * @param type the type of the code change operation
+     * @param pathinfo information about path of a resource on which the code change operation was performed
+     * @param action the action of the code change operation
      * @param author the author's name
      */
-    protected CodeOperation(ZonedDateTime time, Type type, String path, String branch, String action, String author) {
-        super(time, type, path, branch, action, author);
+    protected CodeOperation(ZonedDateTime time, Type type, ChangeTrackerPath pathinfo, String action, String author) {
+        super(time, type, pathinfo, action, author);
     }
     
     /**
-     * Creates an instance storing information about this change operation.
-     * @param time the time when the change operation was performed
-     * @param type the type of the change operation
-     * @param path the path of a file on which the change operation was performed
-     * @param branch the branch of a file on which the change operation was performed
-     * @param action the action of the change operation
+     * Creates an instance storing information about this code change operation.
+     * @param time the time when the code change operation was performed
+     * @param type the type of the code change operation
+     * @param pathinfo information about path of a resource on which the code change operation was performed
+     * @param action the action of the code change operation
      */
-    protected CodeOperation(ZonedDateTime time, Type type, String path, String branch, String action) {
-        super(time, type, path, branch, action);
+    protected CodeOperation(ZonedDateTime time, Type type, ChangeTrackerPath pathinfo, String action) {
+        super(time, type, pathinfo, action);
+    }
+    
+    /**
+     * Sets the leftmost offset of the text affected by this change operation.
+     * @param start the leftmost offset of the affected text
+     */
+    public void setStart(int start) {
+        this.start = start;
     }
     
     /**
@@ -54,15 +76,59 @@ public abstract class CodeOperation extends ChangeOperation implements ICodeOper
     }
     
     /**
-     * Sets the leftmost offset of the text affected by this change operation.
-     * @param start the leftmost offset of the affected text
+     * Returns Java constructs that this change operation backward affects.
+     * @return the collection of the affected Java constructs
      */
-    public void setStart(int start) {
-        this.start = start;
+    @Override
+    public List<JavaConstruct> getBackwardJavaConstructs() {
+        return backwardJavaConstructs;
     }
+    
     /**
-     * Tests this change operation cuts the text.
-     * @return <code>true</code> if the change operation cuts the text, otherwise <code>false</code>
+     * Sets Java constructs that this change operation backward affects.
+     * @param cons the collection of the affected Java constructs
+     */
+    public void setBackwardJavaConstructs(List<JavaConstruct> cons) {
+        backwardJavaConstructs = cons;
+    }
+    
+    /**
+     * Returns Java constructs that this change operation forward affects.
+     * @return the collection of the affected Java constructs
+     */
+    @Override
+    public List<JavaConstruct> getForwardJavaConstructs() {
+        return backwardJavaConstructs;
+    }
+    
+    /**
+     * Sets Java constructs that this change operation forward affects.
+     * @param cons the collection of the affected Java constructs
+     */
+    public void setForwardJavaConstructs(List<JavaConstruct> cons) {
+        forwardJavaConstructs = cons;
+    }
+    
+    /**
+     * Tests this change operation represents either cut, copy, or paste action.
+     * @return <code>true</code> if the change operation represents the cut, copy, or paste, otherwise <code>false</code>
+     */
+    @Override
+    public boolean isCutCopyPaste() {
+        return (isCut() || isCopy() || isPaste());
+    }
+    
+    /**
+     * Tests this change operation represents user's typing.
+     * @return <code>true</code> if the change operation represents the typing, otherwise <code>false</code>
+     */
+    public boolean isTyping() {
+        return action.equals(Action.TYPING.toString());
+    }
+    
+    /**
+     * Tests this change operation represents a cut action.
+     * @return <code>true</code> if the change operation represents the cut action, otherwise <code>false</code>
      */
     @Override
     public boolean isCut() {
@@ -70,24 +136,8 @@ public abstract class CodeOperation extends ChangeOperation implements ICodeOper
     }
     
     /**
-     * Tests this change operation edits the text in several ways.
-     * @return <code>true</code> if the change operation edits the text, otherwise <code>false</code>
-     */
-    public boolean isGeneralEdit() {
-        return (isEdit() || isUndo() || isRedo() || isContentChange() ||  isRefactoring()  || isCodeComplete());
-    }
-        
-    /**
-     * Tests this change operation edits the text.
-     * @return <code>true</code> if the change operation edits the text, otherwise <code>false</code>
-     */
-    public boolean isEdit() {
-        return action.equals(Action.EDIT.toString());
-    }
-    
-    /**
-     * Tests this change operation copies the text.
-     * @return <code>true</code> if the change operation copies the text, otherwise <code>false</code>
+     * Tests this change operation represents a copy action.
+     * @return <code>true</code> if the change operation represents the copy action, otherwise <code>false</code>
      */
     @Override
     public boolean isCopy() {
@@ -95,8 +145,8 @@ public abstract class CodeOperation extends ChangeOperation implements ICodeOper
     }
     
     /**
-     * Tests this change operation pastes the text.
-     * @return <code>true</code> if the change operation pastes the text, otherwise <code>false</code>
+     * Tests this change operation represents a paste action.
+     * @return <code>true</code> if the change operation represents the paste action, otherwise <code>false</code>
      */
     @Override
     public boolean isPaste() {
@@ -104,46 +154,111 @@ public abstract class CodeOperation extends ChangeOperation implements ICodeOper
     }
     
     /**
-     * Tests this change operation undoes the affect of the text.
-     * @return <code>true</code> if the change operation undoes the text, otherwise <code>false</code>
+     * Tests this change operation represents a undo action.
+     * @return <code>true</code> if the change operation represents the undo action, otherwise <code>false</code>
      */
+    @Override
     public boolean isUndo() {
         return action.equals(Action.UNDO.toString());
     }
     
     /**
-     * Tests this document change operation redoes the affect of the text.
-     * @return <code>true</code> if the change operation redoes the text, otherwise <code>false</code>
+     * Tests this change operation represents a redo action.
+     * @return <code>true</code> if the change operation represents the redo action, otherwise <code>false</code>
      */
+    @Override
     public boolean isRedo() {
         return action.equals(Action.REDO.toString());
     }
     
     /**
-     * Tests this document change operation automatically changes the text.
-     * @return <code>true</code> if the change operation automatically changes the text, otherwise <code>false</code>
+     * Tests this change operation represents a resource update action.
+     * @return <code>true</code> if the change operation represents the resource update action, otherwise <code>false</code>
      */
+    @Override
     public boolean isContentChange() {
         return action.equals(Action.CONTENT_CHANGE.toString());
     }
     
     /**
-     * Tests this change operation refactors the code.
-     * @return <code>true</code> if the change operation refactors the code, otherwise <code>false</code>
+     * Tests this change operation represents a refactoring execution.
+     * @return <code>true</code> if the change operation represents the refactoring, otherwise <code>false</code>
      */
-    public boolean isRefactoring() {
-        return action.equals(Action.REFACTOING.toString()) ||
-               action.equals(Action.REFACTOING_UNDO.toString()) ||
-               action.equals(Action.REFACTOING_REDO.toString());
+    @Override
+    public boolean isRefactoringExec() {
+        return action.equals(Action.REFACTORING.toString());
     }
     
     /**
-     * Tests this change operation completes the code.
-     * @return <code>true</code> if the change operation completes the code, otherwise <code>false</code>
+     * Tests this change operation represents a refactoring undo execution.
+     * @return <code>true</code> if the change operation represents the refactoring, otherwise <code>false</code>
      */
-    public boolean isCodeComplete() {
-        return action.equals(Action.QUICK_ASSIST.toString()) ||
-               action.equals(Action.CONTENT_ASSIST.toString());
+    @Override
+    public boolean isRefactoringUndo() {
+        return action.equals(Action.REFACTORING_UNDO.toString());
+    }
+    
+    /**
+     * Tests this change operation represents a refactoring redo execution.
+     * @return <code>true</code> if the change operation represents the refactoring, otherwise <code>false</code>
+     */
+    @Override
+    public boolean isRefactoringRedo() {
+        return action.equals(Action.REFACTORING_REDO.toString());
+    }
+    
+    /**
+     * Tests this change operation represents a refactoring.
+     * @return <code>true</code> if the change operation represents the refactoring, otherwise <code>false</code>
+     */
+    @Override
+    public boolean isRefactoring() {
+        return action.equals(Action.REFACTORING.toString()) ||
+               action.equals(Action.REFACTORING_UNDO.toString()) ||
+               action.equals(Action.REFACTORING_REDO.toString());
+    }
+    
+    /**
+     * Obtains change operations that affect this change operation.
+     * @return the collection of the affecting change operations
+     */
+    @Override
+    public List<ICodeOperation> getAffectingOperations() {
+        List<ICodeOperation> retops = new ArrayList<ICodeOperation>();
+        List<IChangeOperation> ops = fileInfo.getOperations();
+        for (int idx = 0; idx < ops.size(); idx++) {
+            if (ops.get(idx).isDocumentOrCopy()) {
+                ICodeOperation cop = (ICodeOperation)ops.get(idx);
+                if (cop.getTime().isBefore(getTime()) && dependsOn(cop)) {
+                    retops.add(cop);
+                }
+            } else {
+                break;
+            }
+        }
+        return retops;
+    }
+    
+    /**
+     * Collects all code change operations that appear between a time period.
+     * @param start the starting time of the time period
+     * @param end the ending time of the time period
+     * @return the collection of the code change operations, not including a change operation performed at the starting time.
+     */
+    public static List<CodeOperation> getOperations(ChangeTrackerFile finfo, ZonedDateTime start, ZonedDateTime end) {
+        List<IChangeOperation> ops = finfo.getOperations(start, end);
+        List<CodeOperation> retops = new ArrayList<CodeOperation>();
+        if (ops.size() < 1) {
+            return retops;
+        }
+        ops.remove(0);
+        for (int idx = 1; idx < ops.size(); idx++) {
+            IChangeOperation op = ops.get(idx);
+            if (op.isDocumentOrCopy()) {
+                retops.add((CodeOperation)op);
+            }
+        }
+        return retops;
     }
     
     /**

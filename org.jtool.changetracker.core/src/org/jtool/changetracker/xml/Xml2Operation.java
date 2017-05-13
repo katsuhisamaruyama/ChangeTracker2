@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -8,12 +8,12 @@ package org.jtool.changetracker.xml;
 
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
-import org.jtool.changetracker.operation.CommandOperation;
 import org.jtool.changetracker.operation.CopyOperation;
 import org.jtool.changetracker.operation.DocumentOperation;
 import org.jtool.changetracker.operation.FileOperation;
-import org.jtool.changetracker.operation.ResourceOperation;
-import org.jtool.changetracker.operation.GitOperation;
+import org.jtool.changetracker.operation.CommandOperation;
+import org.jtool.changetracker.operation.RefactoringOperation;
+import org.jtool.changetracker.repository.ChangeTrackerPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -21,51 +21,136 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.File;
 import java.time.ZonedDateTime;
 
 /**
- * Converts the XML representation into the history of code change operations.
+ * Converts the XML representation into the history of change operations recorded by ChangeTracker-v2.
  * @author Katsuhisa Maruyama
  */
 public class Xml2Operation {
     
     /**
-     * Obtains code change operations from the XML representation.
-     * @param path the path name of a file to be read
-     * @return the history of the code change operations
-     * @throws Exception if the collection of code change operations fails
+     * The extension string of a history file.
      */
-    public static List<IChangeOperation> getOperations(String path) throws Exception {
+    public static String XML_FILE_EXTENTION = ".xml";
+    
+    /**
+     * The string that indicates the version of stored change operations.
+     */
+    static final String HISTORY_VERSION1_EXT = "a";
+    static final String HISTORY_VERSION2_EXT = "ct2";
+    static final String HISTORY_VERSION2 = "2.0" + HISTORY_VERSION2_EXT;
+    
+    /**
+     * Obtains change operations from the XML representation.
+     * @param path the path name of a file to be read
+     * @return the collection of the change operations, or empty set when failures in reading a file
+     */
+    public static List<IChangeOperation> getOperations(String path) {
         Document doc = XmlFileManager.readXML(path);
-        return getOperations(doc);
+        NodeList list = doc.getElementsByTagName(XmlConstants.HistoryElem);
+        if (list.getLength() <= 0) {
+            return new ArrayList<IChangeOperation>();
+        }
+        
+        String version = getVersion(list);
+        if (version.endsWith(HISTORY_VERSION2_EXT)) {
+            return getOperations(doc); // ChangeTracker-v2
+        } else if (version.endsWith(HISTORY_VERSION1_EXT)) {
+            return Xml2OperationCT.getOperations(doc); // ChangeTracker-v2
+        } else {
+            return Xml2OperationOR.getOperations(doc); // OperationRecorder
+        }
     }
     
     /**
-     * Obtains code change operations from the XML representation.
-     * @param doc the DOM instance that has the XML representation
-     * @return the history of the code change operations
-     * @exception Exception if the format of the operation history file is invalid
+     * Obtains the version of the XML representation.
+     * @param list the list of top elements
+     * @return the version string
      */
-    private static List<IChangeOperation> getOperations(Document doc) throws Exception {
+    private static String getVersion(NodeList list) {
+        Element topElem = (Element)list.item(0);
+        return topElem.getAttribute(XmlConstants.VersionAttr);
+    }
+    
+    /**
+     * Tests if the version of the XML representation is compatible with "changeTracker v2"
+     * @param dirpath the path of a directory that contains operation history files
+     * @return <code>true</code> if the XML representation is compatible with "changeTracker v2", otherwise <code>false</code>
+     */
+    public static boolean isChangeTrackerVersion2(String dirpath) {
+        List<File> files = getHistoryFiles(dirpath);
+        if (files.size() == 0) {
+            return false;
+        }
+        Document doc = XmlFileManager.readXML(files.get(0).getAbsolutePath());
         NodeList list = doc.getElementsByTagName(XmlConstants.HistoryElem);
         if (list.getLength() <= 0) {
-            throw new Exception("invalid operation history format");
+            return false;
+        }
+        String version = getVersion(list);
+        return version.endsWith(HISTORY_VERSION2_EXT);
+    }
+    
+    /**
+     * Returns all descendant history files of a directory.
+     * @param path the path of the directory
+     * @return the collection of all the descendant files
+     */
+    public static List<File> getHistoryFiles(String path) {
+        List<File> files = new ArrayList<File>();
+        String name = getFileName(path);
+        if (name.startsWith("_") || name.startsWith(".")) {
+            return files;
         }
         
-        // Element rootElem = (Element)list.item(0);
-        // String version = rootElem.getAttribute(XmlConstants.VersionAttr);
-        
+        File dir = new File(path);
+        if (dir.isFile()) {
+            if (path.endsWith(XML_FILE_EXTENTION)) {
+                files.add(dir);
+            }
+        } else if (dir.isDirectory() ) {
+            File[] children = dir.listFiles();
+            for (File f : children) {
+                files.addAll(getHistoryFiles(f.getPath()));
+            }
+        }
+        return files;
+    }
+    
+    /**
+     * Returns the name part of the path of the file.
+     * @param path the path of the file
+     * @return the file name
+     */
+    public static String getFileName(String path) {
+        if (path == null) {
+            return "";
+        }
+        int index = path.lastIndexOf(File.separatorChar);
+        if (index == -1) {
+            return "";
+        }
+        return path.substring(index + 1);
+    }
+    
+    /**
+     * Obtains change operations from the XML representation.
+     * @param doc the DOM instance that has the XML representation
+     * @return the collection of the change operations
+     */
+    private static List<IChangeOperation> getOperations(Document doc) {
+        List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
         NodeList operationList = doc.getElementsByTagName(XmlConstants.OperationsElem);
         if (operationList == null) {
-            throw new Exception("invalid operation history format");
+            return ops;
         }
-        
         Node operationsElem = operationList.item(0);
         if (operationsElem == null) {
-            throw new Exception("invalid operation history format");
+            return ops;
         }
         
-        List<IChangeOperation> operations = new ArrayList<IChangeOperation>();
         NodeList childOperations = operationsElem.getChildNodes();
         for (int i = 0; i < childOperations.getLength(); i++) {
             Node node = childOperations.item(i);
@@ -73,18 +158,17 @@ public class Xml2Operation {
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 IChangeOperation operation = getOperation(node);
                 if (operation != null) {
-                    operations.add(operation);
+                    ops.add(operation);
                 }
             }
         }
-        
-        return operations;
+        return ops;
     }
     
     /**
-     * Obtains a code change operation from the DOM element.
+     * Obtains a change operation from the DOM element.
      * @param node the DOM element
-     * @return the code change operation
+     * @return the change operation
      */
     private static IChangeOperation getOperation(Node node) {
         Element elem = (Element)node;
@@ -92,21 +176,14 @@ public class Xml2Operation {
         
         if (elemName.equals(XmlConstants.DocumentOperationElem)) {
             return getDocumentOperation(elem);
-            
         } else if (elemName.equals(XmlConstants.CopyOperationElem)) {
             return getCopyOperation(elem);
-            
-        } else if (elemName.equals(XmlConstants.CommandOperationElem)) {
-            return getCommandOperations(elem);
-            
         } else if (elemName.equals(XmlConstants.FileOperationElem)) {
             return getFileOperation(elem);
-            
-        } else if (elemName.equals(XmlConstants.ResourceOperationElem)) {
-            return getResourceOperation(elem);
-            
-        } else if (elemName.equals(XmlConstants.GitOperationElem)) {
-            return getGitOperation(elem);
+        } else if (elemName.equals(XmlConstants.CommandOperationElem)) {
+            return getCommandOperation(elem);
+        } else if (elemName.equals(XmlConstants.RefactorOperationElem)) {
+            return getRefactoringOperation(elem);
         }
         return null;
     }
@@ -118,15 +195,13 @@ public class Xml2Operation {
      */
     private static DocumentOperation getDocumentOperation(Element elem) {
         OperationAttribute attr = new OperationAttribute(elem);
-        DocumentOperation operation = new DocumentOperation(attr.time, attr.branch, attr.path, attr.action, attr.author);
-        operation.setDescription(attr.desc);
-        operation.setBundleId(attr.bid);
-        
-        operation.setStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
-        operation.setInsertedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.InsertedElem)));
-        operation.setDeletedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.DeletedElem)));
-        
-        return operation;
+        DocumentOperation op = new DocumentOperation(attr.time, attr.pathinfo, attr.action, attr.author);
+        op.setDescription(attr.desc);
+        op.setCompoundId(attr.cid);
+        op.setStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
+        op.setInsertedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.InsertedElem)));
+        op.setDeletedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.DeletedElem)));
+        return op;
     }
     
     /**
@@ -136,28 +211,12 @@ public class Xml2Operation {
      */
     private static CopyOperation getCopyOperation(Element elem) {
         OperationAttribute attr = new OperationAttribute(elem);
-        CopyOperation operation = new CopyOperation(attr.time, attr.branch, attr.path, attr.author);
-        operation.setDescription(attr.desc);
-        operation.setBundleId(attr.bid);
-        
-        operation.setStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
-        operation.setCopiedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.CopiedElem)));
-        
-        return operation;
-    }
-    
-    /**
-     * Obtains a command operation from the DOM element.
-     * @param node the DOM element
-     * @return the command operation
-     */
-    private static CommandOperation getCommandOperations(Element elem) {
-        OperationAttribute attr = new OperationAttribute(elem);
-        CommandOperation operation = new CommandOperation(attr.time, attr.path,  attr.branch, attr.action, attr.author);
-        operation.setDescription(attr.desc);
-        operation.setBundleId(attr.bid);
-        
-        return operation;
+        CopyOperation op = new CopyOperation(attr.time, attr.pathinfo, attr.author);
+        op.setDescription(attr.desc);
+        op.setCompoundId(attr.cid);
+        op.setStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
+        op.setCopiedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.CopiedElem)));
+        return op;
     }
     
     /**
@@ -167,75 +226,80 @@ public class Xml2Operation {
      */
     private static FileOperation getFileOperation(Element elem) {
         OperationAttribute attr = new OperationAttribute(elem);
-        FileOperation operation = new FileOperation(attr.time, attr.path, attr.branch, attr.action, attr.author);
-        operation.setDescription(attr.desc);
-        operation.setBundleId(attr.bid);
-        
+        FileOperation op = new FileOperation(attr.time, attr.pathinfo, attr.action, attr.author);
+        op.setDescription(attr.desc);
+        op.setCompoundId(attr.cid);
+        op.setCharset(elem.getAttribute(XmlConstants.CharsetAttr));
+        op.setSrcDstPath(elem.getAttribute(XmlConstants.SrcDstPathAttr));
         String code = getFirstChildText(elem.getElementsByTagName(XmlConstants.CodeElem));
-        operation.setCode(code);
-        
-        return operation;
+        op.setCode(code);
+        return op;
     }
     
     /**
-     * Obtains a resource operation from the DOM element.
+     * Obtains a command operation from the DOM element.
      * @param node the DOM element
-     * @return the resource operation
+     * @return the command operation
      */
-    private static ResourceOperation getResourceOperation(Element elem) {
+    private static CommandOperation getCommandOperation(Element elem) {
         OperationAttribute attr = new OperationAttribute(elem);
-        ResourceOperation operation = new ResourceOperation(attr.time, attr.branch, attr.path, attr.action, attr.author);
-        operation.setDescription(attr.desc);
-        operation.setBundleId(attr.bid);
-        
-        operation.setSrcDstPath(elem.getAttribute(XmlConstants.SrcDstPathAttr));
-        
-        return operation;
+        CommandOperation op = new CommandOperation(attr.time, attr.pathinfo, attr.action, attr.author);
+        op.setDescription(attr.desc);
+        op.setCompoundId(attr.cid);
+        op.setName(elem.getAttribute(XmlConstants.NameAttr));
+        return op;
     }
     
     /**
-     * Obtains a git operation from the DOM element.
+     * Obtains a refactoring operation from the DOM element.
      * @param node the DOM element
-     * @return the git operation
+     * @return the refactoring operation
      */
-    private static GitOperation getGitOperation(Element elem) {
+    private static RefactoringOperation getRefactoringOperation(Element elem) {
         OperationAttribute attr = new OperationAttribute(elem);
-        GitOperation operation = new GitOperation(attr.time, attr.branch, attr.path, attr.action, attr.author);
-        operation.setDescription(attr.desc);
-        operation.setBundleId(attr.bid);
-        
-        operation.setAddedFiles(GitOperation.getNameSet(elem.getAttribute(XmlConstants.AddedFilesAttr)));
-        operation.setRemovedFiles(GitOperation.getNameSet(elem.getAttribute(XmlConstants.RemovedFilesAttr)));
-        operation.setModifiedFiles(GitOperation.getNameSet(elem.getAttribute(XmlConstants.ModifiedFilesAttr)));
-        
-        return operation;
+        RefactoringOperation op = new RefactoringOperation(attr.time, attr.pathinfo, attr.action, attr.author);
+        op.setDescription(attr.desc);
+        op.setCompoundId(attr.cid);
+        op.setName(elem.getAttribute(XmlConstants.NameAttr));
+        op.setSelectionStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
+        op.setArguments(elem.getAttribute(XmlConstants.ArgumentAttr));
+        String code = getFirstChildText(elem.getElementsByTagName(XmlConstants.CodeElem));
+        op.setSelectedText(code);
+        return op;
     }
     
     /**
      * Obtains the text of stored in the first child of a node list.
-     * @param nodes the node list of nodes that stores the text
+     * @param nodeList the node list of nodes store the text
+     * @return the text string, <code>null</code> if no text was found
+     */
+    static String getFirstChildText(NodeList nodeList) {
+        if (nodeList == null || nodeList.getLength() == 0) {
+            return "";
+        }
+        return getFirstChildText(nodeList.item(0));
+    }
+    
+    /**
+     * Obtains the text of stored in the first child of a node.
+     * @param node the node that stores the text
      * @return the text string, <code>null</code> if no text element was found
      */
-    private static String getFirstChildText(NodeList nodeList) {
-        if (nodeList == null || nodeList.getLength() == 0) {
-            return null;
-        }
-        
-        Node node = nodeList.item(0);
+    static String getFirstChildText(Node node) {
         if (node == null) {
-            return null;
+            return "";
         }
         
         NodeList nodes = node.getChildNodes();
         if (nodes == null || nodes.getLength() == 0) {
-            return null;
+            return "";
         }
         
         Node child = nodes.item(0);
         if (child.getNodeType() == Node.TEXT_NODE) {
             return ((Text)child).getNodeValue();
         }
-        return null;
+        return "";
     }
     
     /**
@@ -243,13 +307,13 @@ public class Xml2Operation {
      * @author Katsuhisa Maruyama
      */
     static class OperationAttribute {
+        
         ZonedDateTime time;
-        String branch;
-        String path;
         String action;
         String author;
         String desc;
-        long bid;
+        long cid;
+        ChangeTrackerPath pathinfo;
         
         /**
          * Obtains basic attributes of a code change operation from the DOM element.
@@ -257,12 +321,17 @@ public class Xml2Operation {
          */
         OperationAttribute(Element elem) {
             time = ChangeOperation.getTime(elem.getAttribute(XmlConstants.TimeAttr));
-            branch = elem.getAttribute(XmlConstants.BranchAttr);
-            path = elem.getAttribute(XmlConstants.PathAttr);
             action = elem.getAttribute(XmlConstants.ActionAttr);
             author = elem.getAttribute(XmlConstants.AuthorAttr);
             desc = elem.getAttribute(XmlConstants.DescriptionAttr);
-            bid = Long.parseLong(elem.getAttribute(XmlConstants.BundleAttr));
+            cid = Long.parseLong(elem.getAttribute(XmlConstants.CompoundAttr));
+            String projectName = elem.getAttribute(XmlConstants.ProjectNameAttr);
+            String packageName = elem.getAttribute(XmlConstants.PackageNameAttr);
+            String path = elem.getAttribute(XmlConstants.PathAttr);
+            String branch = elem.getAttribute(XmlConstants.BranchAttr);
+            String fileName = getFileName(path);
+            pathinfo = new ChangeTrackerPath(projectName, packageName, fileName, path, branch);
         }
     }
 }
+

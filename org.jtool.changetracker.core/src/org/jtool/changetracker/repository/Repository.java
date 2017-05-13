@@ -1,59 +1,52 @@
 /*
- *  Copyright 2016
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
 
 package org.jtool.changetracker.repository;
 
+import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
+import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
 import org.jtool.changetracker.operation.IChangeOperation;
-import org.jtool.changetracker.operation.ResourceOperation;
+import org.jtool.changetracker.operation.ChangeOperation;
+import org.jtool.changetracker.operation.CodeOperation;
+import org.jtool.changetracker.operation.FileOperation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.File;
 
 /**
- * Stores information about the repository of a workspace, projects, packages, and files.
+ * Stores information about the repository for projects, packages, and files.
  * @author Katsuhisa Maruyama
  */
 public class Repository {
     
     /**
-     * The path name of the location of this repository.
+     * The path of the location of this repository.
      */
     private String location;
     
     /**
      * The map that stores information about currently existing projects.
      */
-    private Map<String, ProjectInfo> projectMap = new HashMap<String, ProjectInfo>();
-    
-    /**
-     * The collection of information about all packages.
-     */
-    private List<ProjectInfo> projectHistory = new ArrayList<ProjectInfo>();
+    private Map<String, ChangeTrackerProject> projectMap = new HashMap<String, ChangeTrackerProject>();
     
     /**
      * The map that stores information about currently existing packages.
      */
-    private Map<String, PackageInfo> packageMap = new HashMap<String, PackageInfo>();
-    
-    /**
-     * The collection of information about all packages.
-     */
-    private List<PackageInfo> packageHistory = new ArrayList<PackageInfo>();
+    private Map<String, ChangeTrackerPackage> packageMap = new HashMap<String, ChangeTrackerPackage>();
     
     /**
      * The map that stores information of currently existing files.
      */
-    private Map<String, FileInfo> fileMap = new HashMap<String, FileInfo>();
+    private Map<String, ChangeTrackerFile> fileMap = new HashMap<String, ChangeTrackerFile>();
     
     /**
-     * The collection of information about all files.
+     * The collection of information about all files existing in the past.
      */
-    private List<FileInfo> fileHistory = new ArrayList<FileInfo>();
+    private List<ChangeTrackerFile> fileHistory = new ArrayList<ChangeTrackerFile>();
     
     /**
      * The collection of listeners that receives repository change events.
@@ -61,159 +54,145 @@ public class Repository {
     protected List<RepositoryChangedListener> listeners = new ArrayList<RepositoryChangedListener>();
     
     /**
-     * The character that concatenates a resource name and a branch name.
-     */
-    private static String CONCATENATION_SYMBOL = "$";
-    
-    /**
-     * The code change operations that are not stored in file information.
-     */
-    private List<IChangeOperation> nonFileOperations;
-    
-    /**
      * Creates an instance that stores information about the repository.
-     * @param location the path name of the location of the repository
+     * @param loc the path of the location of the repository
      */
-    Repository(String location) {
-        this.location = location;
-        this.nonFileOperations = new ArrayList<IChangeOperation>();
+    public Repository(String loc) {
+        this.location = loc;
     }
     
     /**
-     * Clears the whole information in this repository.
+     * Clears the whole information about this repository.
      */
-    public void clear() {
+    public  void clear() {
         projectMap.clear();
-        projectHistory.clear();
         packageMap.clear();
-        packageHistory.clear();
         fileMap.clear();
         fileHistory.clear();
     }
     
     /**
-     * Returns the path name of the location of this repository.
-     * @return the path name of the location
+     * Returns the location of this repository.
+     * @return the location
      */
-    public String getLocationPath() {
+    public String getLocation() {
         return location;
     }
     
     /**
-     * Obtains all the code change operations that are not stored in file information.
-     * @return the collection of the code change operations
+     * Returns information about the projects stored in this repository.
+     * @return all the file information
      */
-    List<IChangeOperation> getNonFileOperations() {
-        return nonFileOperations;
+    public List<ChangeTrackerProject> getProjectHistory() {
+        return new ArrayList<ChangeTrackerProject>(projectMap.values());
     }
     
     /**
-     * Returns all the information on the projects within this repository.
-     * @return the collection of the project information
+     * Returns information about the packages stored in this repository.
+     * @return all the file information
      */
-    public List<ProjectInfo> getProjectHistory() {
-        return projectHistory;
+    public List<ChangeTrackerPackage> getPackageHistory() {
+        return new ArrayList<ChangeTrackerPackage>(packageMap.values());
     }
     
     /**
-     * Returns all the information on the packages within this repository.
-     * @return the collection of the package information
+     * Returns information about the files stored in this repository.
+     * @return all the file information
      */
-    public List<PackageInfo> getPackageHistory() {
-        return packageHistory;
-    }
-    
-    /**
-     * Returns all the information on the files within this repository.
-     * @return the collection of the file information
-     */
-    public List<FileInfo> getFileHistory() {
+    public List<ChangeTrackerFile> getFileHistory() {
         return fileHistory;
     }
     
     /**
-     * Adds code change operations to the repository.
-     * @param operation the code change operation to be added
+     * Returns the collection of all the change operations in this repository.
+     * @return the collection of the change operations
      */
-    public void addOperations(List<IChangeOperation> operations) {
-        if (operations == null || operations.size() == 0) {
+    public List<IChangeOperation> getOperations() {
+        List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
+        for (ChangeTrackerFile finfo : getFileHistory()) {
+            ops.addAll(finfo.getOperations());
+        }
+        return ops;
+    }
+    
+    /**
+     * Stores change operations related to the same file into this repository.
+     * @param ops the collection of the change operations to be stored
+     */
+    void storeOperationAll(List<? extends IChangeOperation> ops) {
+        if (ops == null || ops.size() == 0) {
             return;
         }
-        
-        storeOperations(operations);
-        
-        RepositoryChangedEvent evt = new RepositoryChangedEvent(this);
-        fire(evt);
+        addOperationAll(ops);
     }
     
     /**
-     * Adds a code change operation to the repository.
-     * @param operation the code change operation to be added
+     * Add change operations to this repository.
+     * @param ops the collection of the change operations to be added
      */
-    public void addOperation(IChangeOperation operation) {
-        if (operation == null) {
+    private void addOperationAll(List<? extends IChangeOperation> ops) {
+        IChangeOperation op = ops.get(0);
+        ChangeTrackerPath pathinfo = new ChangeTrackerPath(op);
+        if (op.isFile()) {
+            createResourceInfo((FileOperation)op, pathinfo);
+        }
+        ChangeTrackerProject projectInfo = createProject(pathinfo);
+        ChangeTrackerPackage packageInfo = createPackage(pathinfo, projectInfo);
+        ChangeTrackerFile fileInfo = createFile(pathinfo, op,  packageInfo);
+        for (int idx = 0; idx < ops.size(); idx++) {
+            addOperation(ops.get(idx), projectInfo, packageInfo, fileInfo);
+        }
+    }
+    
+    /**
+     * Stores a code change operation into this repository.
+     * @param op the change operation to be stored
+     */
+    void storeOperation(IChangeOperation op) {
+        if (op == null) {
             return;
         }
-        
-        storeOperation(operation);
-        
-        RepositoryChangedEvent evt = new RepositoryChangedEvent(this);
-        fire(evt);
+        addOperation(op);
     }
     
     /**
-     * Stores a code change operation into the repository.
-     * @param operation the code change operation to be stored
+     * Adds a change operation to this repository.
+     * @param op the code change operation to be added
      */
-    void storeOperations(List<IChangeOperation> operations) {
-        String path = operations.get(0).getPath();
-        String branch = operations.get(0).getBranch();
-        
-        
-        
-        
-        String projectName = getProjectName(path, branch);
-        String packageName = getPackageName(path, branch);
-        String fileName = getFileName(path, branch);
-        
-        for (int idx = 0; idx < operations.size(); idx ++) {
-            storeOperation(operations.get(idx), projectName, packageName, fileName);
+    private void addOperation(IChangeOperation op) {
+        ChangeTrackerPath pathinfo = new ChangeTrackerPath(op);
+        if (op.isFile()) {
+            createResourceInfo((FileOperation)op, pathinfo);
         }
+        ChangeTrackerProject projectInfo = createProject(pathinfo);
+        ChangeTrackerPackage packageInfo = createPackage(pathinfo, projectInfo);
+        ChangeTrackerFile fileInfo = createFile(pathinfo, op, packageInfo);
+        addOperation(op, projectInfo, packageInfo, fileInfo);
     }
     
     /**
-     * Stores a code change operation into the repository.
-     * @param operation the code change operation to be stored
+     * Creates information about a resource related the a change operation.
+     * @param op the change operation to be stored
+     * @param pathinfo information about path of the resource
      */
-    void storeOperation(IChangeOperation operation) {
-        String path = operation.getPath();
-        
-        System.err.println("OP = " + operation + " " + path);
-        String branch = operation.getBranch();
-        String projectName = getProjectName(path, branch);
-        String packageName = getPackageName(path, branch);
-        String fileName = getFileName(path, branch);
-        
-        storeOperation(operation, projectName, packageName, fileName);
-    }
-    
-    /**
-     * Stores a code change operation into the repository.
-     * @param operation the code change operation to be stored
-     * @param projectName the name of the project related to the operation
-     * @param packageName the name of the package related to the operation
-     * @param fileName the name of the file related to the operation
-     */
-    private void storeOperation(IChangeOperation operation, String projectName, String packageName, String fileName) {
-        if (operation.isResource()) {
-            storeResourceOperation((ResourceOperation)operation, projectName, packageName, fileName);
-            nonFileOperations.add(operation);
+    private void createResourceInfo(FileOperation op, ChangeTrackerPath pathinfo) {
+        if (op.isAdded()) {
+            ChangeTrackerProject projectInfo = createProject(pathinfo);
+            ChangeTrackerPackage packageInfo = createPackage(pathinfo, projectInfo);
+            createFile(pathinfo, op, packageInfo);
+        } else if (op.isMovedFrom() || op.isRenamedFrom()) {
+            eraseFile(pathinfo);
+            ChangeTrackerProject projectInfo = createProject(pathinfo);
+            ChangeTrackerPackage packageInfo = createPackage(pathinfo, projectInfo);
+            ChangeTrackerFile fileInfo = createFile(pathinfo, op, packageInfo);
             
-        } else if (operation.isGit()) {
-            nonFileOperations.add(operation);
-            
-        } else {
-            storeNormalOperation(operation, projectName, packageName, fileName);
+            ChangeTrackerFile fromFileInfo = getFromFile(op.getSrcDstPath());
+            if (fromFileInfo != null) {
+                fromFileInfo.setFileInfoTo(fileInfo);
+                fileInfo.setFileInfoFrom(fromFileInfo);
+            }
+        } else if (op.isRemoved() || op.isMovedTo() || op.isRenamedTo()) {
+            eraseFile(pathinfo);
         }
     }
     
@@ -222,9 +201,9 @@ public class Repository {
      * @param path the path name of the file information to be retrieved
      * @return the found file information, or <code>null</code> if none
      */
-    private FileInfo getFromFileInfo(String path) {
-        for (int idx = fileHistory.size() - 1; idx <= 0; idx--) {
-            FileInfo info = fileHistory.get(idx);
+    private ChangeTrackerFile getFromFile(String path) {
+        for (int idx = fileHistory.size() - 1; idx >= 0; idx--) {
+            ChangeTrackerFile info = fileHistory.get(idx);
             if (info.getPath().equals(path)) {
                 return info;
             }
@@ -233,267 +212,120 @@ public class Repository {
     }
     
     /**
-     * Stores a resource operation in the repository.
-     * @param operation the operation to be stored
-     * @param projectName the name of the project related to the operation
-     * @param packageName the name of the package related to the operation
-     * @param fileName the name of the file related to the operation
+     * Adds a change operation to the repository.
+     * @param op the change operation to be stored
+     * @param prjinfo information about a project related to the change operation
+     * @param pkginfo information about a package related to the change operation
+     * @param finfo information about a file related to the change operation
      */
-    private void storeResourceOperation(ResourceOperation operation, String projectName, String packageName, String fileName) {
-        String projectKey = getProjectKey(projectName);
-        String packageKey = getPackageKey(projectName, packageName);
-        String fileKey = getFileKey(projectName, packageName, fileName);
-        
-        if (operation.isProjectResource()) {
-            if (operation.isResourceAdd() || operation.isResourceRenameFrom() || operation.isResourceMoveFrom()) {
-                createProjectInfo(projectName, projectKey);
-                
-            } else if (operation.isResourceRemove() || operation.isResourceRenameTo() || operation.isResourceMoveTo()) {
-                eraseProjectInfo(projectKey);
-            }
-            
-        } else if (operation.isPackageResource()) {
-            if (operation.isResourceAdd() || operation.isResourceRenameFrom() || operation.isResourceMoveFrom()) {
-                ProjectInfo projectInfo = createProjectInfo(projectName, projectKey);
-                createPackageInfo(packageName, packageKey, projectInfo);
-                
-             } else if (operation.isResourceRemove() || operation.isResourceRenameTo() || operation.isResourceMoveTo()) {
-                 erasePackageInfo(packageKey);
-            }
-            
-        } else if (operation.isFileResource()) {
-            if (operation.isResourceAdd()) {
-                ProjectInfo projectInfo = createProjectInfo(projectName, projectKey);
-                PackageInfo packageInfo = createPackageInfo(packageName, packageKey, projectInfo);
-                createFileInfo(fileName, fileKey, operation.getPath(), packageInfo);
-                
-            } else if (operation.isResourceRenameFrom() || operation.isResourceMoveFrom()) {
-                ProjectInfo projectInfo = createProjectInfo(projectName, projectKey);
-                PackageInfo packageInfo = createPackageInfo(packageName, packageKey, projectInfo);
-                FileInfo fileInfo = createFileInfo(fileName, fileKey, operation.getPath(), packageInfo);
-                
-                FileInfo fromFileInfo = getFromFileInfo(operation.getSrcDstPath());
-                if (fromFileInfo != null) {
-                    fromFileInfo.setFileInfoTo(fileInfo);
-                    fileInfo.setFileInfoFrom(fromFileInfo);
-                }
-                
-            } else if (operation.isResourceRemove() || operation.isResourceRenameTo() || operation.isResourceMoveTo()) {
-                eraseFileInfo(fileKey);
-            }
+    private void addOperation(IChangeOperation op,
+            ChangeTrackerProject prjinfo, ChangeTrackerPackage pkginfo, ChangeTrackerFile finfo) {
+        finfo.addOperation(op);
+        if (op instanceof ChangeOperation) {
+            ((ChangeOperation)op).setFile(finfo);
+        }
+        prjinfo.updateTimeRange(op);
+        pkginfo.updateTimeRange(op);
+        finfo.updateTimeRange(op);
+        if (op.isDocumentOrCopy()) {
+            detectAffectedJavaConstructs((CodeOperation)op, finfo);
         }
     }
     
     /**
-     * Stores a code change operation except for a resource operation in the repository.
-     * @param operation the operation to be stored
-     * @param projectName the name of the project related to the operation
-     * @param packageName the name of the package related to the operation
-     * @param fileName the name of the file related to the operation
+     * Detects Java constructs that a change operation affects.
+     * @param op the change operation
+     * @param finfo information about a file that contains the Java constructs
      */
-    private void storeNormalOperation(IChangeOperation operation, String projectName, String packageName, String fileName) {
-        String projectKey = getProjectKey(projectName);
-        String packageKey = getPackageKey(projectName, packageName);
-        String fileKey = getFileKey(projectName, packageName, fileName);
-        
-        ProjectInfo projectInfo = createProjectInfo(projectName, projectKey);
-        PackageInfo packageInfo = createPackageInfo(packageName, packageKey, projectInfo);
-        FileInfo fileInfo = createFileInfo(fileName, fileKey, operation.getPath(), packageInfo);
-        
-        fileInfo.addOperation(operation);
-        
-        projectInfo.updateTimeRange(operation);
-        packageInfo.updateTimeRange(operation);
-        fileInfo.updateTimeRange(operation);
+    private void detectAffectedJavaConstructs(CodeOperation op, ChangeTrackerFile finfo) {
+        int index = finfo.getOperationIndexAt(op.getTime());
+        ParseableSnapshot sn = DependencyDetector.parse(finfo, index);
+        if (sn != null) {
+            ParseableSnapshot psn = finfo.getLastSnapshot();
+            finfo.addSnapshot(sn);
+            
+            List<IChangeOperation> ops;
+            if (psn != null) {
+                if (psn.getIndex() < 0) {
+                    ops = finfo.getOperations();
+                } else {
+                    ops = finfo.getOperationsAfter(psn.getTime());
+                    ops.remove(0);
+                }
+            } else {
+                ops = finfo.getOperations();
+            }
+            List<CodeOperation> cops = DependencyDetector.getCodeOperations(ops);
+            DependencyDetector.detectBackwardChangeEdges(psn, cops);
+            DependencyDetector.detectForwardChangeEdges(sn, cops);
+        }
     }
     
     /**
      * Creates information about a project.
-     * @param projectName the name of the project
-     * @param projectKey the key of the project
+     * @param pathinfo information about path of the project
      * @return the created or already existing information about the project
      */
-    private ProjectInfo createProjectInfo(String projectName, String projectKey) {
-        ProjectInfo projectInfo = projectMap.get(projectKey);
-        if (projectInfo != null) {
-            return projectInfo;
+    private ChangeTrackerProject createProject(ChangeTrackerPath pathinfo) {
+        String key = pathinfo.getProjectKey();
+        ChangeTrackerProject pinfo = projectMap.get(key);
+        if (pinfo != null) {
+            return pinfo;
         }
-        
-        projectInfo = new ProjectInfo(projectName);
-        projectMap.put(projectKey, projectInfo);
-        projectHistory.add(projectInfo);
-        return projectInfo;
-    }
-    
-    /**
-     * Removes information about a project.
-     * @param projectKey the key of the project
-     */
-    private void eraseProjectInfo(String projectKey) {
-        projectMap.remove(projectKey);
+        pinfo = new ChangeTrackerProject(pathinfo);
+        projectMap.put(key, pinfo);
+        return pinfo;
     }
     
     /**
      * Creates information about a package.
-     * @param packageName the name of the package
-     * @param packageKey the key of the package
-     * @param projectInfo the information about a project that contains the package
+     * @param pathinfo information about path of the package
+     * @param prjinfo the information about a project that contains the package
      * @return the created or already existing information about the package
      */
-    private PackageInfo createPackageInfo(String packageName, String packageKey, ProjectInfo projectInfo) {
-        PackageInfo packageInfo = packageMap.get(packageKey);
-        if (packageInfo != null) {
-            return packageInfo;
+    private ChangeTrackerPackage createPackage(ChangeTrackerPath pathinfo, ChangeTrackerProject prjinfo) {
+        String key = pathinfo.getPackageKey();
+        ChangeTrackerPackage pinfo = packageMap.get(key);
+        if (pinfo != null) {
+            return pinfo;
         }
-        
-        packageInfo = new PackageInfo(packageName, projectInfo);
-        packageMap.put(packageKey, packageInfo);
-        packageHistory.add(packageInfo);
-        projectInfo.addPackage(packageInfo);
-        
-        return packageInfo;
-    }
-    
-    /**
-     * Removes information about a package.
-     * @param packageKey the key of the package
-     */
-    private void erasePackageInfo(String packageKey) {
-        packageMap.remove(packageKey);
+        pinfo = new ChangeTrackerPackage(pathinfo, prjinfo);
+        packageMap.put(key, pinfo);
+        prjinfo.addPackage(pinfo);
+        return pinfo;
     }
     
     /**
      * Creates information about a file.
-     * @param fileName the name of the file
-     * @param fileKey the key of the file
-     * @param path the path name of the file
-     * @param packageInfo the information about a package that contains the file
+     * @param pathinfo information about path of the file
+     * @param op a change operation that was performed on the file
+     * @param pckinfo the information about a package that contains the file
      * @return the created or already existing information about the file
      */
-    private FileInfo createFileInfo(String fileName, String fileKey, String path, PackageInfo packageInfo) {
-        FileInfo fileInfo = fileMap.get(fileKey);
-        if (fileInfo != null) {
-            return fileInfo;
+    private ChangeTrackerFile createFile(ChangeTrackerPath pathinfo, IChangeOperation op, ChangeTrackerPackage pckinfo) {
+        String key = pathinfo.getFileKey();
+        ChangeTrackerFile finfo = fileMap.get(key);
+        if (finfo != null) {
+            return finfo;
         }
-        
-        fileInfo = new FileInfo(fileName, path, packageInfo);
-        fileMap.put(fileKey, fileInfo);
-        fileHistory.add(fileInfo);
-        packageInfo.addFile(fileInfo);
-        
-        return fileInfo;
+        finfo = new ChangeTrackerFile(pathinfo, pckinfo.getProject(), pckinfo);
+        if (op.isFile()) {
+            FileOperation fop = (FileOperation)op;
+            finfo.setInitialCode(fop.getCode());
+        }
+        fileMap.put(key, finfo);
+        fileHistory.add(finfo);
+        pckinfo.addFile(finfo);
+        return finfo;
     }
     
     /**
      * Removes information about a file.
-     * @param fileKey the key of the file
+     * @param pathinfo information about path of the file
      */
-    private void eraseFileInfo(String fileKey) {
-        fileMap.remove(fileKey);
-    }
-    
-    /**
-     * Returns the key for retrieval of project information.
-     * @param projectName the project name
-     * @return the key string for the project
-     */
-    private String getProjectKey(String projectName) {
-        return projectName;
-    }
-    
-    /**
-     * Returns the key for retrieval of package information.
-     * @param projectName the project name
-     * @param packageName the package name
-     * @return the key string for the package
-     */
-    private String getPackageKey(String projectName, String packageName) {
-        return projectName + "%" + packageName;
-    }
-    
-    /**
-     * Returns the key for retrieval of file information.
-     * @param projectName the project name
-     * @param packageName the package name
-     * @param fileName the file name
-     * @return the key string for the file
-     */
-    private String getFileKey(String projectName, String packageName, String fileName) {
-        return projectName + "%" + packageName + "%" + fileName;
-    }
-    
-    /**
-     * Extracts the project name from a path.
-     * @param the path name of the file
-     * @branch the branch name of the file
-     * @return the project name
-     */
-    private String getProjectName(String path, String branch) {
-        assert path != null;
-        
-        int firstIndex = path.indexOf(File.separatorChar, 1);
-        if (firstIndex == -1) {
-            System.err.println("Unknown project: " + path);
-            return "Unknown";
-        }
-        
-        String name = path.substring(1, firstIndex);
-        
-        if (branch.length() != 0) {
-            return name + CONCATENATION_SYMBOL + branch;
-        }
-        return name;
-    }
-    /**
-     * Extracts the package name from a path.
-     * @param path the path name of the file
-     * @branch the branch name of the file
-     * @return the package name
-     */
-    private String getPackageName(String path, String branch) {
-        assert path != null;
-        
-        String srcDir = File.separatorChar + "src" + File.separatorChar;
-        int firstIndex = path.indexOf(srcDir);
-        int lastIndex = path.lastIndexOf(File.separatorChar) + 1;
-        if (firstIndex == -1 || lastIndex == -1) {
-            System.err.println("Unknown package: " + path);
-            return "Unknown";
-        }
-        
-        if (firstIndex + srcDir.length() == lastIndex) {
-            return "(default package)";
-        }
-        
-        String name = path.substring(firstIndex + srcDir.length(), lastIndex - 1);
-        name = name.replace(File.separatorChar, '.');
-        
-        if (branch.length() != 0) {
-            return name + CONCATENATION_SYMBOL + branch;
-        }
-        return name;
-    }
-    
-    /**
-     * Extracts the file name from a path.
-     * @param path the path name of the file
-     * @branch the branch name of the file
-     * @return the file name without its path information
-     */
-    private String getFileName(String path, String branch) {
-        assert path != null;
-        
-        int lastIndex = path.lastIndexOf(File.separatorChar) + 1;
-        if (lastIndex == -1) {
-            System.err.println("Unknown file: " + path);
-            return "Unknown";
-        }
-        
-        String name = path.substring(lastIndex);
-        if (branch.length() != 0) {
-            return name + CONCATENATION_SYMBOL + branch;
-        }
-        return name;
+    private void eraseFile(ChangeTrackerPath pathinfo) {
+        String key = pathinfo.getFileKey();
+        fileMap.remove(key);
     }
     
     /**
@@ -501,7 +333,9 @@ public class Repository {
      * @param listener the repository changed listener to be added
      */
     public void addEventListener(RepositoryChangedListener listener) {
-        listeners.add(listener);
+        if (listener != null && !listeners.contains(listener)) {
+            listeners.add(listener);
+        }
     }
     
     /**
@@ -509,7 +343,9 @@ public class Repository {
      * @param listener the repository changed listener to be removed
      */
     public void removeEventListener(RepositoryChangedListener listener) {
-        listeners.remove(listener);
+        if (listener != null && listeners.contains(listener)) {
+            listeners.remove(listener);
+        }
     }
     
     /**
@@ -520,5 +356,46 @@ public class Repository {
         for (RepositoryChangedListener listener : listeners) {
             listener.notify(evt);
         }
+    }
+    
+    /**
+     * Restores the contents of source code on file operations.
+     */
+    public void restoreCodeOnFileOperation() {
+        for (ChangeTrackerFile finfo : getFileHistory()) {
+            finfo.getOperationHistory().restoreCodeOnFileOperation();
+        }
+    }
+    
+    /**
+     * Compacts the history of change operations.
+     */
+    public void compactOperations() {
+        for (ChangeTrackerFile finfo : getFileHistory()) {
+            finfo.getOperationHistory().compact();
+        }
+    }
+    
+    /**
+     * Checks the change operations in this repository were consistently performed.
+     */
+    public void checkOperationConsistency() {
+        for (ChangeTrackerFile finfo : getFileHistory()) {
+            finfo.getOperationHistory().checkOperationConsistency();
+        }
+    }
+    
+    /**
+     * Returns the string for printing.
+     * @return the string for printing
+     */
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("Repository=[" + location + "]");
+        buf.append(" Project#=" + projectMap.size());
+        buf.append(" Package#=" + packageMap.size());
+        buf.append(" File#=" + fileHistory.size());
+        return buf.toString();
     }
 }

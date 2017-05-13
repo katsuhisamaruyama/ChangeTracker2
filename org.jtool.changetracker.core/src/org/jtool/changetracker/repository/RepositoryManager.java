@@ -1,27 +1,33 @@
 /*
- *  Copyright 2016
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
 
 package org.jtool.changetracker.repository;
 
+import org.jtool.changetracker.core.Activator;
+import org.jtool.changetracker.core.ChangeTrackerPreferencePage;
+import org.jtool.changetracker.core.ChangeTrackerConsole;
+import org.jtool.changetracker.core.ChangeTrackerDialog;
+import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.xml.Xml2Operation;
 import org.jtool.changetracker.xml.Operation2Xml;
-import org.jtool.changetracker.xml.XmlFileManager;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.IEditorPart;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 
 /**
- * Manages the repository that stores information about code change operations.
+ * Manages the repository that stores information about change operations.
  * @author Katsuhisa Maruyama
  */
 public class RepositoryManager {
@@ -32,38 +38,24 @@ public class RepositoryManager {
     private static RepositoryManager instance = new RepositoryManager();
     
     /**
-     * A repository that stores the code change operations.
+     * The main repository that stores change operations.
      */
-    private Repository repository;
+    private Repository mainRepository = null;
     
     /**
-     * The path name of the location where history files exist.
-     */
-    private String location;
-    
-    /**
-     * The directory that stores history files.
-     */
-    private static String DEFAULT_DIRECTORY_PATH = File.separator + "#history";
-    
-    /**
-     * The extension string of a Java file. 
+     * The extension string of a Java file.
      */
     public static String JAVA_FILE_EXTENTION = ".java";
-    
-    /**
-     * The extension string of a history file. 
-     */
-    public static String XML_FILE_EXTENTION = ".xml";
     
     /**
      * Prohibits the creation of an instance.
      */
     private RepositoryManager() {
+        mainRepository = createRepository(ChangeTrackerPreferencePage.getLocation());
     }
     
     /**
-     * Returns the single instance that manages the history.
+     * Returns the single instance that manages the repository of change operations.
      * @return the history manager
      */
     public static RepositoryManager getInstance() {
@@ -71,164 +63,215 @@ public class RepositoryManager {
     }
     
     /**
-     * Returns the repository that stores the code change operations.
-     * @return the repository
+     * Initializes the whole information about the main repository.
      */
-    public Repository getRepository() {
-        return repository;
+    public void init() {
+        openRepository(mainRepository);
     }
     
     /**
-     * Sets the path name of the location where history files exist.
-     * @param location the path name of the location
+     * Terminates the whole information about the main and additional repositories.
      */
-    public void setLocation(String location) {
-        this.location = location;
+    public void term() {
+        if (mainRepository != null) {
+            mainRepository.clear();
+        }
     }
     
     /**
-     * Sets the path name of the default location where history files exist.
+     * Creates a repository.
+     * @param loc the location of the repository
+     * @return the created repository
      */
-    public void setDefaultLocation() {
-        this.location = getDefaultDirectoryPath();
+    public Repository createRepository(String loc) {
+        Repository repo = collectChangeOperationsFromHistoryFiles(loc);
+        return repo;
     }
     
     /**
-     * Collects code change operations from history files in the default location and stores them into a repository.
-     * @return repository the repository that stores the code change operations
+     * Returns the main repository that stores change operations.
+     * @return the main repository, or <code>null</code> if none
      */
-    public Repository collectOperationsFromHistoryFiles() {
-        if (location == null) {
-            setDefaultLocation();
+    public Repository getMainRepository() {
+        return mainRepository;
+    }
+    
+    /**
+     * Changes the location of the main repository.
+     * @param loc the location of the main repository
+     */
+    public void changeMainRepository(String loc) {
+        if (mainRepository != null && mainRepository.getLocation().equals(loc)) {
+            return;
         }
         
-        boolean resultMakeDir = XmlFileManager.makeDir(new File(location));
-        if (!resultMakeDir) {
+        boolean result = ChangeTrackerDialog.yesnoDialog("Repository Change", "Are you Ok to close all editors?");
+        if (!result) {
+            return;
+        }
+        
+        fire(mainRepository, RepositoryChangedEvent.Type.ABOUT_TO_LOCATION_CHANGE);
+        closeAllEditors();
+        if (mainRepository != null) {
+            mainRepository.clear();
+        }
+        mainRepository = collectChangeOperationsFromHistoryFiles(loc);
+        fire(mainRepository, RepositoryChangedEvent.Type.LOCATION_CHANGED);
+    }
+    
+    /**
+     * Closes all the editors.
+     */
+    private void closeAllEditors() {
+        IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        IWorkbenchPage page = workbenchWindow.getActivePage();
+        for (IEditorReference editorRef : page.getEditorReferences()) {
+            IEditorPart editor = editorRef.getEditor(true);
+            page.closeEditor(editor, true);
+        }
+    }
+    
+    /**
+     * Opens a repository.
+     * @param repo the repository to be opened
+     */
+    public void openRepository(Repository repo) {
+        fire(repo, RepositoryChangedEvent.Type.OPENED);
+    }
+    
+    /**
+     * Closes a repository.
+     * @param repo the repository to be closed
+     */
+    public void closeRepository(Repository repo) {
+        if (repo != null && !repo.getLocation().equals(mainRepository.getLocation())) {
+            fire(repo, RepositoryChangedEvent.Type.ABOUT_TO_CLOSE);
+            repo.clear();
+            repo = null;
+            fire(repo, RepositoryChangedEvent.Type.CLOSED);
+        }
+    }
+    
+    /**
+     * Refreshes a repository.
+     * @param repo the repository to be refreshed
+     */
+    public void refreshRepository(Repository repo) {
+        if (repo != null) {
+            fire(repo, RepositoryChangedEvent.Type.ABOUT_TO_REFRESH);
+            repo.clear();
+            repo = collectChangeOperationsFromHistoryFiles(repo.getLocation());
+            fire(repo, RepositoryChangedEvent.Type.REFRESHED);
+        }
+    }
+    
+    /**
+     * Collects change operations from history files in the default location and stores them into the repository.
+     * @return the location of a repository that stores the change operations, or <code>null</code> if the collection failed
+     */
+    public Repository collectChangeOperationsFromHistoryFiles(String loc) {
+        File dir = new File(loc);
+        if (!dir.isDirectory()) {
             return null;
         }
         
-        if (repository == null) {
-            repository = new Repository(location);
-        } else {
-            repository.clear();
-        }
-        
-        Job job = new Job("Collecting operations from history files") {
-            
-            /**
-             * Executes this job. Returns the result of the execution.
-             * @param monitor the progress monitor to use to display progress and receive requests for cancellation
-             */
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    List<File> files = getAllHistoryFiles(location);
-                    
-                    monitor.beginTask("Collecting code change operations", files.size());
-                    readHistoryFiles(files, monitor);
-                    
-                    return Status.OK_STATUS;
-                    
-                } catch (Exception e) {
-                    System.err.println("Failed to collect code change operations from history files: " + e.toString());
-                    e.printStackTrace();
-                    
-                    repository.clear();
-                    return Status.CANCEL_STATUS;
-                    
-                } finally {
+        Repository repo = new Repository(loc);
+        try {
+            IWorkbenchWindow window = Activator.getWorkbenchWindow();
+            window.run(false, true, new IRunnableWithProgress() {
+                
+                /**
+                 * Reads history files existing in the specified directory.
+                 * @param monitor the progress monitor to use to display progress and receive requests for cancellation
+                 * @exception InterruptedException if the operation detects a request to cancel
+                 */
+                @Override
+                public void run(IProgressMonitor monitor) throws InterruptedException {
+                    List<File> files = Xml2Operation.getHistoryFiles(loc);
+                    monitor.beginTask("Reading change operations from history files", files.size());
+                    readHistoryFiles(repo, files, monitor);
                     monitor.done();
                 }
-            }
-        };
-        job.setUser(false);
-        job.schedule();
-        
-        return repository;
+            });
+        } catch (InterruptedException | InvocationTargetException e) {
+            repo.clear();
+        }
+        return repo;
     }
     
     /**
-     * Reads the history files.
-     * @return the collection of all the operations stored in the history files
+     * Reads history files and stores them into the repository.
+     * @param repo the repository that stores the change operations
+     * @param files the collection of the history files
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @throws Exception if a request to cancel or any failure is detected
      */
-    private void readHistoryFiles(List<File> files, IProgressMonitor monitor) throws Exception {
+    public void readHistoryFiles(Repository repo, List<File> files, IProgressMonitor monitor) throws InterruptedException {
         for (File file : files) {
             String path = file.getAbsolutePath();
-            List<IChangeOperation> operations = Xml2Operation.getOperations(path);
-            
-            OperationHistory.sort(operations);
-            repository.storeOperations(operations);
+            repo.storeOperationAll(Xml2Operation.getOperations(path));
             
             if (monitor.isCanceled()) {
+                repo.clear();
                 monitor.done();
                 throw new InterruptedException("User interrupted");
             }
             monitor.worked(1);
         }
+        repo.restoreCodeOnFileOperation();
+        repo.compactOperations();
+        repo.checkOperationConsistency();
     }
     
     /**
-     * Returns all descendant history files of a directory.
-     * @param path the path name of the directory
-     * @return the descendant files
+     * Stores change operations into the main repository.
+     * @param ops the collection of the change operations to be stored
      */
-    private List<File> getAllHistoryFiles(String path) {
-        List<File> files = new ArrayList<File>();
-        
-        File dir = new File(path);
-        if (dir.isFile()) {
-            if (path.endsWith(XML_FILE_EXTENTION)) {
-                files.add(dir);
-            }
-            
-        } else if (dir.isDirectory()) {
-            File[] children = dir.listFiles();
-            for (File f : children) {
-                files.addAll(getAllHistoryFiles(f.getPath()));
-            }
-        }
-        
-        return files;
+    public void storeChangeOperations(List<IChangeOperation> ops) {
+        ChangeOperation.sort(ops);
+        ops = OperationHistoryCompactor.compact(ops);
+        mainRepository.storeOperationAll(ops);
+        fire(mainRepository, RepositoryChangedEvent.Type.OPERATION_ADDED);
+        storeChangeOperationsIntoHistoryFile(ops);
     }
     
     /**
-     * Stores code change operations into repository.
-     * @param operations the collection of code change operations
+     * Stores a code change operation into the main repository.
+     * @param op the change operation to be stored
      */
-    public void storeOperations(List<IChangeOperation> operations) {
-        operations = OperationHistory.form(operations);
-        repository.addOperations(operations);
+    public void storeOperation(IChangeOperation op) {
+        mainRepository.storeOperation(op);
+        fire(mainRepository, RepositoryChangedEvent.Type.OPERATION_ADDED);
         
-        storeOperationsIntoHistoryFile(operations);
+        List<IChangeOperation> ops = new ArrayList<IChangeOperation>(1);
+        ops.add(op);
+        storeChangeOperationsIntoHistoryFile(ops);
     }
     
     /**
-     * Stores code change operations into a history file.
-     * @param operations the collection of code change operations
+     * Stores change operations into a history file.
+     * @param ops the collection of the change operations
      */
-    private void storeOperationsIntoHistoryFile(List<IChangeOperation> operations) {
-        if (operations.size() == 0) {
+    private void storeChangeOperationsIntoHistoryFile(List<IChangeOperation> ops) {
+        if (ops.size() == 0) {
             return;
         }
         
         try {
-            long time = operations.get(0).getTimeAsLong();
-            String filename = location + File.separatorChar + String.valueOf(time) + XML_FILE_EXTENTION;
-            
-            Operation2Xml.storeOperations(operations, filename);
+            long time = ops.get(0).getTimeAsLong();
+            String filename = mainRepository.getLocation() + File.separatorChar + String.valueOf(time);
+            Operation2Xml.storeOperations(ops, filename);
         } catch (Exception e) {
-            System.err.println("Failed to store code change operations into a history file: " + e.toString());
+            ChangeTrackerConsole.println("Failed to store change operations into a history file: " + e.toString());
         }
     }
     
     /**
-     * Returns the default path name of the directory that contains history files.
-     * @return the default directory path name.
+     * Sends a repository changed event to all the listeners.
+     * @param evt the changed event.
      */
-    private String getDefaultDirectoryPath() {
-        IPath workspaceDir = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-        return workspaceDir.append(DEFAULT_DIRECTORY_PATH).toString();
+    public void fire(Repository repo, RepositoryChangedEvent.Type type) {
+        RepositoryChangedEvent event = new RepositoryChangedEvent(repo, type);
+        repo.fire(event);
     }
 }

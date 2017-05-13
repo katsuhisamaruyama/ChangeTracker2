@@ -8,6 +8,8 @@ package org.jtool.changetracker.operation;
 
 import java.time.ZonedDateTime;
 
+import org.jtool.changetracker.repository.ChangeTrackerPath;
+
 /**
  * Stores information about a file operation.
  * @author Katsuhisa Maruyama
@@ -18,11 +20,10 @@ public class FileOperation extends ChangeOperation {
      * The action of a file operation.
      */
     public enum Action {
-        ADDED, REMOVED, OPENED, CLOSED, SAVED, ACTIVATED, REFACTORED,
-        MOVED_FROM, MOVED_TO, RENAMED_FROM, RENAMED_TO, CONTENT_CHANGED,
-        PACKAGE_MOVED_FROM, PACKAGE_MOVED_TO, PACKAGE_RENAMED_FROM, PACKAGE_RENAMED_TO,
-        PROJECT_RENAMED_FROM, PROJECT_RENAMED_TO,
-        GIT_ADDED, GIT_REMOVED, GIT_MODIFIED;
+        ADDED, REMOVED, OPENED, CLOSED, SAVED, ACTIVATED,
+        REFACTORED, CONTENT_CHANGED,
+        MOVED_FROM, MOVED_TO, RENAMED_FROM, RENAMED_TO,
+        ADDED_GIT_INDEX_CHANGED, REMOVED_GIT_INDEX_CHANGED, MODIFIED_GIT_INDEX_CHANGED;
     }
     
     /**
@@ -43,24 +44,22 @@ public class FileOperation extends ChangeOperation {
     /**
      * Creates an instance storing information about this file operation.
      * @param time the time when the file operation was performed
-     * @param path the path of a file on which the file operation was performed
-     * @param branch the branch of a file on which the file operation was performed
+     * @param pathinfo information about path of a resource on which the file operation was performed
      * @param action the action of the file operation
      * @param author the author's name
      */
-    public FileOperation(ZonedDateTime time, String path, String branch, String action, String author) {
-        super(time, Type.FILE, path, branch, action, author);
+    public FileOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action, String author) {
+        super(time, Type.FILE, pathinfo, action, author);
     }
     
     /**
      * Creates an instance storing information about this file operation.
      * @param time the time when the file operation was performed
-     * @param path the path of a file on which the file operation was performed
-     * @param branch the branch of a file on which the change operation was performed
+     * @param pathinfo information about path of a resource on which the file operation was performed
      * @param action the action of the file operation
      */
-    public FileOperation(ZonedDateTime time, String path, String branch, String action) {
-        super(time, Type.FILE, path, branch, action);
+    public FileOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action) {
+        super(time, Type.FILE, pathinfo, action);
     }
     
     /**
@@ -115,18 +114,18 @@ public class FileOperation extends ChangeOperation {
     }
     
     /**
-     * Tests if this file operation adds a file to a package.
+     * Tests if this file operation adds a file.
      * @return <code>true</code> if the file operation adds a file, otherwise <code>false</code>
      */
-    public boolean isAdd() {
+    public boolean isAdded() {
         return action.equals(Action.ADDED.toString());
     }
     
     /**
-     * Tests if this file operation removes a file from a package.
+     * Tests if this file operation removes a file.
      * @return <code>true</code> if the file operation removes a file, otherwise <code>false</code>
      */
-    public boolean isRemove() {
+    public boolean isRemoved() {
         return action.equals(Action.REMOVED.toString());
     }
     
@@ -134,7 +133,7 @@ public class FileOperation extends ChangeOperation {
      * Tests if this file operation opens a file.
      * @return <code>true</code> if the file operation opens a file, otherwise <code>false</code>
      */
-    public boolean isOpen() {
+    public boolean isOpened() {
         return action.equals(Action.OPENED.toString());
     }
     
@@ -142,7 +141,7 @@ public class FileOperation extends ChangeOperation {
      * Tests if this file operation closes a file.
      * @return <code>true</code> if the file operation closes a file, otherwise <code>false</code>
      */
-    public boolean isClose() {
+    public boolean isClosed() {
         return action.equals(Action.CLOSED.toString());
     }
     
@@ -150,7 +149,7 @@ public class FileOperation extends ChangeOperation {
      * Tests if this file operation saves a file.
      * @return <code>true</code> if the file operation saves a file, otherwise <code>false</code>
      */
-    public boolean isSave() {
+    public boolean isSaved() {
         return action.equals(Action.SAVED.toString());
     }
     
@@ -158,23 +157,30 @@ public class FileOperation extends ChangeOperation {
      * Tests if this file operation activates a file.
      * @return <code>true</code> if the file operation activates a file, otherwise <code>false</code>
      */
-    public boolean isActivate() {
+    public boolean isActivated() {
         return action.equals(Action.ACTIVATED.toString());
     }
     
     /**
-     * Tests if this file operation refactors a file.
-     * @return <code>true</code> if the file operation refactors a file, otherwise <code>false</code>
+     * Tests if this macro refactors the contents of a file.
+     * @return <code>true</code> if the file operation refactors the contents of a file, otherwise <code>false</code>
      */
-    public boolean isRefactor() {
+    public boolean iRefactored() {
         return action.equals(Action.REFACTORED.toString());
     }
     
     /**
+     * Tests if this macro changes the contents of a file.
+     * @return <code>true</code> if the file operation changes the contents of a file, otherwise <code>false</code>
+     */
+    public boolean isContentChanged() {
+        return action.equals(Action.CONTENT_CHANGED.toString());
+    }
+    /**
      * Tests if this file operation moves a file from somewhere.
      * @return <code>true</code> if the file operation moves a file from somewhere, otherwise <code>false</code>
      */
-    public boolean isMoveFrom() {
+    public boolean isMovedFrom() {
         return action.equals(Action.MOVED_FROM.toString());
     }
     
@@ -182,7 +188,7 @@ public class FileOperation extends ChangeOperation {
      * Tests if this file operation moves a file to somewhere.
      * @return <code>true</code> if the file operation moves a file to somewhere, otherwise <code>false</code>
      */
-    public boolean isMoveTo() {
+    public boolean isMovedTo() {
         return action.equals(Action.MOVED_TO.toString());
     }
     
@@ -190,7 +196,7 @@ public class FileOperation extends ChangeOperation {
      * Tests if this macro changes the name of a file from the old one.
      * @return <code>true</code> if the file operation changes the name of a file from the old one, otherwise <code>false</code>
      */
-    public boolean isRenameFrom() {
+    public boolean isRenamedFrom() {
         return action.equals(Action.RENAMED_FROM.toString());
     }
     
@@ -198,88 +204,8 @@ public class FileOperation extends ChangeOperation {
      * Tests if this macro changes the name of a file to the new one.
      * @return <code>true</code> if the file operation changes the name of a file to the new one, otherwise <code>false</code>
      */
-    public boolean isRenameTo() {
+    public boolean isRenamedTo() {
         return action.equals(Action.RENAMED_TO.toString());
-    }
-    
-    /**
-     * Tests if this macro changes the contents of a file.
-     * @return <code>true</code> if the file operation changes the contents of a file, otherwise <code>false</code>
-     */
-    public boolean isContentChange() {
-        return action.equals(Action.CONTENT_CHANGED.toString());
-    }
-    
-    /**
-     * Tests this file operation moves a package from somewhere.
-     * @return <code>true</code> if the file operation moves a package from somewhere, otherwise <code>false</code>
-     */
-    public boolean isPackageMoveFrom() {
-        return action.equals(Action.PACKAGE_MOVED_FROM.toString());
-    }
-    
-    /**
-     * Tests this file operation moves a package to somewhere.
-     * @return <code>true</code> if the file operation moves a package to somewhere, otherwise <code>false</code>
-     */
-    public boolean isPackageMoveTo() {
-        return action.equals(Action.PACKAGE_MOVED_TO.toString());
-    }
-    
-    /**
-     * Tests if this file operation changes the name of a package from the old one.
-     * @return <code>true</code> if the file operation changes the name of a package from the old one, otherwise <code>false</code>
-     */
-    public boolean isPackageRenameFrom() {
-        return action.equals(Action.PACKAGE_RENAMED_FROM.toString());
-    }
-    
-    /**
-     * Tests if this file operation changes the name of a package to the new one.
-     * @return <code>true</code> if the file operation changes the name of a package to the new one, otherwise <code>false</code>
-     */
-    public boolean isPackageRenameTo() {
-        return action.equals(Action.PACKAGE_RENAMED_TO.toString());
-    }
-    
-    /**
-     * Tests if this file operation changes the name of a project from the old one.
-     * @return <code>true</code> if the file operation changes the name of a project from the old one, otherwise <code>false</code>
-     */
-    public boolean isProjectRenameFrom() {
-        return action.equals(Action.PROJECT_RENAMED_FROM.toString());
-    }
-    
-    /**
-     * Tests if this file operation changes the name of a project to the new one.
-     * @return <code>true</code> if the file operation changes the name of a project to the new one, otherwise <code>false</code>
-     */
-    public boolean isProjectRenameTo() {
-        return action.equals(Action.PROJECT_RENAMED_TO.toString());
-    }
-    
-    /**
-     * Tests if this file operation adds a file to the git repository.
-     * @return <code>true</code> if the file operation adds a file to the git repository, otherwise <code>false</code>
-     */
-    public boolean isGitAdd() {
-        return action.equals(Action.GIT_ADDED.toString());
-    }
-    
-    /**
-     * Tests if this file operation removes a file from the git repository.
-     * @return <code>true</code> if the file operation removes a file from the git repository, otherwise <code>false</code>
-     */
-    public boolean isGitRemove() {
-        return action.equals(Action.GIT_REMOVED.toString());
-    }
-    
-    /**
-     * Tests if this file operation modifies a file within the git repository.
-     * @return <code>true</code> if the file operation modifies a file within the git repository, otherwise <code>false</code>
-     */
-    public boolean isGitModify() {
-        return action.equals(Action.GIT_MODIFIED.toString());
     }
     
     /**
@@ -291,9 +217,6 @@ public class FileOperation extends ChangeOperation {
         StringBuilder buf = new StringBuilder();
         buf.append(super.toString());
         buf.append(" code=[" + getShortText(code) + "]");
-        if (isCompounded()) {
-            buf.append(" compound=" + compoundId);
-        }
         return buf.toString();
     }
 }

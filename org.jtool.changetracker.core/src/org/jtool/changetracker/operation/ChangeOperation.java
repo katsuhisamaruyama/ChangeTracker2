@@ -6,6 +6,13 @@
 
 package org.jtool.changetracker.operation;
 
+import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.ChangeTrackerPath;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ArrayList;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -17,6 +24,8 @@ public abstract class ChangeOperation implements IChangeOperation {
     
     /**
      * The time when this change operation was performed.
+     * There is no change operations with the same time within the same file
+     * (with the same path and the same branch).
      */
     protected ZonedDateTime time;
     
@@ -26,14 +35,9 @@ public abstract class ChangeOperation implements IChangeOperation {
     protected Type type;
     
     /**
-     * The path name of a resource on which this change operation was performed.
+     * Information about path of a resource on which this change operation was performed.
      */
-    protected String path;
-    
-    /**
-     * The branch name of a resource on which this change operation was performed.
-     */
-    protected String branch;
+    protected ChangeTrackerPath pathinfo;
     
     /**
      * The action of this change operation.
@@ -56,19 +60,22 @@ public abstract class ChangeOperation implements IChangeOperation {
     protected long compoundId = -1;
     
     /**
+     * The information about a file that this change operation affects.
+     */
+    protected ChangeTrackerFile fileInfo;
+    
+    /**
      * Creates an instance storing information about this change operation.
      * @param time the time when the change operation was performed
      * @param type the type of the change operation
-     * @param path the path of a file on which the change operation was performed
-     * @param branch the branch of a file on which the change operation was performed
+     * @param pathinfo information about path of a resource on which the change operation was performed
      * @param action the action of the change operation
      * @param author the author's name
      */
-    protected ChangeOperation(ZonedDateTime time, Type type, String path, String branch, String action, String author) {
+    protected ChangeOperation(ZonedDateTime time, Type type, ChangeTrackerPath pathinfo, String action, String author) {
         this.time = time;
         this.type = type;
-        this.path = path;
-        this.branch = branch;
+        this.pathinfo = pathinfo;
         this.action = action;
         this.author = author;
     }
@@ -77,12 +84,11 @@ public abstract class ChangeOperation implements IChangeOperation {
      * Creates an instance storing information about this change operation.
      * @param time the time when the change operation was performed
      * @param type the type of the change operation
-     * @param path the path of a file on which the change operation was performed
-     * @param branch the branch of a file on which the change operation was performed
+     * @param pathinfo information about path of a resource on which the change operation was performed
      * @param action the action of the change operation
      */
-    protected ChangeOperation(ZonedDateTime time, Type type, String path, String branch, String action) {
-        this(time, type, path, branch, action, getUserName());
+    protected ChangeOperation(ZonedDateTime time, Type type, ChangeTrackerPath pathinfo, String action) {
+        this(time, type, pathinfo, action, getUserName());
     }
     
     /**
@@ -91,6 +97,22 @@ public abstract class ChangeOperation implements IChangeOperation {
      */
     protected static String getUserName() {
         return System.getProperty("user.name");
+    }
+    @Override
+    /**
+     * Returns the qualified name of this change operation.
+     * @return the qualified name
+     */
+    public String getQualifiedName() {
+        return String.valueOf(time.toInstant().toEpochMilli()) + "+" + pathinfo.getPath() + "+" + pathinfo.getBranch();
+    }
+    
+    /**
+     * Sets the time when this change operation was performed.
+     * @param time the time of the change operation
+     */
+    public void setTime(ZonedDateTime time) {
+        this.time = time;
     }
     
     /**
@@ -104,7 +126,7 @@ public abstract class ChangeOperation implements IChangeOperation {
     
     /**
      * Returns the time when this change operation was performed.
-     * @return the <code>long</code> value that represents the time of the change operation
+     * @return the <code>long</code> value
      */
     @Override
     public long getTimeAsLong() {
@@ -113,16 +135,34 @@ public abstract class ChangeOperation implements IChangeOperation {
     
     /**
      * Returns the time when this change operation was performed.
-     * @param time the time of the change operation
-     * @return the <code>String</code> value that represents the time of the change operation
+     * @return the <code>String</code> value
+     */
+    @Override
+    public String getTimeAsString() {
+        return getTimeAsString(time);
+    }
+    
+    /**
+     * Returns the time when this change operation was performed.
+     * @return the formatted <code>String</code> value
+     */
+    @Override
+    public String getFormatedTime() {
+        return getFormatedTime(time);
+    }
+    
+    /**
+     * Returns the string corresponding time.
+     * @param time the time information
+     * @return the string corresponding the time
      */
     public static String getTimeAsString(ZonedDateTime time) {
         return time.format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
     }
     
     /**
-     * Returns the formated information about the time when this change operation was performed.
-     * @param time the time of the change operation
+     * Returns the formated information about time.
+     * @param time the time information
      * @return the formatted information about the time
      */
     public static String getFormatedTime(ZonedDateTime time) {
@@ -130,9 +170,9 @@ public abstract class ChangeOperation implements IChangeOperation {
     }
     
     /**
-     * Returns the time when this change operation was performed.
-     * @param str the <code>String</code> value that represents the time of the change operation
-     * @return the time of the change operation
+     * Obtains the time from string corresponding time.
+     * @param str the string corresponding the time
+     * @return the time information
      */
     public static ZonedDateTime getTime(String str) {
         return ZonedDateTime.parse(str, DateTimeFormatter.ISO_ZONED_DATE_TIME);
@@ -148,21 +188,39 @@ public abstract class ChangeOperation implements IChangeOperation {
     }
     
     /**
+     * Returns the name of a project containing a resource on which this change operation was performed.
+     * @return the project name
+     */
+    @Override
+    public String getProjectName() {
+        return pathinfo.getProjectName();
+    }
+    
+    /**
+     * Returns the name of a package containing a resource on which this change operation was performed.
+     * @return the package name
+     */
+    @Override
+    public String getPackageName() {
+        return pathinfo.getPackageName();
+    }
+    
+    /**
+     * Returns the name of a file on which this change operation was performed.
+     * @return the file name without its location information
+     */
+    @Override
+    public String getFileName() {
+        return pathinfo.getFileName();
+    }
+    
+    /**
      * Returns the path of a file on which this change operation was performed.
      * @return the path of the change operation
      */
     @Override
     public String getPath() {
-        return path;
-    }
-    
-    /**
-     * The path of a file on which this change operation was performed
-     * @return the branch of the change operation
-     */
-    public void setPath(String path) {
-        assert path != null;
-        this.path = path;
+        return pathinfo.getPath();
     }
     
     /**
@@ -171,16 +229,7 @@ public abstract class ChangeOperation implements IChangeOperation {
      */
     @Override
     public String getBranch() {
-        return branch;
-    }
-    
-    /**
-     * The branch of a file on which this change operation was performed.
-     * @return the branch of the change operation
-     */
-    public void setBranch(String branch) {
-        assert branch != null;
-        this.branch = branch;
+        return pathinfo.getBranch();
     }
     
     /**
@@ -194,7 +243,7 @@ public abstract class ChangeOperation implements IChangeOperation {
     
     /**
      * Sets the action of this change operation.
-     * @param action the action of the change operation
+     * @param the action of the change operation
      */
     public void setAction(String action) {
         this.action = action;
@@ -272,6 +321,15 @@ public abstract class ChangeOperation implements IChangeOperation {
     }
     
     /**
+     * Tests if this change operation edits or copies any text of code.
+     * @return <code>true</code> if the change operation edits or copies any text, otherwise <code>false</code>
+     */
+    @Override
+    public boolean isDocumentOrCopy() {
+        return isDocument() || isCopy();
+    }
+    
+    /**
      * Tests if this change operation is related to a file.
      * @return <code>true</code> if the change operation is related to a file, otherwise <code>false</code>
      */
@@ -281,14 +339,67 @@ public abstract class ChangeOperation implements IChangeOperation {
     }
     
     /**
-     * Tests if this change operation is performed on a file represented by a branch and a path.
-     * @param branch the branch of the file
-     * @param path the path of the file
-     * @return <code>true</code> if this change operation is performed on the specified file, otherwise <code>false</code>
+     * Tests if this change operation is related to a command.
+     * @return <code>true</code> if the change operation is related to a command, otherwise <code>false</code>
+     */
+    @Override
+    public boolean isCommand() {
+         return type == Type.COMMAND;
+    }
+    
+    /**
+     * Tests if this change operation is related to refactoring.
+     * @return <code>true</code> if the change operation is related to refactoring, otherwise <code>false</code>
+     */
+    @Override
+    public boolean isRefactor() {
+         return type == Type.REFACTOR;
+    }
+    
+    /**
+     * Tests if this change operation is performed on a resource represented by a branch and a path.
+     * @param branch the branch of the resource
+     * @param path the path of the resource
+     * @return <code>true</code> if this change operation is performed on the resource, otherwise <code>false</code>
      */
     @Override
     public boolean isPerformedOn(String branch, String path) {
-        return this.branch.equals(branch) && this.path.equals(path);
+        return getBranch().equals(branch) && getPath().equals(path);
+    }
+    
+    /**
+     * Obtains change operations that affect this change operation.
+     * Note that this method execution requires much time for huge number of change operations.
+     * Instead an operation history graph can be used if you code will invoke this method many times.
+     * @return the collection of the affecting change operations
+     */
+    public List<ICodeOperation> getAffectingOperations() {
+        return new ArrayList<ICodeOperation>();
+    }
+    
+    /**
+     * Tests if this change operation depends on a given change operation.
+     * @param op the change operation that might affect this change operation
+     * @return <code>true</code> if this change operation depends on the given operation, otherwise <code>false</code>
+     */
+    public boolean dependsOn(IChangeOperation op) {
+        return false;
+    }
+    
+    /**
+     * Returns information about a file that this change operation affects.
+     * @return the file information
+     */
+    public ChangeTrackerFile getFile() {
+        return fileInfo;
+    }
+    
+    /**
+     * Sets information about a file that this change operation affects.
+     * @param finfo the file information
+     */
+    public void setFile(ChangeTrackerFile finfo) {
+        fileInfo = finfo;
     }
     
     /**
@@ -301,8 +412,7 @@ public abstract class ChangeOperation implements IChangeOperation {
         if (op == null) {
             return false;
         }
-        
-        return time.equals(op.getTime()) && branch.equals(op.getBranch()) && path.equals(op.getPath());
+        return time.equals(op.getTime()) && getBranch().equals(op.getBranch()) && getPath().equals(op.getPath());
     }
     
     /**
@@ -328,9 +438,36 @@ public abstract class ChangeOperation implements IChangeOperation {
     }
     
     /**
+     * Sorts change operations in time order.
+     * @param ops the the collection of change operations to be sorted
+     */
+    public static void sort(List<? extends IChangeOperation> ops) {
+        Collections.sort(ops, new Comparator<IChangeOperation>() {
+            
+            /**
+             * Compares two code change operations for order.
+             * @param op1 the first code change operation to be compared
+             * @param op2 the second code change operation to be compared
+             */
+            public int compare(IChangeOperation op1, IChangeOperation op2) {
+                ZonedDateTime time1 = op1.getTime();
+                ZonedDateTime time2 = op2.getTime();
+                
+                if (time1.isAfter(time2)) {
+                    return 1;
+                } else if (time1.isBefore(time2)) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        });
+    }
+    
+    /**
      * Converts a text into its pretty one.
      * @param text the original text
-     * @return the text consists of the first four characters not including the new line
+     * @return the text consists of several characters not including the new line
      */
     protected String getShortText(String text) {
         if (text == null) {
@@ -358,10 +495,14 @@ public abstract class ChangeOperation implements IChangeOperation {
         StringBuilder buf = new StringBuilder();
         buf.append(getFormatedTime(time));
         buf.append(" type=[" + type + "]");
-        buf.append(" path=[" + path + "]");
-        buf.append(" branch=[" + branch + "]");
+        buf.append(" path=[" + getPath() + "]");
+        buf.append(" branch=[" + getBranch() + "]");
+        buf.append(" resource=[" + getProjectName() + "/" + getPackageName() + "/" + getFileName() + "]");
         buf.append(" action=[" + action + "]");
         buf.append(" author=[" + author + "]");
+        if (isCompounded()) {
+            buf.append(" compound=" + compoundId);
+        }
         if (description.length() != 0) {
             buf.append(" description=[" + description + "]");
         }
