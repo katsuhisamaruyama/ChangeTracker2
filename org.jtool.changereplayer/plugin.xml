@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.7"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="false"
+            category="org.jtool.changetracker.core.views.category"
+            class="org.jtool.changetracker.replayer.ui.ChangeExplorerView"
+            icon="icons/cr.gif"
+            id="org.jtool.changetracker.replayer.ui.ChangeExplorerView"
+            name="Change Explorer"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="org.jtool.changetracker.core.views.category"
+            class="org.jtool.changetracker.replayer.ui.HistoryView"
+            icon="icons/cr.gif"
+            id="org.jtool.changetracker.replayer.ui.HistoryView"
+            name="Change History"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="org.jtool.changetracker.core.views.category"
+            class="org.jtool.changetracker.replayer.ui.CodeChangeView"
+            icon="icons/cr.gif"
+            id="org.jtool.changetracker.replayer.ui.CodeChangeView"
+            name="Code Change"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.jtool.changetracker.replayer.Activator">
+      </startup>
+   </extension>
+</plugin>
