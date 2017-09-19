@@ -8,11 +8,10 @@ package org.jtool.changetracker.operation;
 
 import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.CTPath;
-
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 

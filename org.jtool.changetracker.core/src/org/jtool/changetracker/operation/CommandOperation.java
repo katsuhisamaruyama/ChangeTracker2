@@ -6,9 +6,8 @@
 
 package org.jtool.changetracker.operation;
 
-import java.time.ZonedDateTime;
-
 import org.jtool.changetracker.repository.CTPath;
+import java.time.ZonedDateTime;
 
 /**
  * Stores information on a command operation.

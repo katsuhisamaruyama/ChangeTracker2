@@ -9,7 +9,6 @@ package org.jtool.changetracker.operation;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.CTPath;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.time.ZonedDateTime;

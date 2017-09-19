@@ -6,10 +6,9 @@
 
 package org.jtool.changetracker.operation;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import org.jtool.changetracker.repository.CTFile;
+import java.util.List;
+import java.time.ZonedDateTime;
 
 /**
  * Defines an interface that accesses information about the all kinds of change operations.

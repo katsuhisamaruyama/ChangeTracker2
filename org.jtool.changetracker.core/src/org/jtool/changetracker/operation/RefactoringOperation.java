@@ -6,10 +6,8 @@
 
 package org.jtool.changetracker.operation;
 
-import java.util.Map;
-
 import org.jtool.changetracker.repository.CTPath;
-
+import java.util.Map;
 import java.util.HashMap;
 import java.time.ZonedDateTime;
 
