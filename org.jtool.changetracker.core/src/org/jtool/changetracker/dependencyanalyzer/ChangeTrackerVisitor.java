@@ -9,7 +9,7 @@ package org.jtool.changetracker.dependencyanalyzer;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import org.eclipse.jdt.core.dom.Initializer;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -62,7 +62,7 @@ class ChangeTrackerVisitor extends ASTVisitor {
     /**
      * Creates a visitor visiting an AST.
      */
-    ChangeTrackerVisitor(ZonedDateTime time, int index, ChangeTrackerFile finfo) {
+    ChangeTrackerVisitor(ZonedDateTime time, int index, CTFile finfo) {
         this(true);
     }
     

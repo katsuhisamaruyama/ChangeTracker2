@@ -10,9 +10,9 @@ import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.operation.CodeOperation;
 import org.jtool.changetracker.operation.DocumentOperation;
 import org.jtool.changetracker.operation.IChangeOperation;
-import org.jtool.changetracker.repository.ChangeTrackerProject;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
-import org.jtool.changetracker.core.ChangeTrackerConsole;
+import org.jtool.changetracker.repository.CTProject;
+import org.jtool.changetracker.repository.CTFile;
+import org.jtool.changetracker.core.CTConsole;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
 import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
@@ -33,7 +33,7 @@ class OpGraphConstructor {
      * @param finfo information about the file
      * @return the created operation history graph for the file
      */
-    static FileOpGraph createGraph(ChangeTrackerFile finfo) {
+    static FileOpGraph createGraph(CTFile finfo) {
         FileOpGraph fgraph = new FileOpGraph(finfo);
         Job job = new Job("Constructing an operation history graph") {
             
@@ -54,7 +54,7 @@ class OpGraphConstructor {
                     return Status.OK_STATUS;
                     
                 } catch (Exception e) {
-                    ChangeTrackerConsole.println("Failed to construct an operation history graph");
+                    CTConsole.println("Failed to construct an operation history graph");
                     fgraph.clear();
                     return Status.CANCEL_STATUS;
                     
@@ -79,7 +79,7 @@ class OpGraphConstructor {
      * @param fgraph the operation history graph for the file
      */
     static void collectOrdedEdges(FileOpGraph fgraph) {
-        ChangeTrackerFile finfo = fgraph.getFile();
+        CTFile finfo = fgraph.getFile();
         Job job = new Job("Constructing an operation history graph") {
             
             /**
@@ -94,7 +94,7 @@ class OpGraphConstructor {
                     collectOrderedEdges(fgraph, monitor);
                     return Status.OK_STATUS;
                 } catch (Exception e) {
-                    ChangeTrackerConsole.println("Failed to construct an operation history graph");
+                    CTConsole.println("Failed to construct an operation history graph");
                     fgraph.clear();
                     return Status.CANCEL_STATUS;
                 } finally {
@@ -113,7 +113,7 @@ class OpGraphConstructor {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @exception InterruptedException if the operation detects a request to cancel
      */
-    private static void collectOperationNodes(ChangeTrackerFile finfo, FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
+    private static void collectOperationNodes(CTFile finfo, FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
         List<IChangeOperation> operations = finfo.getOperations();
         for (int idx = 0; idx < operations.size(); idx++) {
             
@@ -141,7 +141,7 @@ class OpGraphConstructor {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @exception InterruptedException if the operation detects a request to cancel
      */
-    private static void collectJavaConstructNodes(ChangeTrackerFile finfo, FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
+    private static void collectJavaConstructNodes(CTFile finfo, FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
         List<ParseableSnapshot> snapshots = finfo.getSnapshots();
         for (int idx = 0; idx < snapshots.size(); idx++) {
             
@@ -328,7 +328,7 @@ class OpGraphConstructor {
      * @param pgraph an operation history graph for the project
      */
     static void collectInterEdges(ProjectOpGraph pgraph) {
-        ChangeTrackerProject pinfo = pgraph.getProject();
+        CTProject pinfo = pgraph.getProject();
         Job job = new Job("Collecting operations from history files") {
             
             /**
@@ -343,7 +343,7 @@ class OpGraphConstructor {
                     collectCCPEdges(pgraph, ops, monitor);
                     return Status.OK_STATUS;
                 } catch (Exception e) {
-                    ChangeTrackerConsole.println("Failed to collect inter-edges");
+                    CTConsole.println("Failed to collect inter-edges");
                     return Status.CANCEL_STATUS;
                 } finally {
                     monitor.done();

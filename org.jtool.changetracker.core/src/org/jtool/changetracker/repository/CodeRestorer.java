@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.repository;
 
-import org.jtool.changetracker.core.ChangeTrackerConsole;
+import org.jtool.changetracker.core.CTConsole;
 import org.jtool.changetracker.operation.CopyOperation;
 import org.jtool.changetracker.operation.DocumentOperation;
 import org.jtool.changetracker.operation.IChangeOperation;
@@ -26,7 +26,7 @@ class CodeRestorer {
      * @param to the index at the last change operation within the time range
      * @return the resulting code after the application
      */
-    static String applyOperations(ChangeTrackerFile file, String code, int from, int to) {
+    static String applyOperations(CTFile file, String code, int from, int to) {
         return applyOperations(file.getOperationHistory(), code, from, to);
     }
     /**
@@ -97,13 +97,13 @@ class CodeRestorer {
         if (dtext.length() > 0) {
             String rtext = code.substring(start, end);
             if (rtext == null || !rtext.equals(dtext)) {
-                ChangeTrackerConsole.println("Cannot delete text: " + op.toString());
+                CTConsole.println("Cannot delete text: " + op.toString());
                 return false;
             }
         }
         
         if (code.length() < start) {
-            ChangeTrackerConsole.println("Cannot insert/delete text : " + op.toString());
+            CTConsole.println("Cannot insert/delete text : " + op.toString());
             return false;
         }
         return true;
@@ -140,12 +140,12 @@ class CodeRestorer {
         if (itext.length() > 0) {
             String rtext = code.substring(start, end);
             if (rtext == null || !rtext.equals(itext)) {
-                ChangeTrackerConsole.println("Cannot insert text: " + op.toString());
+                CTConsole.println("Cannot insert text: " + op.toString());
                 return false;
             }
         }
         if (code.length() - itext.length() + op.getDeletedText().length() < start) {
-            ChangeTrackerConsole.println("Cannot insert/delete text : " + op.toString());
+            CTConsole.println("Cannot insert/delete text : " + op.toString());
             return false;
         }
         return true;
@@ -182,7 +182,7 @@ class CodeRestorer {
             int end = start + ctext.length();
             String rtext = code.substring(start, end);
             if (rtext == null || !rtext.equals(ctext)) {
-                ChangeTrackerConsole.println("Cannot copy text: " + op.toString());
+                CTConsole.println("Cannot copy text: " + op.toString());
                 return false;
             }
         }

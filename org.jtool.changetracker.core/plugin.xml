@@ -4,13 +4,13 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="org.jtool.changetracker.core.ChangeTrackerPreferenceInitializer">
+            class="org.jtool.changetracker.core.CTPreferenceInitializer">
       </initializer>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="org.jtool.changetracker.core.ChangeTrackerPreferencePage"
+            class="org.jtool.changetracker.core.CTPreferencePage"
             id="org.jtool.changetracker.PreferencePage"
             name="ChangeTracker">
       </page>

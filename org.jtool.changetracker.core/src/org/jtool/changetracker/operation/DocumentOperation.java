@@ -7,7 +7,7 @@
 package org.jtool.changetracker.operation;
 
 import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTPath;
 
 import java.util.List;
 import java.time.ZonedDateTime;
@@ -35,7 +35,7 @@ public class DocumentOperation extends CodeOperation implements ICodeOperation {
      * @param action the action of the document operation
      * @param author the author's name
      */
-    public DocumentOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action, String author) {
+    public DocumentOperation(ZonedDateTime time, CTPath pathinfo, String action, String author) {
         super(time, Type.DOCUMENT, pathinfo, action, author);
     }
     
@@ -45,7 +45,7 @@ public class DocumentOperation extends CodeOperation implements ICodeOperation {
      * @param pathinfo information about path of a resource on which the document operation was performed
      * @param action the action of the document change operation
      */
-    public DocumentOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action) {
+    public DocumentOperation(ZonedDateTime time, CTPath pathinfo, String action) {
         super(time, Type.DOCUMENT, pathinfo, action);
     }
     

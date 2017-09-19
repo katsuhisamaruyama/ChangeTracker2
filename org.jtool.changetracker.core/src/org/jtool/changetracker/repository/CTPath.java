@@ -12,7 +12,7 @@ import org.jtool.changetracker.operation.IChangeOperation;
  * Information about the path of a resource on which a change operation was performed.
  * @author Katsuhisa Maruyama
  */
-public class ChangeTrackerPath {
+public class CTPath {
     
     /**
      * The name of a project that contains the resource.
@@ -44,8 +44,10 @@ public class ChangeTrackerPath {
      * @param projectName the name of a project that contains the resource
      * @param packageName the name of a package that contains the resource
      * @param fileName the name of a file that contains the resource
+     * @param path the path of the resource
+     * @param branch the branch of the resource
      */
-    public ChangeTrackerPath(String projectName, String packageName, String fileName, String path, String branch) {
+    public CTPath(String projectName, String packageName, String fileName, String path, String branch) {
         this.projectName = projectName;
         this.packageName = packageName;
         this.fileName = fileName;
@@ -57,7 +59,7 @@ public class ChangeTrackerPath {
      * Creates information about the path of a resource on which a change operation was performed.
      * @param op the change operation
      */
-    public ChangeTrackerPath(IChangeOperation op) {
+    public CTPath(IChangeOperation op) {
         this(op.getProjectName(), op.getPackageName(), op.getFileName(), op.getPath(), op.getBranch());
     }
     

@@ -93,8 +93,10 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
      */
     public void start() {
         operationMap.clear();
-        macroRecorder.addMacroListener(this);
         running = true;
+        
+        macroRecorder.addMacroListener(this);
+        macroRecorder.start();
     }
     
     /**
@@ -102,6 +104,8 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
      */
     public void stop() {
         macroRecorder.removeMacroListener(this);
+        macroRecorder.stop();
+        
         storeAllChangeOerations();
         operationMap.clear();
         running = false;

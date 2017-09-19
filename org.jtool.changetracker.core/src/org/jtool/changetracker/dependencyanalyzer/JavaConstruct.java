@@ -7,7 +7,7 @@
 package org.jtool.changetracker.dependencyanalyzer;
 
 import org.jtool.changetracker.operation.ChangeOperation;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,7 +134,7 @@ public class JavaConstruct {
      * Returns information about a file that contains this Java construct.
      * @return the file information
      */
-    public ChangeTrackerFile getFile() {
+    public CTFile getFile() {
         return snapshot.getFile();
     }
     

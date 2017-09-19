@@ -7,7 +7,7 @@
 package org.jtool.changetracker.operation;
 
 import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTPath;
 
 import java.util.List;
 import java.time.ZonedDateTime;
@@ -29,7 +29,7 @@ public class CopyOperation extends CodeOperation implements ICodeOperation {
      * @param pathinfo information about path of a resource on which the copy operation was performed
      * @param author the author's name
      */
-    public CopyOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String author) {
+    public CopyOperation(ZonedDateTime time, CTPath pathinfo, String author) {
         super(time, Type.COPY, pathinfo, Action.COPY.toString(), author);
     }
     
@@ -39,7 +39,7 @@ public class CopyOperation extends CodeOperation implements ICodeOperation {
      * @param pathinfo information about path of a resource on which the copy operation was performed
      * @param path the path of a file on which the copy operation was performed
      */
-    public CopyOperation(ZonedDateTime time, ChangeTrackerPath pathinfo) {
+    public CopyOperation(ZonedDateTime time, CTPath pathinfo) {
         super(time, Type.COPY, pathinfo,  Action.COPY.toString());
     }
     

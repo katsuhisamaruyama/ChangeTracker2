@@ -6,9 +6,9 @@
 
 package org.jtool.changetracker.dependecygraph;
 
-import org.jtool.changetracker.core.ChangeTrackerConsole;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
-import org.jtool.changetracker.repository.ChangeTrackerProject;
+import org.jtool.changetracker.core.CTConsole;
+import org.jtool.changetracker.repository.CTFile;
+import org.jtool.changetracker.repository.CTProject;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -60,7 +60,7 @@ public class OpGraphManager {
      * @param pinfo information about the project
      * @return the operation history graph for the project, or <code>null</code> if none
      */
-    public ProjectOpGraph getGraph(ChangeTrackerProject pinfo) {
+    public ProjectOpGraph getGraph(CTProject pinfo) {
         return projectGraphs.get(pinfo.getQualifiedName());
     }
     
@@ -69,15 +69,15 @@ public class OpGraphManager {
      * @param pinfo information about the project
      * @return the created operation history graph
      */
-    public ProjectOpGraph createGraph(ChangeTrackerProject pinfo) {
+    public ProjectOpGraph createGraph(CTProject pinfo) {
         if (pinfo == null) {
             return null;
         }
         
         ProjectOpGraph pgraph = getGraph(pinfo);
-        List<ChangeTrackerFile> finfos = new ArrayList<ChangeTrackerFile>(); 
+        List<CTFile> finfos = new ArrayList<CTFile>(); 
         if (pgraph != null) {
-            for (ChangeTrackerFile finfo : pinfo.getFiles()) {
+            for (CTFile finfo : pinfo.getFiles()) {
                 FileOpGraph fgraph = pgraph.get(finfo);
                 if (finfo.getLastUpdatedTime().isAfter(fgraph.getLastUpdatedTime())) {
                     finfos.add(finfo);
@@ -85,7 +85,7 @@ public class OpGraphManager {
             }
             
             if (finfos.size() != 0) {
-                for (ChangeTrackerFile finfo : finfos) {
+                for (CTFile finfo : finfos) {
                     FileOpGraph fgraph = OpGraphConstructor.createGraph(finfo);
                     if (fgraph.getFile() != null) {
                         fgraph.setLastUpdatedTime(ZonedDateTime.now());
@@ -93,7 +93,7 @@ public class OpGraphManager {
                         pgraph.add(fgraph);
                     } else {
                         pgraph.clear();
-                        ChangeTrackerConsole.println("Failed to create an operation history graph " + pinfo.getQualifiedName());
+                        CTConsole.println("Failed to create an operation history graph " + pinfo.getQualifiedName());
                         break;
                     }
                 }
@@ -106,14 +106,14 @@ public class OpGraphManager {
         } else {
             pgraph = new ProjectOpGraph(pinfo);
             projectGraphs.put(pinfo.getQualifiedName(), pgraph);
-            for (ChangeTrackerFile finfo : pinfo.getFiles()) {
+            for (CTFile finfo : pinfo.getFiles()) {
                 FileOpGraph fgraph = OpGraphConstructor.createGraph(finfo);
                 if (fgraph.getFile() != null) {
                     fgraph.setLastUpdatedTime(ZonedDateTime.now());
                     pgraph.add(fgraph);
                 } else {
                     pgraph.clear();
-                    ChangeTrackerConsole.println("Failed to create an operation history graph " + pinfo.getQualifiedName());
+                    CTConsole.println("Failed to create an operation history graph " + pinfo.getQualifiedName());
                     break;
                 }
             }
@@ -131,7 +131,7 @@ public class OpGraphManager {
      * @param pinfo information about the project to be checked
      * @return <code>true</code> if the operation history graph exists, otherwise <code>false</code>
      */
-    public boolean existGraph(ChangeTrackerProject pinfo) {
+    public boolean existGraph(CTProject pinfo) {
         if (pinfo == null) {
             return false; 
         }
@@ -140,7 +140,7 @@ public class OpGraphManager {
             return false;
         }
         
-        for (ChangeTrackerFile finfo : pinfo.getFiles()) {
+        for (CTFile finfo : pinfo.getFiles()) {
             FileOpGraph fgraph = pgraph.get(finfo);
             if (finfo.getLastUpdatedTime().isAfter(fgraph.getLastUpdatedTime())) {
                 return false;

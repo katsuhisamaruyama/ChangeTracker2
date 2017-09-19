@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
  * Stores information about a resource stored into the repository.
  * @author Katsuhisa Maruyama
  */
-public class ChangeTrackerResource {
+public class CTResource {
     
     /**
      * The name of this resource.
@@ -39,7 +39,7 @@ public class ChangeTrackerResource {
      * @param name the name of this resource
      * @param qname the qualified name of this resource
      */
-    protected ChangeTrackerResource(String name, String qname) {
+    protected CTResource(String name, String qname) {
         this.name = name;
         this.qualifiedName = qname;
     }
@@ -111,7 +111,7 @@ public class ChangeTrackerResource {
      * @param res the resource
      * @return <code>true</code> if the two resources are the same, otherwise <code>false</code>
      */
-    public boolean equals(ChangeTrackerResource res) {
+    public boolean equals(CTResource res) {
         if (res == null) {
             return false;
         }
@@ -126,8 +126,8 @@ public class ChangeTrackerResource {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ChangeTrackerResource) {
-            return equals((ChangeTrackerResource)obj);
+        if (obj instanceof CTResource) {
+            return equals((CTResource)obj);
         }
         return false;
     }
@@ -145,15 +145,15 @@ public class ChangeTrackerResource {
      * Sorts the collection of resources in alphabetical order.
      * @param rs the collection of the resources to be sorted
      */
-    static void sort(List<? extends ChangeTrackerResource> rs) {
+    static void sort(List<? extends CTResource> rs) {
         
         /**
          * Compares two resources in alphabetical order.
          * @param res1 - the first resource to be compared
          * @param res2 - the second resource to be compared
          */
-        Collections.sort(rs, new Comparator<ChangeTrackerResource>() {
-            public int compare(ChangeTrackerResource res1, ChangeTrackerResource res2) {
+        Collections.sort(rs, new Comparator<CTResource>() {
+            public int compare(CTResource res1, CTResource res2) {
                 return res1.getName().compareTo(res2.getName());
             }
         });

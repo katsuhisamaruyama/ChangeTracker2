@@ -8,7 +8,7 @@ package org.jtool.changetracker.operation;
 
 import java.time.ZonedDateTime;
 
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTPath;
 
 /**
  * Stores information about a file operation.
@@ -48,7 +48,7 @@ public class FileOperation extends ChangeOperation {
      * @param action the action of the file operation
      * @param author the author's name
      */
-    public FileOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action, String author) {
+    public FileOperation(ZonedDateTime time, CTPath pathinfo, String action, String author) {
         super(time, Type.FILE, pathinfo, action, author);
     }
     
@@ -58,7 +58,7 @@ public class FileOperation extends ChangeOperation {
      * @param pathinfo information about path of a resource on which the file operation was performed
      * @param action the action of the file operation
      */
-    public FileOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action) {
+    public FileOperation(ZonedDateTime time, CTPath pathinfo, String action) {
         super(time, Type.FILE, pathinfo, action);
     }
     

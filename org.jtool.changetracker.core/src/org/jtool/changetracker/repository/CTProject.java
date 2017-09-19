@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
  * Stores information about a project.
  * @author Katsuhisa Maruyama
  */
-public class ChangeTrackerProject extends ChangeTrackerResource {
+public class CTProject extends CTResource {
     
     /**
      * The branch name of this project.
@@ -27,13 +27,13 @@ public class ChangeTrackerProject extends ChangeTrackerResource {
     /**
      * The collection of all packages within this project.
      */
-    private List<ChangeTrackerPackage> packages = new ArrayList<ChangeTrackerPackage>();
+    private List<CTPackage> packages = new ArrayList<CTPackage>();
     
     /**
      * Creates an instance that stores information about this project.
      * @param pathinfo information about path of this project
      */
-    ChangeTrackerProject(ChangeTrackerPath pathinfo) {
+    CTProject(CTPath pathinfo) {
         super(pathinfo.getProjectName(), pathinfo.getQualifiedProjectName());
         this.branch = pathinfo.getBranch();
     }
@@ -49,10 +49,10 @@ public class ChangeTrackerProject extends ChangeTrackerResource {
      * Stores information about a package within this project.
      * @param pinfo the package information to be stored
      */
-    void addPackage(ChangeTrackerPackage pinfo) {
+    void addPackage(CTPackage pinfo) {
         if (!packages.contains(pinfo)) {
             packages.add(pinfo);
-            ChangeTrackerResource.sort(packages);
+            CTResource.sort(packages);
         }
     }
     
@@ -68,7 +68,7 @@ public class ChangeTrackerProject extends ChangeTrackerResource {
      * Returns information about packages within this project.
      * @return information of the packages
      */
-    public List<ChangeTrackerPackage> getPackages() {
+    public List<CTPackage> getPackages() {
         return packages;
     }
     
@@ -76,9 +76,9 @@ public class ChangeTrackerProject extends ChangeTrackerResource {
      * Returns the files within this project.
      * @return the collection of the file information
      */
-    public List<ChangeTrackerFile> getFiles() {
-        List<ChangeTrackerFile> files = new ArrayList<ChangeTrackerFile>();
-        for (ChangeTrackerPackage pinfo : getPackages()) {
+    public List<CTFile> getFiles() {
+        List<CTFile> files = new ArrayList<CTFile>();
+        for (CTPackage pinfo : getPackages()) {
             files.addAll(pinfo.getFiles());
         }
         return files;
@@ -90,7 +90,7 @@ public class ChangeTrackerProject extends ChangeTrackerResource {
      * @return the found operation, or <code>null</code> if none
      */
     public IChangeOperation getOperationAt(ZonedDateTime time) {
-        for (ChangeTrackerFile finfo : getFiles()) {
+        for (CTFile finfo : getFiles()) {
             IChangeOperation op = finfo.getOperationAt(time);
             if (op != null) {
                 return op;
@@ -105,7 +105,7 @@ public class ChangeTrackerProject extends ChangeTrackerResource {
      */
     public List<IChangeOperation> getOperations() {
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
-        for (ChangeTrackerFile finfo : getFiles()) {
+        for (CTFile finfo : getFiles()) {
             ops.addAll(finfo.getOperations());
         }
         ChangeOperation.sort(ops);

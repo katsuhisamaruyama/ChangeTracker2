@@ -8,7 +8,7 @@ package org.jtool.changetracker.operation;
 
 import java.time.ZonedDateTime;
 
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTPath;
 
 /**
  * Stores information on a command operation.
@@ -35,7 +35,7 @@ public class CommandOperation extends ChangeOperation {
      * @param action the action of the command operation
      * @param author the author's name
      */
-    public CommandOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action, String author) {
+    public CommandOperation(ZonedDateTime time, CTPath pathinfo, String action, String author) {
         super(time, Type.COMMAND, pathinfo, action, author);
     }
     
@@ -45,7 +45,7 @@ public class CommandOperation extends ChangeOperation {
      * @param pathinfo information about path of a resource on which the command operation was performed
      * @param action the action of the command operation
      */
-    public CommandOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action) {
+    public CommandOperation(ZonedDateTime time, CTPath pathinfo, String action) {
         this(time, pathinfo, action, ChangeOperation.getUserName());
     }
     

@@ -13,7 +13,7 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
  * Initializes the preference values.
  * @author Katsuhisa Maruyama
  */
-public class ChangeTrackerPreferenceInitializer extends AbstractPreferenceInitializer {
+public class CTPreferenceInitializer extends AbstractPreferenceInitializer {
     
     /**
      * Stores initial preference values.
@@ -21,7 +21,7 @@ public class ChangeTrackerPreferenceInitializer extends AbstractPreferenceInitia
     @Override
     public void initializeDefaultPreferences() {
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
-        String defaultLocation = ChangeTrackerPreferencePage.getDefaultLoaction();
-        store.setDefault(ChangeTrackerPreferencePage.REPOSITORY_LOCATION, defaultLocation);
+        String defaultLocation = CTPreferencePage.getDefaultLoaction();
+        store.setDefault(CTPreferencePage.REPOSITORY_LOCATION, defaultLocation);
     }
 }

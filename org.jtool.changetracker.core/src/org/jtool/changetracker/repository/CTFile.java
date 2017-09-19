@@ -18,7 +18,7 @@ import java.time.ZonedDateTime;
  * Stores the information about a file.
  * @author Katsuhisa Maruyama
  */
-public class ChangeTrackerFile extends ChangeTrackerResource {
+public class CTFile extends CTResource {
     
     /**
      * The path name of this file.
@@ -33,12 +33,12 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
     /**
      * The information about a project containing this file.
      */
-    protected ChangeTrackerProject projectInfo;
+    protected CTProject projectInfo;
     
     /**
      * The information about a package containing this file.
      */
-    protected ChangeTrackerPackage packageInfo;
+    protected CTPackage packageInfo;
     
     /**
      * The time when this file information was last modified (or initially generated).
@@ -48,12 +48,12 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
     /**
      * The previous file that exists before the file rename or move.
      */
-    private ChangeTrackerFile fileInfoFrom = null;
+    private CTFile fileInfoFrom = null;
     
     /**
      * The next file that exists after the file rename or move.
      */
-    private ChangeTrackerFile fileInfoTo = null;
+    private CTFile fileInfoTo = null;
     
     /**
      * The collections of all snapshots of this file.
@@ -66,7 +66,7 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
      * @param prjinfo the information about a package containing this file
      * @param pkginfo the information about a package containing this file
      */
-    ChangeTrackerFile(ChangeTrackerPath pathinfo, ChangeTrackerProject prjinfo, ChangeTrackerPackage pkginfo) {
+    CTFile(CTPath pathinfo, CTProject prjinfo, CTPackage pkginfo) {
         super(pathinfo.getFileName(), pathinfo.getQualifiedName());
         this.path = pathinfo.getPath();
         this.projectInfo = prjinfo;
@@ -101,7 +101,7 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
      * Returns the information about a project containing this file.
      * @return the project information
      */
-    public ChangeTrackerProject getProject() {
+    public CTProject getProject() {
         return projectInfo;
     }
     
@@ -109,7 +109,7 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
      * Returns the information about a package containing this file.
      * @return the package information
      */
-    public ChangeTrackerPackage getPackage() {
+    public CTPackage getPackage() {
         return packageInfo;
     }
     
@@ -177,7 +177,7 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
      * Sets the previous file that exists before the file rename or move.
      * @param finfo the information about the file that is backward connected to this file
      */
-    public void setFileInfoFrom(ChangeTrackerFile finfo) {
+    public void setFileInfoFrom(CTFile finfo) {
         fileInfoFrom = finfo;
     }
     
@@ -185,7 +185,7 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
      * Returns the previous file that exists before the file rename or move.
      * @return the information about the file that is backward connected to this file
      */
-    public ChangeTrackerFile getDataInfoFrom() {
+    public CTFile getDataInfoFrom() {
         return fileInfoFrom;
     }
     
@@ -193,7 +193,7 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
      * Sets the next file that exists before the file rename or move.
      * @param finfo the information about the file that is forward connected from this file
      */
-    public void setFileInfoTo(ChangeTrackerFile finfo) {
+    public void setFileInfoTo(CTFile finfo) {
         fileInfoTo = finfo;
     }
     
@@ -201,7 +201,7 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
      * Returns the next file that exists before the file rename or move.
      * @return the information about the file that is forward connected from this file
      */
-    public ChangeTrackerFile getFileInfoTo() {
+    public CTFile getFileInfoTo() {
         return fileInfoTo;
     }
     
@@ -391,7 +391,7 @@ public class ChangeTrackerFile extends ChangeTrackerResource {
      * @param resource the resource
      * @return <code>true</code> if the two resources are the same, otherwise <code>false</code>
      */
-    public boolean equalsDeep(ChangeTrackerFile finfo) {
+    public boolean equalsDeep(CTFile finfo) {
         if (finfo == null) {
             return false;
         }

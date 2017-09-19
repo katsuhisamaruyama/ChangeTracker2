@@ -9,7 +9,7 @@ package org.jtool.changetracker.dependencyanalyzer;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.CodeOperation;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -25,7 +25,7 @@ public class DependencyDetector {
      * @param index the index number of the change operation that generates the snapshot
      * @return the generated parseable snapshot, or <code>null</code> the generation fails
      */
-    public static ParseableSnapshot parse(ChangeTrackerFile finfo, int index) {
+    public static ParseableSnapshot parse(CTFile finfo, int index) {
         ParseableSnapshot psn = finfo.getLastSnapshot();
         String code;
         if (psn != null) {
@@ -43,7 +43,7 @@ public class DependencyDetector {
      * @param code the contents of the snapshot
      * @return the generated parseable snapshot, or <code>null</code> the generation fails
      */
-    public static ParseableSnapshot parse(ChangeTrackerFile finfo, int index, String code) {
+    public static ParseableSnapshot parse(CTFile finfo, int index, String code) {
         ChangeTrackerParser parser = new ChangeTrackerParser();
         CompilationUnit cu = parser.parse(code);
         if (cu != null) {

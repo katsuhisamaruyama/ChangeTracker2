@@ -9,7 +9,7 @@ package org.jtool.changetracker.dependecygraph;
 import org.jtool.changetracker.dependencyanalyzer.CodeRange;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.operation.ChangeOperation;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import java.time.ZonedDateTime;
 
 /**
@@ -31,7 +31,7 @@ public class CodeSnippet {
     /**
      * The information about file that contains this code snippet.
      */
-    private ChangeTrackerFile fileInfo;
+    private CTFile fileInfo;
     
     /**
      * Creates an instance that stores information about a code snippet.
@@ -40,7 +40,7 @@ public class CodeSnippet {
      * @param text the contents of this code snippet
      * @param finfo information about file that contains this code snippet
      */
-    public CodeSnippet(ZonedDateTime time, int start, int end, ChangeTrackerFile finfo) {
+    public CodeSnippet(ZonedDateTime time, int start, int end, CTFile finfo) {
         this.time = time;
         this.codeRange = new CodeRange(start, end);
         this.fileInfo = finfo;
@@ -126,7 +126,7 @@ public class CodeSnippet {
      * Returns information about file that contains this code snippet
      * @return the file information
      */
-    public ChangeTrackerFile getFile() {
+    public CTFile getFile() {
         return fileInfo;
     }
     

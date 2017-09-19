@@ -9,8 +9,8 @@ package org.jtool.changetracker.dependecygraph;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
 import org.jtool.changetracker.operation.ICodeOperation;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
-import org.jtool.changetracker.repository.ChangeTrackerProject;
+import org.jtool.changetracker.repository.CTFile;
+import org.jtool.changetracker.repository.CTProject;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class ProjectOpGraph {
     /**
      * The information of a project corresponding to this graph.
      */
-    private ChangeTrackerProject projectInfo;
+    private CTProject projectInfo;
     
     /**
      * The collection of all operation history graphs for files within the project.
@@ -44,7 +44,7 @@ public class ProjectOpGraph {
      * Creates an instance that stores information about an operation history graph for a project.
      * @param pinfo the information of the project
      */
-    protected ProjectOpGraph(ChangeTrackerProject pinfo) {
+    protected ProjectOpGraph(CTProject pinfo) {
         this.projectInfo = pinfo;
     }
     
@@ -52,7 +52,7 @@ public class ProjectOpGraph {
      * Returns information of a project corresponding to this graph.
      * @return the project information.
      */
-    public ChangeTrackerProject getProject() {
+    public CTProject getProject() {
         return projectInfo;
     }
     
@@ -71,7 +71,7 @@ public class ProjectOpGraph {
      * @param finfo information about the file
      * @return the operation history graph for the file, or <code>null</code> if none
      */
-    FileOpGraph get(ChangeTrackerFile finfo) {
+    FileOpGraph get(CTFile finfo) {
         return fileGraphs.get(finfo.getQualifiedName());
     }
     
@@ -87,7 +87,7 @@ public class ProjectOpGraph {
      * Removes an operation history graph for a file.
      * @param finfo information about the file to be removed
      */
-    void remove(ChangeTrackerFile finfo) {
+    void remove(CTFile finfo) {
         fileGraphs.remove(finfo.getQualifiedName());
     }
     

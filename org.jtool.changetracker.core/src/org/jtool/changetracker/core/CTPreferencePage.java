@@ -27,7 +27,7 @@ import java.io.File;
  * Manages the preference page.
  * @author Katsuhisa Maruyama
  */
-public class ChangeTrackerPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public class CTPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
     
     /**
      * The label for indicating the location of a directory that contains operation history files.
@@ -47,7 +47,7 @@ public class ChangeTrackerPreferencePage extends FieldEditorPreferencePage imple
     /**
      * Creates an object for a preference page.
      */
-    public ChangeTrackerPreferencePage() {
+    public CTPreferencePage() {
         super(GRID);
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
         setPreferenceStore(store);

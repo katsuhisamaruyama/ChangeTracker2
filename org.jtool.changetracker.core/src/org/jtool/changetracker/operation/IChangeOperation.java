@@ -9,7 +9,7 @@ package org.jtool.changetracker.operation;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 
 /**
  * Defines an interface that accesses information about the all kinds of change operations.
@@ -184,7 +184,7 @@ public interface IChangeOperation {
      * Returns information about a file that this change operation affects.
      * @return the file information
      */
-    public ChangeTrackerFile getFile();
+    public CTFile getFile();
     
     /**
      * Tests if this change operation is the same as a given one.

@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.xml;
 
-import org.jtool.changetracker.core.ChangeTrackerConsole;
+import org.jtool.changetracker.core.CTConsole;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -50,7 +50,7 @@ public class XmlFileManager {
             return FileUtils.readFileToString(file);
             
         } catch (IOException e) {
-            ChangeTrackerConsole.println(e.getMessage());
+            CTConsole.println(e.getMessage());
         }
         return null;
     }
@@ -100,7 +100,7 @@ public class XmlFileManager {
             return builder.parse(file);
             
         } catch (Exception e) {
-            ChangeTrackerConsole.println("DOM: Parse error occurred: " + e.getMessage() + ".");
+            CTConsole.println("DOM: Parse error occurred: " + e.getMessage() + ".");
             return null;
         }
     }
@@ -111,7 +111,7 @@ public class XmlFileManager {
      * @param e the occurred exception
      */
     private static void printException(String filename, SAXParseException e) {
-        ChangeTrackerConsole.println("[FATAL]file:" + filename + "line:" + e.getLineNumber() + ", " +
+        CTConsole.println("[FATAL]file:" + filename + "line:" + e.getLineNumber() + ", " +
           "column:" + e.getColumnNumber() + ", " + e.getMessage());
     }
     
@@ -132,7 +132,7 @@ public class XmlFileManager {
             return contents;
             
         } catch (final IOException e) {
-            ChangeTrackerConsole.println(e.getMessage());
+            CTConsole.println(e.getMessage());
             return null;
         }
     }
@@ -174,7 +174,7 @@ public class XmlFileManager {
             return doc;
             
         } catch (TransformerException e) {
-            ChangeTrackerConsole.println("DOM: Write error occurred: " + e.getMessage() + ".");
+            CTConsole.println("DOM: Write error occurred: " + e.getMessage() + ".");
             return null;
         }
     }
@@ -190,7 +190,7 @@ public class XmlFileManager {
             return true;
             
         } catch (IOException e) {
-            ChangeTrackerConsole.println(e.getMessage());
+            CTConsole.println(e.getMessage());
             return false;
         }
     }
@@ -203,7 +203,7 @@ public class XmlFileManager {
         try {
             FileUtils.deleteDirectory(dir);
         } catch (IOException e) {
-            ChangeTrackerConsole.println(e.getMessage());
+            CTConsole.println(e.getMessage());
         }
     }
     

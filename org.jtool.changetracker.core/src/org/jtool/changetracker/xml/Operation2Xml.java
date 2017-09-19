@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.xml;
 
-import org.jtool.changetracker.core.ChangeTrackerConsole;
+import org.jtool.changetracker.core.CTConsole;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.operation.CopyOperation;
@@ -95,7 +95,7 @@ public class Operation2Xml {
             Element opElem = appendRefactorOperationElement(doc, (RefactoringOperation)operation);
             parent.appendChild(opElem);
         } else {
-            ChangeTrackerConsole.println("Unknown operation");
+            CTConsole.println("Unknown operation");
         }
     }
     

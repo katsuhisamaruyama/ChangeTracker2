@@ -31,22 +31,22 @@ public class Repository {
     /**
      * The map that stores information about currently existing projects.
      */
-    private Map<String, ChangeTrackerProject> projectMap = new HashMap<String, ChangeTrackerProject>();
+    private Map<String, CTProject> projectMap = new HashMap<String, CTProject>();
     
     /**
      * The map that stores information about currently existing packages.
      */
-    private Map<String, ChangeTrackerPackage> packageMap = new HashMap<String, ChangeTrackerPackage>();
+    private Map<String, CTPackage> packageMap = new HashMap<String, CTPackage>();
     
     /**
      * The map that stores information of currently existing files.
      */
-    private Map<String, ChangeTrackerFile> fileMap = new HashMap<String, ChangeTrackerFile>();
+    private Map<String, CTFile> fileMap = new HashMap<String, CTFile>();
     
     /**
      * The collection of information about all files existing in the past.
      */
-    private List<ChangeTrackerFile> fileHistory = new ArrayList<ChangeTrackerFile>();
+    private List<CTFile> fileHistory = new ArrayList<CTFile>();
     
     /**
      * The collection of listeners that receives repository change events.
@@ -83,23 +83,23 @@ public class Repository {
      * Returns information about the projects stored in this repository.
      * @return all the file information
      */
-    public List<ChangeTrackerProject> getProjectHistory() {
-        return new ArrayList<ChangeTrackerProject>(projectMap.values());
+    public List<CTProject> getProjectHistory() {
+        return new ArrayList<CTProject>(projectMap.values());
     }
     
     /**
      * Returns information about the packages stored in this repository.
      * @return all the file information
      */
-    public List<ChangeTrackerPackage> getPackageHistory() {
-        return new ArrayList<ChangeTrackerPackage>(packageMap.values());
+    public List<CTPackage> getPackageHistory() {
+        return new ArrayList<CTPackage>(packageMap.values());
     }
     
     /**
      * Returns information about the files stored in this repository.
      * @return all the file information
      */
-    public List<ChangeTrackerFile> getFileHistory() {
+    public List<CTFile> getFileHistory() {
         return fileHistory;
     }
     
@@ -109,7 +109,7 @@ public class Repository {
      */
     public List<IChangeOperation> getOperations() {
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
-        for (ChangeTrackerFile finfo : getFileHistory()) {
+        for (CTFile finfo : getFileHistory()) {
             ops.addAll(finfo.getOperations());
         }
         return ops;
@@ -132,13 +132,13 @@ public class Repository {
      */
     private void addOperationAll(List<? extends IChangeOperation> ops) {
         IChangeOperation op = ops.get(0);
-        ChangeTrackerPath pathinfo = new ChangeTrackerPath(op);
+        CTPath pathinfo = new CTPath(op);
         if (op.isFile()) {
             createResourceInfo((FileOperation)op, pathinfo);
         }
-        ChangeTrackerProject projectInfo = createProject(pathinfo);
-        ChangeTrackerPackage packageInfo = createPackage(pathinfo, projectInfo);
-        ChangeTrackerFile fileInfo = createFile(pathinfo, op,  packageInfo);
+        CTProject projectInfo = createProject(pathinfo);
+        CTPackage packageInfo = createPackage(pathinfo, projectInfo);
+        CTFile fileInfo = createFile(pathinfo, op,  packageInfo);
         for (int idx = 0; idx < ops.size(); idx++) {
             addOperation(ops.get(idx), projectInfo, packageInfo, fileInfo);
         }
@@ -160,13 +160,13 @@ public class Repository {
      * @param op the code change operation to be added
      */
     private void addOperation(IChangeOperation op) {
-        ChangeTrackerPath pathinfo = new ChangeTrackerPath(op);
+        CTPath pathinfo = new CTPath(op);
         if (op.isFile()) {
             createResourceInfo((FileOperation)op, pathinfo);
         }
-        ChangeTrackerProject projectInfo = createProject(pathinfo);
-        ChangeTrackerPackage packageInfo = createPackage(pathinfo, projectInfo);
-        ChangeTrackerFile fileInfo = createFile(pathinfo, op, packageInfo);
+        CTProject projectInfo = createProject(pathinfo);
+        CTPackage packageInfo = createPackage(pathinfo, projectInfo);
+        CTFile fileInfo = createFile(pathinfo, op, packageInfo);
         addOperation(op, projectInfo, packageInfo, fileInfo);
     }
     
@@ -175,18 +175,18 @@ public class Repository {
      * @param op the change operation to be stored
      * @param pathinfo information about path of the resource
      */
-    private void createResourceInfo(FileOperation op, ChangeTrackerPath pathinfo) {
+    private void createResourceInfo(FileOperation op, CTPath pathinfo) {
         if (op.isAdded()) {
-            ChangeTrackerProject projectInfo = createProject(pathinfo);
-            ChangeTrackerPackage packageInfo = createPackage(pathinfo, projectInfo);
+            CTProject projectInfo = createProject(pathinfo);
+            CTPackage packageInfo = createPackage(pathinfo, projectInfo);
             createFile(pathinfo, op, packageInfo);
         } else if (op.isMovedFrom() || op.isRenamedFrom()) {
             eraseFile(pathinfo);
-            ChangeTrackerProject projectInfo = createProject(pathinfo);
-            ChangeTrackerPackage packageInfo = createPackage(pathinfo, projectInfo);
-            ChangeTrackerFile fileInfo = createFile(pathinfo, op, packageInfo);
+            CTProject projectInfo = createProject(pathinfo);
+            CTPackage packageInfo = createPackage(pathinfo, projectInfo);
+            CTFile fileInfo = createFile(pathinfo, op, packageInfo);
             
-            ChangeTrackerFile fromFileInfo = getFromFile(op.getSrcDstPath());
+            CTFile fromFileInfo = getFromFile(op.getSrcDstPath());
             if (fromFileInfo != null) {
                 fromFileInfo.setFileInfoTo(fileInfo);
                 fileInfo.setFileInfoFrom(fromFileInfo);
@@ -201,9 +201,9 @@ public class Repository {
      * @param path the path name of the file information to be retrieved
      * @return the found file information, or <code>null</code> if none
      */
-    private ChangeTrackerFile getFromFile(String path) {
+    private CTFile getFromFile(String path) {
         for (int idx = fileHistory.size() - 1; idx >= 0; idx--) {
-            ChangeTrackerFile info = fileHistory.get(idx);
+            CTFile info = fileHistory.get(idx);
             if (info.getPath().equals(path)) {
                 return info;
             }
@@ -219,7 +219,7 @@ public class Repository {
      * @param finfo information about a file related to the change operation
      */
     private void addOperation(IChangeOperation op,
-            ChangeTrackerProject prjinfo, ChangeTrackerPackage pkginfo, ChangeTrackerFile finfo) {
+            CTProject prjinfo, CTPackage pkginfo, CTFile finfo) {
         finfo.addOperation(op);
         if (op instanceof ChangeOperation) {
             ((ChangeOperation)op).setFile(finfo);
@@ -237,7 +237,7 @@ public class Repository {
      * @param op the change operation
      * @param finfo information about a file that contains the Java constructs
      */
-    private void detectAffectedJavaConstructs(CodeOperation op, ChangeTrackerFile finfo) {
+    private void detectAffectedJavaConstructs(CodeOperation op, CTFile finfo) {
         int index = finfo.getOperationIndexAt(op.getTime());
         ParseableSnapshot sn = DependencyDetector.parse(finfo, index);
         if (sn != null) {
@@ -266,13 +266,13 @@ public class Repository {
      * @param pathinfo information about path of the project
      * @return the created or already existing information about the project
      */
-    private ChangeTrackerProject createProject(ChangeTrackerPath pathinfo) {
+    private CTProject createProject(CTPath pathinfo) {
         String key = pathinfo.getProjectKey();
-        ChangeTrackerProject pinfo = projectMap.get(key);
+        CTProject pinfo = projectMap.get(key);
         if (pinfo != null) {
             return pinfo;
         }
-        pinfo = new ChangeTrackerProject(pathinfo);
+        pinfo = new CTProject(pathinfo);
         projectMap.put(key, pinfo);
         return pinfo;
     }
@@ -283,13 +283,13 @@ public class Repository {
      * @param prjinfo the information about a project that contains the package
      * @return the created or already existing information about the package
      */
-    private ChangeTrackerPackage createPackage(ChangeTrackerPath pathinfo, ChangeTrackerProject prjinfo) {
+    private CTPackage createPackage(CTPath pathinfo, CTProject prjinfo) {
         String key = pathinfo.getPackageKey();
-        ChangeTrackerPackage pinfo = packageMap.get(key);
+        CTPackage pinfo = packageMap.get(key);
         if (pinfo != null) {
             return pinfo;
         }
-        pinfo = new ChangeTrackerPackage(pathinfo, prjinfo);
+        pinfo = new CTPackage(pathinfo, prjinfo);
         packageMap.put(key, pinfo);
         prjinfo.addPackage(pinfo);
         return pinfo;
@@ -302,13 +302,13 @@ public class Repository {
      * @param pckinfo the information about a package that contains the file
      * @return the created or already existing information about the file
      */
-    private ChangeTrackerFile createFile(ChangeTrackerPath pathinfo, IChangeOperation op, ChangeTrackerPackage pckinfo) {
+    private CTFile createFile(CTPath pathinfo, IChangeOperation op, CTPackage pckinfo) {
         String key = pathinfo.getFileKey();
-        ChangeTrackerFile finfo = fileMap.get(key);
+        CTFile finfo = fileMap.get(key);
         if (finfo != null) {
             return finfo;
         }
-        finfo = new ChangeTrackerFile(pathinfo, pckinfo.getProject(), pckinfo);
+        finfo = new CTFile(pathinfo, pckinfo.getProject(), pckinfo);
         if (op.isFile()) {
             FileOperation fop = (FileOperation)op;
             finfo.setInitialCode(fop.getCode());
@@ -323,7 +323,7 @@ public class Repository {
      * Removes information about a file.
      * @param pathinfo information about path of the file
      */
-    private void eraseFile(ChangeTrackerPath pathinfo) {
+    private void eraseFile(CTPath pathinfo) {
         String key = pathinfo.getFileKey();
         fileMap.remove(key);
     }
@@ -362,7 +362,7 @@ public class Repository {
      * Restores the contents of source code on file operations.
      */
     public void restoreCodeOnFileOperation() {
-        for (ChangeTrackerFile finfo : getFileHistory()) {
+        for (CTFile finfo : getFileHistory()) {
             finfo.getOperationHistory().restoreCodeOnFileOperation();
         }
     }
@@ -371,7 +371,7 @@ public class Repository {
      * Compacts the history of change operations.
      */
     public void compactOperations() {
-        for (ChangeTrackerFile finfo : getFileHistory()) {
+        for (CTFile finfo : getFileHistory()) {
             finfo.getOperationHistory().compact();
         }
     }
@@ -380,7 +380,7 @@ public class Repository {
      * Checks the change operations in this repository were consistently performed.
      */
     public void checkOperationConsistency() {
-        for (ChangeTrackerFile finfo : getFileHistory()) {
+        for (CTFile finfo : getFileHistory()) {
             finfo.getOperationHistory().checkOperationConsistency();
         }
     }

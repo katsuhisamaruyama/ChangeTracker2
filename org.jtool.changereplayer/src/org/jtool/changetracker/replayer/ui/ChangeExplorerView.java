@@ -71,7 +71,7 @@ public class ChangeExplorerView extends ViewPart {
     /**
      * A repository that is shown in this view.
      */
-    private Repository currentRepository = null;
+    private Repository currentRepository;
     
     /**
      * The collection of actions that open each of the repositories.
@@ -93,6 +93,7 @@ public class ChangeExplorerView extends ViewPart {
      */
     public ChangeExplorerView() {
         replayManager = ReplayManager.getInstance();
+        currentRepository = RepositoryManager.getInstance().getMainRepository();
     }
     
     /**
@@ -106,9 +107,8 @@ public class ChangeExplorerView extends ViewPart {
         viewer.setContentProvider(new TreeNodeContentProvider());
         viewer.setLabelProvider(new ProjectLabelProvider());
         
-        currentRepository = RepositoryManager.getInstance().getMainRepository();
         currentRepository.addEventListener(replayManager);
-        addRepositoryInToolBarMenu(RepositoryManager.getInstance().getMainRepository());
+        addRepositoryInToolBarMenu(currentRepository);
         addOpenRepositoryItemInToolBarMenu();
         
         registerFileSelectAction();

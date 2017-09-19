@@ -15,7 +15,7 @@ import org.eclipse.ui.PlatformUI;
  * Displays a dialog with a message.
  * @author Katsuhisa Maruyama
  */
-public class ChangeTrackerDialog {
+public class CTDialog {
     
     /**
      * Displays an information dialog presenting the specified message.

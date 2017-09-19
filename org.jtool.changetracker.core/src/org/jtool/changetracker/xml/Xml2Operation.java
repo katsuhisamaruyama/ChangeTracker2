@@ -13,7 +13,7 @@ import org.jtool.changetracker.operation.DocumentOperation;
 import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.operation.CommandOperation;
 import org.jtool.changetracker.operation.RefactoringOperation;
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -313,7 +313,7 @@ public class Xml2Operation {
         String author;
         String desc;
         long cid;
-        ChangeTrackerPath pathinfo;
+        CTPath pathinfo;
         
         /**
          * Obtains basic attributes of a code change operation from the DOM element.
@@ -330,7 +330,7 @@ public class Xml2Operation {
             String path = elem.getAttribute(XmlConstants.PathAttr);
             String branch = elem.getAttribute(XmlConstants.BranchAttr);
             String fileName = getFileName(path);
-            pathinfo = new ChangeTrackerPath(projectName, packageName, fileName, path, branch);
+            pathinfo = new CTPath(projectName, packageName, fileName, path, branch);
         }
     }
 }

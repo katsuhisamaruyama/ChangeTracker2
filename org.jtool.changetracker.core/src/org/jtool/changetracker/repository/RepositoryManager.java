@@ -7,9 +7,9 @@
 package org.jtool.changetracker.repository;
 
 import org.jtool.changetracker.core.Activator;
-import org.jtool.changetracker.core.ChangeTrackerPreferencePage;
-import org.jtool.changetracker.core.ChangeTrackerConsole;
-import org.jtool.changetracker.core.ChangeTrackerDialog;
+import org.jtool.changetracker.core.CTPreferencePage;
+import org.jtool.changetracker.core.CTConsole;
+import org.jtool.changetracker.core.CTDialog;
 import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.xml.Xml2Operation;
@@ -51,7 +51,7 @@ public class RepositoryManager {
      * Prohibits the creation of an instance.
      */
     private RepositoryManager() {
-        mainRepository = createRepository(ChangeTrackerPreferencePage.getLocation());
+        mainRepository = createRepository(CTPreferencePage.getLocation());
     }
     
     /**
@@ -105,7 +105,7 @@ public class RepositoryManager {
             return;
         }
         
-        boolean result = ChangeTrackerDialog.yesnoDialog("Repository Change", "Are you Ok to close all editors?");
+        boolean result = CTDialog.yesnoDialog("Repository Change", "Are you Ok to close all editors?");
         if (!result) {
             return;
         }
@@ -262,7 +262,7 @@ public class RepositoryManager {
             String filename = mainRepository.getLocation() + File.separatorChar + String.valueOf(time);
             Operation2Xml.storeOperations(ops, filename);
         } catch (Exception e) {
-            ChangeTrackerConsole.println("Failed to store change operations into a history file: " + e.toString());
+            CTConsole.println("Failed to store change operations into a history file: " + e.toString());
         }
     }
     

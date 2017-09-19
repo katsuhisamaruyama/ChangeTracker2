@@ -7,7 +7,7 @@
 package org.jtool.changetracker.dependecygraph;
 
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.operation.ICodeOperation;
 import java.util.List;
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class OpSlice {
      * @param finfo information about a file containing a code snippet
      * @param snip the code snippet for a slice criterion
      */
-    public OpSlice(ProjectOpGraph pgraph, ChangeTrackerFile finfo, CodeSnippet snip) {
+    public OpSlice(ProjectOpGraph pgraph, CTFile finfo, CodeSnippet snip) {
         this.projectGraph = pgraph;
         this.fileGraph = projectGraph.get(finfo);
         this.snippet = snip;

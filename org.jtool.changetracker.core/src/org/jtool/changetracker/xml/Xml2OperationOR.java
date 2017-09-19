@@ -12,7 +12,7 @@ import org.jtool.changetracker.operation.CopyOperation;
 import org.jtool.changetracker.operation.DocumentOperation;
 import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.operation.ICodeOperation;
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTPath;
 import org.jtool.changetracker.operation.CommandOperation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -88,12 +88,12 @@ public class Xml2OperationOR {
      * @param elem the DOM element
      * @return the path information
      */
-    private static ChangeTrackerPath createPathInfo(Element elem) {
+    private static CTPath createPathInfo(Element elem) {
         String path = getPath(elem.getAttribute(FileAttr));
         String projectName = Xml2OperationCT.getProjectName(path);
         String packageName = Xml2OperationCT.getPackageName(path);
         String fileName = Xml2Operation.getFileName(path);
-        return new ChangeTrackerPath(projectName, packageName, fileName, path, BRANCH);
+        return new CTPath(projectName, packageName, fileName, path, BRANCH);
     }
     /**
      * Obtains change operations from the XML representation.
@@ -164,7 +164,7 @@ public class Xml2OperationOR {
      */
     private static DocumentOperation getDocumentOperation(Element elem) {
         ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
-        ChangeTrackerPath pathinfo = createPathInfo(elem);
+        CTPath pathinfo = createPathInfo(elem);
         String action = elem.getAttribute(CCPTypeAttr);
         if (action.length() == 0) {
             action = elem.getAttribute(CCPAttr);
@@ -217,7 +217,7 @@ public class Xml2OperationOR {
      */
     private static CopyOperation getCopyOperation(Element elem) {
         ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
-        ChangeTrackerPath pathinfo = createPathInfo(elem);
+        CTPath pathinfo = createPathInfo(elem);
         
         CopyOperation op = new CopyOperation(time, pathinfo, developer);
         op.setStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
@@ -232,7 +232,7 @@ public class Xml2OperationOR {
      */
     private static FileOperation getFileOperation(Element elem) {
         ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
-        ChangeTrackerPath pathinfo = createPathInfo(elem);
+        CTPath pathinfo = createPathInfo(elem);
         String action = parseFileAction(elem.getAttribute(TypeAttr));
         
         FileOperation op = new FileOperation(time, pathinfo, action, developer);
@@ -276,7 +276,7 @@ public class Xml2OperationOR {
      */
     private static CommandOperation getCommandOperation(Element elem) {
         ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
-        ChangeTrackerPath pathinfo = createPathInfo(elem);
+        CTPath pathinfo = createPathInfo(elem);
         
         CommandOperation op = new CommandOperation(time, pathinfo, developer);
         op.setName(elem.getAttribute(LabelAttr));

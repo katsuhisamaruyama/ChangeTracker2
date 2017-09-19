@@ -7,7 +7,7 @@
 package org.jtool.changetracker.xml;
 
 import org.jtool.changetracker.core.Activator;
-import org.jtool.changetracker.core.ChangeTrackerDialog;
+import org.jtool.changetracker.core.CTDialog;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.repository.Repository;
@@ -56,7 +56,7 @@ public class XmlConverter {
                 String path = dialog.open();
                 
                 if (Xml2Operation.isChangeTrackerVersion2(path)) {
-                    ChangeTrackerDialog.errorDialog("Convert Format",
+                    CTDialog.errorDialog("Convert Format",
                             "No need to convert since the XML format is compatible with ChangeTracker v2");
                     return;
                 }
@@ -67,7 +67,7 @@ public class XmlConverter {
                 List<File> files = Xml2Operation.getHistoryFiles(path);
                 boolean result = convert(files, dirpath);
                 if (result) {
-                    ChangeTrackerDialog.informationDialog("Convert Format", "The converted files are stored in " + dirpath);
+                    CTDialog.informationDialog("Convert Format", "The converted files are stored in " + dirpath);
                 } else {
                     XmlFileManager.deleteDir(new File(dirpath));
                 }

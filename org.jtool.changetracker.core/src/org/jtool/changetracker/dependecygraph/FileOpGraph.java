@@ -9,7 +9,7 @@ package org.jtool.changetracker.dependecygraph;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
 import org.jtool.changetracker.operation.ICodeOperation;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -27,7 +27,7 @@ public class FileOpGraph {
     /**
      * The information about a file corresponding to this graph.
      */
-    private ChangeTrackerFile fileInfo;
+    private CTFile fileInfo;
     
     /**
      * The collection of nodes of this graph.
@@ -48,7 +48,7 @@ public class FileOpGraph {
      * Creates an instance that stores information about an operation history graph for a file.
      * @param finfo information of the file
      */
-    protected FileOpGraph(ChangeTrackerFile finfo) {
+    protected FileOpGraph(CTFile finfo) {
         this.fileInfo = finfo;
     }
     
@@ -56,7 +56,7 @@ public class FileOpGraph {
      * Returns information about a file corresponding to this graph.
      * @return the file information.
      */
-    public ChangeTrackerFile getFile() {
+    public CTFile getFile() {
         return fileInfo;
     }
     

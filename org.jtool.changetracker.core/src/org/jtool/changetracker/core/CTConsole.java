@@ -16,7 +16,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
  * Displays a dialog with a message.
  * @author Katsuhisa Maruyama
  */
-public class ChangeTrackerConsole {
+public class CTConsole {
     
     /**
      * The name of the dedicated console.

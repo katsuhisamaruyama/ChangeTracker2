@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.dependencyanalyzer;
 
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.operation.IChangeOperation;
 import java.util.List;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class ParseableSnapshot {
     /**
      * The file path of this parse-able snapshot.
      */
-    private ChangeTrackerFile fileInfo;
+    private CTFile fileInfo;
     
     /**
      * The index number of a change operation that generates this snapshot.
@@ -56,7 +56,7 @@ public class ParseableSnapshot {
      * @param code the contents of source code for the this parse-able snapshot
      * @param cons Java constructs within this parse-able snapshot
      */
-    public ParseableSnapshot(ChangeTrackerFile finfo,int index, String code, List<JavaConstruct> cons) {
+    public ParseableSnapshot(CTFile finfo,int index, String code, List<JavaConstruct> cons) {
         this.fileInfo = finfo;
         this.index = index;
         this.code = code;
@@ -71,7 +71,7 @@ public class ParseableSnapshot {
      * Returns information about a file for this parse-able snapshot.
      * @return the information about the file
      */
-    public ChangeTrackerFile getFile() {
+    public CTFile getFile() {
         return fileInfo;
     }
     

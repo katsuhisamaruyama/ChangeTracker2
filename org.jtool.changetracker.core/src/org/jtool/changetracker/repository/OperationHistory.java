@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.repository;
 
-import org.jtool.changetracker.core.ChangeTrackerConsole;
+import org.jtool.changetracker.core.CTConsole;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.operation.FileOperation;
@@ -355,13 +355,13 @@ public class OperationHistory {
                     String nextCode = CodeRestorer.applyOperations(this, toCode, idx, fidx);
                     
                     if (!toCode.equals(predCode)) {
-                        ChangeTrackerConsole.println("Inconsistent with change operations: " +
+                        CTConsole.println("Inconsistent with change operations: " +
                                 fop.getFormatedTime() + " (" + fop.getTimeAsLong() + ") - " +
                                 op.getFormatedTime() + " (" + op.getTimeAsLong() + ") by forward restoration");
                         success = false;
                     }
                     if (!fromCode.equals(nextCode)) {
-                        ChangeTrackerConsole.println("Inconsistent with change operations: " +
+                        CTConsole.println("Inconsistent with change operations: " +
                                 fop.getFormatedTime() + " (" + fop.getTimeAsLong() + ") - (" +
                                 op.getFormatedTime() + "(" + op.getTimeAsLong() + ") by backward restoration");
                         success = false;
@@ -371,7 +371,7 @@ public class OperationHistory {
             } else if (op.isDocument() || op.isCopy()) {
                 String code = getCode(idx);
                 if (code == null) {
-                    ChangeTrackerConsole.println("Failure of restration: " + op.getTimeAsLong() + " " + op.toString());
+                    CTConsole.println("Failure of restration: " + op.getTimeAsLong() + " " + op.toString());
                 }
             }
         }

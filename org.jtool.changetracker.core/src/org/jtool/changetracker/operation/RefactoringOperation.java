@@ -8,7 +8,7 @@ package org.jtool.changetracker.operation;
 
 import java.util.Map;
 
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTPath;
 
 import java.util.HashMap;
 import java.time.ZonedDateTime;
@@ -53,7 +53,7 @@ public class RefactoringOperation extends ChangeOperation {
      * @param action the action of the refactoring operation
      * @param author the author's name
      */
-    public RefactoringOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action, String author) {
+    public RefactoringOperation(ZonedDateTime time, CTPath pathinfo, String action, String author) {
         super(time, Type.REFACTOR, pathinfo, action, author);
     }
     
@@ -63,7 +63,7 @@ public class RefactoringOperation extends ChangeOperation {
      * @param pathinfo information about path of a resource on which the refactoring operation was performed
      * @param action the action of the refactoring operation
      */
-    public RefactoringOperation(ZonedDateTime time, ChangeTrackerPath pathinfo, String action) {
+    public RefactoringOperation(ZonedDateTime time, CTPath pathinfo, String action) {
         this(time, pathinfo, action, ChangeOperation.getUserName());
     }
     

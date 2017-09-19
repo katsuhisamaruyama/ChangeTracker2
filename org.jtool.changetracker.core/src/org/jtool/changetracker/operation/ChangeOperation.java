@@ -6,8 +6,8 @@
 
 package org.jtool.changetracker.operation;
 
-import org.jtool.changetracker.repository.ChangeTrackerFile;
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTFile;
+import org.jtool.changetracker.repository.CTPath;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,7 +37,7 @@ public abstract class ChangeOperation implements IChangeOperation {
     /**
      * Information about path of a resource on which this change operation was performed.
      */
-    protected ChangeTrackerPath pathinfo;
+    protected CTPath pathinfo;
     
     /**
      * The action of this change operation.
@@ -62,7 +62,7 @@ public abstract class ChangeOperation implements IChangeOperation {
     /**
      * The information about a file that this change operation affects.
      */
-    protected ChangeTrackerFile fileInfo;
+    protected CTFile fileInfo;
     
     /**
      * Creates an instance storing information about this change operation.
@@ -72,7 +72,7 @@ public abstract class ChangeOperation implements IChangeOperation {
      * @param action the action of the change operation
      * @param author the author's name
      */
-    protected ChangeOperation(ZonedDateTime time, Type type, ChangeTrackerPath pathinfo, String action, String author) {
+    protected ChangeOperation(ZonedDateTime time, Type type, CTPath pathinfo, String action, String author) {
         this.time = time;
         this.type = type;
         this.pathinfo = pathinfo;
@@ -87,7 +87,7 @@ public abstract class ChangeOperation implements IChangeOperation {
      * @param pathinfo information about path of a resource on which the change operation was performed
      * @param action the action of the change operation
      */
-    protected ChangeOperation(ZonedDateTime time, Type type, ChangeTrackerPath pathinfo, String action) {
+    protected ChangeOperation(ZonedDateTime time, Type type, CTPath pathinfo, String action) {
         this(time, type, pathinfo, action, getUserName());
     }
     
@@ -390,7 +390,7 @@ public abstract class ChangeOperation implements IChangeOperation {
      * Returns information about a file that this change operation affects.
      * @return the file information
      */
-    public ChangeTrackerFile getFile() {
+    public CTFile getFile() {
         return fileInfo;
     }
     
@@ -398,7 +398,7 @@ public abstract class ChangeOperation implements IChangeOperation {
      * Sets information about a file that this change operation affects.
      * @param finfo the file information
      */
-    public void setFile(ChangeTrackerFile finfo) {
+    public void setFile(CTFile finfo) {
         fileInfo = finfo;
     }
     

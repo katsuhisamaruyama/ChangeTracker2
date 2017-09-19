@@ -7,8 +7,8 @@
 package org.jtool.changetracker.operation;
 
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
-import org.jtool.changetracker.repository.ChangeTrackerPath;
+import org.jtool.changetracker.repository.CTFile;
+import org.jtool.changetracker.repository.CTPath;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public abstract class CodeOperation extends ChangeOperation implements ICodeOper
      * @param action the action of the code change operation
      * @param author the author's name
      */
-    protected CodeOperation(ZonedDateTime time, Type type, ChangeTrackerPath pathinfo, String action, String author) {
+    protected CodeOperation(ZonedDateTime time, Type type, CTPath pathinfo, String action, String author) {
         super(time, type, pathinfo, action, author);
     }
     
@@ -54,7 +54,7 @@ public abstract class CodeOperation extends ChangeOperation implements ICodeOper
      * @param pathinfo information about path of a resource on which the code change operation was performed
      * @param action the action of the code change operation
      */
-    protected CodeOperation(ZonedDateTime time, Type type, ChangeTrackerPath pathinfo, String action) {
+    protected CodeOperation(ZonedDateTime time, Type type, CTPath pathinfo, String action) {
         super(time, type, pathinfo, action);
     }
     
@@ -245,7 +245,7 @@ public abstract class CodeOperation extends ChangeOperation implements ICodeOper
      * @param end the ending time of the time period
      * @return the collection of the code change operations, not including a change operation performed at the starting time.
      */
-    public static List<CodeOperation> getOperations(ChangeTrackerFile finfo, ZonedDateTime start, ZonedDateTime end) {
+    public static List<CodeOperation> getOperations(CTFile finfo, ZonedDateTime start, ZonedDateTime end) {
         List<IChangeOperation> ops = finfo.getOperations(start, end);
         List<CodeOperation> retops = new ArrayList<CodeOperation>();
         if (ops.size() < 1) {
