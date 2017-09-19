@@ -15,11 +15,14 @@ import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.xml.Xml2Operation;
 import org.jtool.changetracker.xml.Operation2Xml;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.IEditorPart;
 import java.util.List;
 import java.util.ArrayList;
@@ -51,7 +54,7 @@ public class RepositoryManager {
      * Prohibits the creation of an instance.
      */
     private RepositoryManager() {
-        mainRepository = createRepository(CTPreferencePage.getLocation());
+        mainRepository = new Repository(CTPreferencePage.getLocation());
     }
     
     /**
@@ -66,7 +69,20 @@ public class RepositoryManager {
      * Initializes the whole information about the main repository.
      */
     public void initialize() {
-        openRepository(mainRepository);
+        UIJob job = new UIJob("Confirm") {
+            
+            /**
+             * Run the job in the UI thread.
+             * @param monitor the progress monitor to use to display progress
+             */
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                collectChangeOperationsFromHistoryFiles(mainRepository);
+                openRepository(mainRepository);
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
     }
     
     /**
@@ -76,16 +92,6 @@ public class RepositoryManager {
         if (mainRepository != null) {
             mainRepository.clear();
         }
-    }
-    
-    /**
-     * Creates a repository.
-     * @param loc the location of the repository
-     * @return the created repository
-     */
-    public Repository createRepository(String loc) {
-        Repository repo = collectChangeOperationsFromHistoryFiles(loc);
-        return repo;
     }
     
     /**
@@ -115,7 +121,8 @@ public class RepositoryManager {
         if (mainRepository != null) {
             mainRepository.clear();
         }
-        mainRepository = collectChangeOperationsFromHistoryFiles(loc);
+        mainRepository = new Repository(loc);
+        collectChangeOperationsFromHistoryFiles(mainRepository);
         fire(mainRepository, RepositoryChangedEvent.Type.LOCATION_CHANGED);
     }
     
@@ -160,24 +167,28 @@ public class RepositoryManager {
         if (repo != null) {
             fire(repo, RepositoryChangedEvent.Type.ABOUT_TO_REFRESH);
             repo.clear();
-            repo = collectChangeOperationsFromHistoryFiles(repo.getLocation());
+            repo = new Repository(repo.getLocation());
+            collectChangeOperationsFromHistoryFiles(repo);
             fire(repo, RepositoryChangedEvent.Type.REFRESHED);
         }
     }
     
     /**
      * Collects change operations from history files in the default location and stores them into the repository.
-     * @return the location of a repository that stores the change operations, or <code>null</code> if the collection failed
+     * @param repo the repository to be refreshed
      */
-    public Repository collectChangeOperationsFromHistoryFiles(String loc) {
-        File dir = new File(loc);
+    public void collectChangeOperationsFromHistoryFiles(Repository repo) {
+        File dir = new File(repo.getLocation());
         if (!dir.isDirectory()) {
-            return null;
+            return;
         }
         
-        Repository repo = new Repository(loc);
         try {
             IWorkbenchWindow window = Activator.getWorkbenchWindow();
+            
+            System.out.println(window);
+            
+            
             window.run(false, true, new IRunnableWithProgress() {
                 
                 /**
@@ -187,7 +198,7 @@ public class RepositoryManager {
                  */
                 @Override
                 public void run(IProgressMonitor monitor) throws InterruptedException {
-                    List<File> files = Xml2Operation.getHistoryFiles(loc);
+                    List<File> files = Xml2Operation.getHistoryFiles(repo.getLocation());
                     monitor.beginTask("Reading change operations from history files", files.size());
                     readHistoryFiles(repo, files, monitor);
                     monitor.done();
@@ -196,7 +207,6 @@ public class RepositoryManager {
         } catch (InterruptedException | InvocationTargetException e) {
             repo.clear();
         }
-        return repo;
     }
     
     /**

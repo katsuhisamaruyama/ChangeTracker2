@@ -11,7 +11,6 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import org.eclipse.ui.IWorkbench;
 
 /**

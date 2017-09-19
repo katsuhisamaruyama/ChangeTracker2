@@ -17,9 +17,10 @@
       </initializer>
    </extension>
    <extension
-         point="org.eclipse.ui.startup">
-      <startup
-            class="org.jtool.changetracker.recorder.Activator">
-      </startup>
+         point="org.jtool.macrorecorder.handlers">
+      <handler
+            class="org.jtool.changetracker.recorder.ChangeOperationRecorder"
+            commandId="org.jtool.changetracker.recorder.ChangeOperationRecorder">
+      </handler>
    </extension>
 </plugin>

@@ -6,7 +6,6 @@
 
 package org.jtool.changetracker.recorder;
 
-import org.jtool.changetracker.core.ChangeTrackerConsole;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
@@ -18,20 +17,26 @@ import org.jtool.changetracker.operation.RefactoringOperation;
 import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.repository.RepositoryChangedEvent;
 import org.jtool.changetracker.repository.RepositoryChangedListener;
-import org.jtool.changetracker.repository.ChangeTrackerPath;
-import org.jtool.macrorecorder.recorder.IMacroRecorder;
-import org.jtool.macrorecorder.recorder.MacroRecorder;
-import org.jtool.macrorecorder.recorder.IMacroListener;
-import org.jtool.macrorecorder.recorder.MacroEvent;
+import org.jtool.changetracker.repository.CTPath;
+import org.jtool.changetracker.core.CTConsole;
 import org.jtool.macrorecorder.macro.Macro;
-import org.jtool.macrorecorder.macro.CodeCompletionMacro;
 import org.jtool.macrorecorder.macro.CommandMacro;
 import org.jtool.macrorecorder.macro.CompoundMacro;
 import org.jtool.macrorecorder.macro.CopyMacro;
 import org.jtool.macrorecorder.macro.DocumentMacro;
 import org.jtool.macrorecorder.macro.FileMacro;
+import org.jtool.macrorecorder.macro.CodeCompletionMacro;
 import org.jtool.macrorecorder.macro.RefactoringMacro;
+import org.jtool.macrorecorder.macro.ResourceMacro;
 import org.jtool.macrorecorder.macro.GitMacro;
+import org.jtool.macrorecorder.recorder.IMacroListener;
+import org.jtool.macrorecorder.recorder.MacroEvent;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.UIJob;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -49,24 +54,9 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
     private static ChangeOperationRecorder instance = new ChangeOperationRecorder();
     
     /**
-     * A recorder that records macros.
-     */
-    private IMacroRecorder macroRecorder;
-    
-    /**
-     * The collection of listeners that receives change operations.
-     */
-    private List<IChangeOperationListener> listeners = new ArrayList<IChangeOperationListener>();
-    
-    /**
      * A map that stores the collection of change operations for each file.
      */
     private Map<String, List<IChangeOperation>> operationMap = new HashMap<String, List<IChangeOperation>>();
-    
-    /**
-     * A flag that indicates if this recorder is running.
-     */
-    private boolean running = false;
     
     /**
      * A flag that indicates if recorded change operations are displayed on the console.
@@ -74,10 +64,14 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
     private boolean displayOperation = false;
     
     /**
+     * A flag that indicates if the recording is allowed or not.
+     */
+    private boolean recordingOk;
+    
+    /**
      * Creates an object that records change operations.
      */
-    private ChangeOperationRecorder() {
-        this.macroRecorder = MacroRecorder.getInstance();
+    public ChangeOperationRecorder() {
     }
     
     /**
@@ -89,34 +83,64 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
     }
     
     /**
-     * Starts the recording of change operations.
+     * Confirms the recording.
+     * @return <code>true</code> if the recording is allowed, otherwise <code>false</code>
      */
-    public void start() {
-        operationMap.clear();
-        running = true;
+    public boolean recordingAllowed() {
+        recordingOk = false;
+        UIJob job = new UIJob("Confirm") {
+            
+            /**
+             * Run the job in the UI thread.
+             * @param monitor the progress monitor to use to display progress
+             */
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                if (ChangeOperationRecorderPreferencePage.startWithoutPrompt()) {
+                    recordingOk = true;
+                } else {
+                    Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+                    ComfirmationDialog dialog = new ComfirmationDialog(shell);
+                    dialog.open();
+                    ChangeOperationRecorderPreferencePage.startWithoutPrompt(dialog.withoutPrompt());
+                    if (dialog.isOk()) {
+                        recordingOk = true;
+                    }
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
         
-        macroRecorder.addMacroListener(this);
-        macroRecorder.start();
+        try {
+            job.join();
+        } catch (InterruptedException e) {
+            recordingOk = false;
+        }
+        return recordingOk;
     }
     
     /**
-     * Stops the recording of code change operations.
+     * Initializes this handler immediately before starting the macro recording.
      */
-    public void stop() {
-        macroRecorder.removeMacroListener(this);
-        macroRecorder.stop();
+    @Override
+    public void initialize() {
+        operationMap.clear();
         
+        displayOperationsOnConsole(ChangeOperationRecorderPreferencePage.displayOperations());
+        
+        RepositoryManager manager = RepositoryManager.getInstance();
+        manager.getMainRepository().addEventListener(this);
+    }
+    
+    /**
+     * Terminate this handler immediately after stopping the macro recording.
+     */
+    @Override
+    public void terminate() {
         storeAllChangeOerations();
+        
         operationMap.clear();
-        running = false;
-    }
-    
-    /**
-     * Tests if this recorder is running.
-     * @return <code>true</code> if this recorder is running, otherwise <code>false</code>
-     */
-    public boolean isRunning() {
-        return running;
     }
     
     /**
@@ -165,14 +189,18 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
             return createOperation((DocumentMacro)macro);
         } else if (macro instanceof CopyMacro) {
             return createOperation((CopyMacro)macro);
-        } else if (macro instanceof CodeCompletionMacro) {
-            return createOperation((CodeCompletionMacro)macro);
         } else if (macro instanceof FileMacro) {
             return createOperation((FileMacro)macro);
         } else if (macro instanceof CommandMacro) {
             return createOperation((CommandMacro)macro);
+        } else if (macro instanceof RefactoringMacro) {
+            return null;
+        } else if (macro instanceof CodeCompletionMacro) {
+            return null;
+        } else if (macro instanceof ResourceMacro) {
+            return null;
         } else if (macro instanceof GitMacro) {
-            return createOperation((GitMacro)macro);
+            return null;
         }
         return null;
     }
@@ -236,7 +264,7 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
             return null;
         }
         
-        ChangeTrackerPath pathinfo = new ChangeTrackerPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
+        CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
         DocumentOperation op = new DocumentOperation(macro.getTime(), pathinfo, action);
         op.setStart(macro.getStart());
@@ -251,7 +279,7 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
      * @return the created operation
      */
     private ChangeOperation createOperation(CopyMacro macro) {
-        ChangeTrackerPath pathinfo = new ChangeTrackerPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
+        CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
         CopyOperation op = new CopyOperation(macro.getTime(), pathinfo);
         op.setStart(macro.getStart());
@@ -259,27 +287,7 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
         return op;
     }
     
-    /**
-     * Creates a command operation from a code completion macro.
-     * @param macro the code completion macro
-     * @return the created operation, or <code>null</code> when an unknown macro was found
-     */
-    private ChangeOperation createOperation(CodeCompletionMacro macro) {
-//        String action = "";
-//        if (macro.isContentAssistEnd()) {
-//            action = CommandOperation.Action.CONTENT_ASSIST.toString();
-//        } else if (macro.isQuickAssistEnd()) {
-//            action = CommandOperation.Action.QUICK_ASSIST.toString();
-//        } else {
-//            return null;
-//        }
-//        ChangeTrackerPath pathinfo = new ChangeTrackerPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
-//                macro.getPath(), macro.getBranch());
-//        CommandOperation op = new CommandOperation(macro.getTime(), pathinfo, action);
-//        op.setName(macro.getName());
-//        return op;
-        return null;
-    }
+   
     
     /**
      * Creates a file operation from a file macro.
@@ -289,36 +297,38 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
     private ChangeOperation createOperation(FileMacro macro) {
         String action = "";
         if (macro.isAdd()) {
-            action = FileOperation.Action.ADDED.toString();
+            action = FileOperation.Action.ADD.toString();
         } else if (macro.isDelete()) {
-            action = FileOperation.Action.REMOVED.toString();
+            action = FileOperation.Action.REMOVE.toString();
         } else if (macro.isOpen()) {
-            action = FileOperation.Action.OPENED.toString();
+            action = FileOperation.Action.OPEN.toString();
         } else if (macro.isClose()) {
-            action = FileOperation.Action.CLOSED.toString();
+            action = FileOperation.Action.CLOSE.toString();
         } else if (macro.isSave()) {
-            action = FileOperation.Action.SAVED.toString();
+            action = FileOperation.Action.SAVE.toString();
         } else if (macro.isActivate()) {
-            action = FileOperation.Action.ACTIVATED.toString();
+            action = FileOperation.Action.ACTIVATE.toString();
         } else if (macro.isRefactor()) {
-            action = FileOperation.Action.REFACTORED.toString();
+            action = FileOperation.Action.REFACTOR.toString();
         } else if (macro.isMoveFrom()) {
-            action = FileOperation.Action.MOVED_FROM.toString();
+            action = FileOperation.Action.MOVE_FROM.toString();
         } else if (macro.isMoveTo()) {
-            action = FileOperation.Action.MOVED_TO.toString();
+            action = FileOperation.Action.MOVE_TO.toString();
         } else if (macro.isRenameFrom()) {
-            action = FileOperation.Action.MOVED_FROM.toString();
+            action = FileOperation.Action.MOVE_FROM.toString();
         } else if (macro.isRenameTo()) {
-            action = FileOperation.Action.RENAMED_TO.toString();
+            action = FileOperation.Action.RENAME_TO.toString();
         } else if (macro.isContentChange()) {
-            action = FileOperation.Action.CONTENT_CHANGED.toString();
+            action = FileOperation.Action.CONTENT_CHANGE.toString();
         } else {
             return null;
         }
-        ChangeTrackerPath pathinfo = new ChangeTrackerPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
+        CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
         FileOperation op = new FileOperation(macro.getTime(), pathinfo, action.toString());
         op.setCode(macro.getCode());
+        op.setCharset(macro.getCharset());
+        op.setSrcDstPath(macro.getSrcDstPath());
         return op;
     }
     
@@ -328,21 +338,11 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
      * @return the created operation
      */
     private ChangeOperation createOperation(CommandMacro macro) {
-        ChangeTrackerPath pathinfo = new ChangeTrackerPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
+        CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
-        CommandOperation op = new CommandOperation(macro.getTime(), pathinfo, CommandOperation.Action.EXECUTION.toString());
-        op.setName(macro.getCommandId());
+        CommandOperation op = new CommandOperation(macro.getTime(), pathinfo, CommandOperation.Action.EXECUTE.toString());
+        op.setCommandId(macro.getCommandId());
         return op;
-    }
-    
-    /**
-     * Creates a file operation from agit macro.
-     * @param macro the git macro
-     * @return the created operation
-     */
-    private ChangeOperation createOperation(GitMacro macro) {
-        //Not implemented yet
-        return null;
     }
     
     /**
@@ -358,15 +358,17 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
             } else if (macro.isRedo()) {
                 action = RefactoringOperation.Action.REDO.toString();
             } else {
-                action = RefactoringOperation.Action.EXECUTION.toString();
+                action = RefactoringOperation.Action.EXECUTE.toString();
             }
         } else {
             return null;
         }
-        ChangeTrackerPath pathinfo = new ChangeTrackerPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
+        CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
         RefactoringOperation op = new RefactoringOperation(macro.getTime(), pathinfo, action);
-        op.setName(macro.getName());
+        op.setCommandId(macro.getName());
+        op.setSelectionStart(macro.getSelectionStart());
+        op.setSelectedText(macro.getSelectionText());
         op.setArguments(macro.getArguments());
         return op;
     }
@@ -418,26 +420,10 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
     }
     
     /**
-     * Adds a listener that receives a code change operation.
-     * @param listener the listener to be added
-     */
-    public void addOperationEventListener(IChangeOperationListener listener) {
-        listeners.add(listener);
-    }
-    
-    /**
-     * Removes a listener that no longer receives a change operation.
-     * @param listener the listener to be removed
-     */
-    public void removeOperationEventListener(IChangeOperationListener listener) {
-        listeners.remove(listener);
-    }
-    
-    /**
      * Sets a flag that indicate if change operations are displayed on the console.
      * @param bool <code>true</code> if recorded change operations are displayed, otherwise <code>false</code>
      */
-    public void displayOperationsOnConsole(boolean bool) {
+    void displayOperationsOnConsole(boolean bool) {
         displayOperation = bool;
     }
     
@@ -445,12 +431,9 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
      * Sends a code change operation event to all the listeners.
      * @param op the code change operation
      */
-    protected void notify(IChangeOperation op) {
+    void notify(IChangeOperation op) {
         if (displayOperation) {
-            ChangeTrackerConsole.println(op.toString());
-        }
-        for (IChangeOperationListener listener : listeners) {
-            listener.operationAdded(op);
+            CTConsole.println(op.toString());
         }
     }
 }
