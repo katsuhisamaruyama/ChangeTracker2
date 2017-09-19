@@ -320,6 +320,12 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
             action = FileOperation.Action.RENAME_TO.toString();
         } else if (macro.isContentChange()) {
             action = FileOperation.Action.CONTENT_CHANGE.toString();
+        } else if (macro.isGitAdded()) {
+            action = FileOperation.Action.GIT_ADD.toString();
+        } else if (macro.isGitRemoved()) {
+            action = FileOperation.Action.GIT_REMOVE.toString();
+        } else if (macro.isGitModified()) {
+            action = FileOperation.Action.GIT_MODIFY.toString();
         } else {
             return null;
         }
