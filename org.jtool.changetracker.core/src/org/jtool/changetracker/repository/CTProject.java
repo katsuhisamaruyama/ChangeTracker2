@@ -8,7 +8,6 @@ package org.jtool.changetracker.repository;
 
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.time.ZonedDateTime;

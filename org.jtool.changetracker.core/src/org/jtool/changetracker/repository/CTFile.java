@@ -6,10 +6,9 @@
 
 package org.jtool.changetracker.repository;
 
+import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
 import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
-import org.jtool.changetracker.operation.IChangeOperation;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.time.ZonedDateTime;

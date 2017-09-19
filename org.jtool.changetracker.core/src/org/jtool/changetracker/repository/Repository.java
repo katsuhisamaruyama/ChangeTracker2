@@ -6,12 +6,12 @@
 
 package org.jtool.changetracker.repository;
 
-import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
-import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.operation.CodeOperation;
 import org.jtool.changetracker.operation.FileOperation;
+import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
+import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;

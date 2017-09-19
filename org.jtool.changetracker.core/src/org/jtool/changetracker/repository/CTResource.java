@@ -7,7 +7,6 @@
 package org.jtool.changetracker.repository;
 
 import org.jtool.changetracker.operation.IChangeOperation;
-
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
@@ -103,8 +102,6 @@ public class CTResource {
         }
         return null;
     }
-    
-    
     
     /**
      * Tests if this resource is the same as a given one.

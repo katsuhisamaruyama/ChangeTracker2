@@ -27,7 +27,7 @@ class XmlConstants {
     static final String CodeElem     = "code";
     static final String SelectedElem = "selected";
     
-    static final String VersionAttr     = "version";
+    static final String VersionAttr = "version";
     
     static final String TimeAttr        = "time";
     static final String PathAttr        = "path";
