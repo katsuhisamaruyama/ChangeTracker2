@@ -19,9 +19,9 @@ public class FileOperation extends ChangeOperation {
      * The action of a file operation.
      */
     public enum Action {
-        ADDED, REMOVED, OPENED, CLOSED, SAVED, ACTIVATED,
-        REFACTORED, CONTENT_CHANGED,
-        MOVED_FROM, MOVED_TO, RENAMED_FROM, RENAMED_TO,
+        ADD, REMOVE, OPEN, CLOSE, SAVE, ACTIVATE,
+        REFACTOR, CONTENT_CHANGE,
+        MOVE_FROM, MOVE_TO, RENAME_FROM, RENAME_TO,
         ADDED_GIT_INDEX_CHANGED, REMOVED_GIT_INDEX_CHANGED, MODIFIED_GIT_INDEX_CHANGED;
     }
     
@@ -117,7 +117,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation adds a file, otherwise <code>false</code>
      */
     public boolean isAdded() {
-        return action.equals(Action.ADDED.toString());
+        return action.equals(Action.ADD.toString());
     }
     
     /**
@@ -125,7 +125,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation removes a file, otherwise <code>false</code>
      */
     public boolean isRemoved() {
-        return action.equals(Action.REMOVED.toString());
+        return action.equals(Action.REMOVE.toString());
     }
     
     /**
@@ -133,7 +133,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation opens a file, otherwise <code>false</code>
      */
     public boolean isOpened() {
-        return action.equals(Action.OPENED.toString());
+        return action.equals(Action.OPEN.toString());
     }
     
     /**
@@ -141,7 +141,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation closes a file, otherwise <code>false</code>
      */
     public boolean isClosed() {
-        return action.equals(Action.CLOSED.toString());
+        return action.equals(Action.CLOSE.toString());
     }
     
     /**
@@ -149,7 +149,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation saves a file, otherwise <code>false</code>
      */
     public boolean isSaved() {
-        return action.equals(Action.SAVED.toString());
+        return action.equals(Action.SAVE.toString());
     }
     
     /**
@@ -157,7 +157,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation activates a file, otherwise <code>false</code>
      */
     public boolean isActivated() {
-        return action.equals(Action.ACTIVATED.toString());
+        return action.equals(Action.ACTIVATE.toString());
     }
     
     /**
@@ -165,7 +165,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation refactors the contents of a file, otherwise <code>false</code>
      */
     public boolean iRefactored() {
-        return action.equals(Action.REFACTORED.toString());
+        return action.equals(Action.REFACTOR.toString());
     }
     
     /**
@@ -173,14 +173,14 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation changes the contents of a file, otherwise <code>false</code>
      */
     public boolean isContentChanged() {
-        return action.equals(Action.CONTENT_CHANGED.toString());
+        return action.equals(Action.CONTENT_CHANGE.toString());
     }
     /**
      * Tests if this file operation moves a file from somewhere.
      * @return <code>true</code> if the file operation moves a file from somewhere, otherwise <code>false</code>
      */
     public boolean isMovedFrom() {
-        return action.equals(Action.MOVED_FROM.toString());
+        return action.equals(Action.MOVE_FROM.toString());
     }
     
     /**
@@ -188,7 +188,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation moves a file to somewhere, otherwise <code>false</code>
      */
     public boolean isMovedTo() {
-        return action.equals(Action.MOVED_TO.toString());
+        return action.equals(Action.MOVE_TO.toString());
     }
     
     /**
@@ -196,7 +196,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation changes the name of a file from the old one, otherwise <code>false</code>
      */
     public boolean isRenamedFrom() {
-        return action.equals(Action.RENAMED_FROM.toString());
+        return action.equals(Action.RENAME_FROM.toString());
     }
     
     /**
@@ -204,7 +204,7 @@ public class FileOperation extends ChangeOperation {
      * @return <code>true</code> if the file operation changes the name of a file to the new one, otherwise <code>false</code>
      */
     public boolean isRenamedTo() {
-        return action.equals(Action.RENAMED_TO.toString());
+        return action.equals(Action.RENAME_TO.toString());
     }
     
     /**

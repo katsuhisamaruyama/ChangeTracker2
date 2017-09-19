@@ -21,16 +21,16 @@ public class RefactoringOperation extends ChangeOperation {
      * The action of a command operation.
      */
     public enum Action {
-        EXECUTION, UNDO, REDO;
+        EXECUTE, UNDO, REDO;
     }
     
     /**
-     * The name of a refactoring.
+     * The name of this refactoring.
      */
     private String name;
     
     /**
-     * The map that stores arguments of a refactoring.
+     * The map that stores arguments of this refactoring.
      */
     private Map<String, String> argumentMap;
     
@@ -66,17 +66,16 @@ public class RefactoringOperation extends ChangeOperation {
     }
     
     /**
-     *Sets the string representing the command name of this refactoring operation.
-     * @param name the command name of the refactoring operation
+     * Sets the name of this refactoring.
+     * @param name the refactoring name
      */
     public void setName(String name) {
         assert name != null;
-        
         this.name = name;
     }
     
     /**
-     * Returns the name of a refactoring.
+     * Returns the name of this refactoring.
      * @return the refactoring name
      */
     public String getName() {
@@ -187,7 +186,7 @@ public class RefactoringOperation extends ChangeOperation {
      * @return <code>true</code> if this this refactoring operation represents the normal refactoring, otherwise <code>false</code>
      */
     public boolean isNormal() {
-        return action.equals(CommandOperation.Action.EXECUTION.toString());
+        return action.equals(CommandOperation.Action.EXECUTE.toString());
     }
     
     /**

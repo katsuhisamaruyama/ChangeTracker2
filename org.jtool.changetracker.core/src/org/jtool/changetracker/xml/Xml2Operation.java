@@ -246,7 +246,7 @@ public class Xml2Operation {
         CommandOperation op = new CommandOperation(attr.time, attr.pathinfo, attr.action, attr.author);
         op.setDescription(attr.desc);
         op.setCompoundId(attr.cid);
-        op.setName(elem.getAttribute(XmlConstants.NameAttr));
+        op.setCommandId(elem.getAttribute(XmlConstants.CommandIdAttr));
         return op;
     }
     

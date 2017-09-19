@@ -16,16 +16,16 @@ import java.time.ZonedDateTime;
 public class CommandOperation extends ChangeOperation {
     
     /**
-     * The action of a command operation.
+     * The action of a file operation.
      */
     public enum Action {
-        EXECUTION, REFACTORING, CONTENT_ASSIST, QUICK_ASSIST, GIT;
+        EXECUTE;
     }
     
     /**
-     * The string representing the command name of this command operation.
+     * The string representing the command identification.
      */
-    private String name;
+    private String commandId;
     
     /**
      * Creates an instance storing information on this command operation.
@@ -49,20 +49,20 @@ public class CommandOperation extends ChangeOperation {
     }
     
     /**
-     *Sets the string representing the command name of this command operation.
-     * @param name the command name of the command operation
+     * Sets command information.
+     * @param commandId the string representing the command identification
      */
-    public void setName(String name) {
-        assert name != null;
-        this.name = name;
+    public void setCommandId(String commandId) {
+        assert commandId != null;
+        this.commandId = commandId;
     }
     
     /**
-     * Returns the string representing the command name of this command operation.
-     * @return the command name of the command operation
+     * Returns command information.
+     * @return the string representing the command identification
      */
-    public String getName() {
-        return name;
+    public String getCommandId() {
+        return commandId;
     }
     
     /**
@@ -73,7 +73,7 @@ public class CommandOperation extends ChangeOperation {
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append(super.toString());
-        buf.append(" name=[" + name + "]");
+        buf.append(" commandId=[" + commandId + "]");
         return buf.toString();
     }
 }

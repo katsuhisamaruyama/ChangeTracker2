@@ -186,7 +186,7 @@ public class Operation2Xml {
         Element elem = doc.createElement(XmlConstants.CommandOperationElem);
         setOperationElement(doc, elem, operation);
         
-        elem.setAttribute(XmlConstants.NameAttr, operation.getName());
+        elem.setAttribute(XmlConstants.CommandIdAttr, operation.getCommandId());
         return elem;
     }
     

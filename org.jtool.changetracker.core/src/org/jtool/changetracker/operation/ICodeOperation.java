@@ -6,10 +6,8 @@
 
 package org.jtool.changetracker.operation;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
+import java.util.List;
 
 /**
  * Defines an interface that accesses information about document and copy operations.

@@ -254,17 +254,17 @@ public class Xml2OperationOR {
      */
     static String parseFileAction(String str) {
         if ("NEW".equals(str)) {
-            return FileOperation.Action.ADDED.toString();
+            return FileOperation.Action.ADD.toString();
         } else if ("OPEN".equals(str)) {
-            return FileOperation.Action.OPENED.toString();
+            return FileOperation.Action.OPEN.toString();
         } else if ("CLOSE".equals(str)) {
-            return FileOperation.Action.CLOSED.toString();
+            return FileOperation.Action.CLOSE.toString();
         } else if ("SAVE".equals(str)) {
-            return FileOperation.Action.SAVED.toString();
+            return FileOperation.Action.SAVE.toString();
         } else if ("DELETE".equals(str)) {
-            return FileOperation.Action.REMOVED.toString();
+            return FileOperation.Action.REMOVE.toString();
         } else if ("ACT".equals(str)) {
-            return FileOperation.Action.ACTIVATED.toString();
+            return FileOperation.Action.ACTIVATE.toString();
         }
         return "NONE";
     }
@@ -279,7 +279,7 @@ public class Xml2OperationOR {
         CTPath pathinfo = createPathInfo(elem);
         
         CommandOperation op = new CommandOperation(time, pathinfo, developer);
-        op.setName(elem.getAttribute(LabelAttr));
+        op.setCommandId(elem.getAttribute(LabelAttr));
         return op;
     }
 }
