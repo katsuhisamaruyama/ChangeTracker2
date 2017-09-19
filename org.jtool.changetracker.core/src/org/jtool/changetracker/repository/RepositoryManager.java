@@ -65,14 +65,14 @@ public class RepositoryManager {
     /**
      * Initializes the whole information about the main repository.
      */
-    public void init() {
+    public void initialize() {
         openRepository(mainRepository);
     }
     
     /**
      * Terminates the whole information about the main and additional repositories.
      */
-    public void term() {
+    public void terminate() {
         if (mainRepository != null) {
             mainRepository.clear();
         }
