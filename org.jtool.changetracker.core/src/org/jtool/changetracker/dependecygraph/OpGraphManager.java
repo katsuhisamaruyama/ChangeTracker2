@@ -29,7 +29,7 @@ public class OpGraphManager {
     /**
      * The map of operation history graphs for projects.
      */
-    private Map<String, ProjectOpGraph> projectGraphs = new HashMap<String, ProjectOpGraph>();
+    private Map<String, OpGraphForProject> projectGraphs = new HashMap<String, OpGraphForProject>();
     
     /**
      * Prohibits the creation of an instance.
@@ -49,7 +49,7 @@ public class OpGraphManager {
      * Clears all the operation history graphs
      */
     public void clear() {
-        for (ProjectOpGraph graph : projectGraphs.values()) {
+        for (OpGraphForProject graph : projectGraphs.values()) {
             graph.clear();
         }
         projectGraphs.clear();
@@ -60,7 +60,7 @@ public class OpGraphManager {
      * @param pinfo information about the project
      * @return the operation history graph for the project, or <code>null</code> if none
      */
-    public ProjectOpGraph getGraph(CTProject pinfo) {
+    public OpGraphForProject getGraph(CTProject pinfo) {
         return projectGraphs.get(pinfo.getQualifiedName());
     }
     
@@ -69,16 +69,16 @@ public class OpGraphManager {
      * @param pinfo information about the project
      * @return the created operation history graph
      */
-    public ProjectOpGraph createGraph(CTProject pinfo) {
+    public OpGraphForProject createGraph(CTProject pinfo) {
         if (pinfo == null) {
             return null;
         }
         
-        ProjectOpGraph pgraph = getGraph(pinfo);
+        OpGraphForProject pgraph = getGraph(pinfo);
         List<CTFile> finfos = new ArrayList<CTFile>(); 
         if (pgraph != null) {
             for (CTFile finfo : pinfo.getFiles()) {
-                FileOpGraph fgraph = pgraph.get(finfo);
+                OpGraphForFile fgraph = pgraph.get(finfo);
                 if (finfo.getLastUpdatedTime().isAfter(fgraph.getLastUpdatedTime())) {
                     finfos.add(finfo);
                 }
@@ -86,7 +86,7 @@ public class OpGraphManager {
             
             if (finfos.size() != 0) {
                 for (CTFile finfo : finfos) {
-                    FileOpGraph fgraph = OpGraphConstructor.createGraph(finfo);
+                    OpGraphForFile fgraph = OpGraphCreator.createGraph(finfo);
                     if (fgraph.getFile() != null) {
                         fgraph.setLastUpdatedTime(ZonedDateTime.now());
                         pgraph.remove(finfo);
@@ -99,15 +99,15 @@ public class OpGraphManager {
                 }
                 if (pgraph.size() != 0) {
                     pgraph.removeAllEdges();
-                    OpGraphConstructor.collectInterEdges(pgraph);
+                    OpGraphCreator.collectInterEdges(pgraph);
                 }
             }
             
         } else {
-            pgraph = new ProjectOpGraph(pinfo);
+            pgraph = new OpGraphForProject(pinfo);
             projectGraphs.put(pinfo.getQualifiedName(), pgraph);
             for (CTFile finfo : pinfo.getFiles()) {
-                FileOpGraph fgraph = OpGraphConstructor.createGraph(finfo);
+                OpGraphForFile fgraph = OpGraphCreator.createGraph(finfo);
                 if (fgraph.getFile() != null) {
                     fgraph.setLastUpdatedTime(ZonedDateTime.now());
                     pgraph.add(fgraph);
@@ -118,7 +118,7 @@ public class OpGraphManager {
                 }
             }
             if (pgraph.size() != 0) {
-                OpGraphConstructor.collectInterEdges(pgraph);
+                OpGraphCreator.collectInterEdges(pgraph);
             }
         }
         
@@ -135,13 +135,13 @@ public class OpGraphManager {
         if (pinfo == null) {
             return false; 
         }
-        ProjectOpGraph pgraph = projectGraphs.get(pinfo.getQualifiedName());
+        OpGraphForProject pgraph = projectGraphs.get(pinfo.getQualifiedName());
         if (pgraph == null) {
             return false;
         }
         
         for (CTFile finfo : pinfo.getFiles()) {
-            FileOpGraph fgraph = pgraph.get(finfo);
+            OpGraphForFile fgraph = pgraph.get(finfo);
             if (finfo.getLastUpdatedTime().isAfter(fgraph.getLastUpdatedTime())) {
                 return false;
             }

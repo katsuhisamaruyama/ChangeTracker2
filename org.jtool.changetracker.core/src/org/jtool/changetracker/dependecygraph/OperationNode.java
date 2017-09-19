@@ -32,7 +32,7 @@ public class OperationNode extends OpGraphNode {
      * @param fgraph an operation history graph for a file that contains this node
      * @param op the change operation
      */
-    public OperationNode(FileOpGraph fgraph, ICodeOperation op) {
+    public OperationNode(OpGraphForFile fgraph, ICodeOperation op) {
         super(fgraph);
         this.operation = op;
     }

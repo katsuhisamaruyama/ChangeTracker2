@@ -12,10 +12,10 @@ import org.jtool.changetracker.operation.DocumentOperation;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.repository.CTProject;
 import org.jtool.changetracker.repository.CTFile;
-import org.jtool.changetracker.core.CTConsole;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
 import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
+import org.jtool.changetracker.core.CTConsole;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -26,15 +26,15 @@ import java.util.List;
  * Constructs an operation history graph for a file.
  * @author Katsuhisa Maruyama
  */
-class OpGraphConstructor {
+class OpGraphCreator {
     
     /**
      * Creates an operation history graph of a file.
      * @param finfo information about the file
      * @return the created operation history graph for the file
      */
-    static FileOpGraph createGraph(CTFile finfo) {
-        FileOpGraph fgraph = new FileOpGraph(finfo);
+    static OpGraphForFile createGraph(CTFile finfo) {
+        OpGraphForFile fgraph = new OpGraphForFile(finfo);
         Job job = new Job("Constructing an operation history graph") {
             
             /**
@@ -78,7 +78,7 @@ class OpGraphConstructor {
      * Collects ordered editing within the operation history graph for a file.
      * @param fgraph the operation history graph for the file
      */
-    static void collectOrdedEdges(FileOpGraph fgraph) {
+    static void collectOrdedEdges(OpGraphForFile fgraph) {
         CTFile finfo = fgraph.getFile();
         Job job = new Job("Constructing an operation history graph") {
             
@@ -113,7 +113,7 @@ class OpGraphConstructor {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @exception InterruptedException if the operation detects a request to cancel
      */
-    private static void collectOperationNodes(CTFile finfo, FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
+    private static void collectOperationNodes(CTFile finfo, OpGraphForFile fgraph, IProgressMonitor monitor) throws InterruptedException {
         List<IChangeOperation> operations = finfo.getOperations();
         for (int idx = 0; idx < operations.size(); idx++) {
             
@@ -141,7 +141,7 @@ class OpGraphConstructor {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @exception InterruptedException if the operation detects a request to cancel
      */
-    private static void collectJavaConstructNodes(CTFile finfo, FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
+    private static void collectJavaConstructNodes(CTFile finfo, OpGraphForFile fgraph, IProgressMonitor monitor) throws InterruptedException {
         List<ParseableSnapshot> snapshots = finfo.getSnapshots();
         for (int idx = 0; idx < snapshots.size(); idx++) {
             
@@ -167,7 +167,7 @@ class OpGraphConstructor {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @throws InterruptedException if the operation detects a request to cancel
      */
-    private static void collectDependencyEdges(FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
+    private static void collectDependencyEdges(OpGraphForFile fgraph, IProgressMonitor monitor) throws InterruptedException {
         List<OperationNode> nodes = fgraph.getOperationNodes();
         for (int idx = 0; idx < nodes.size(); idx++) {
             OperationNode opnode = nodes.get(idx);
@@ -203,7 +203,7 @@ class OpGraphConstructor {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @throws InterruptedException if the operation detects a request to cancel
      */
-    private static void collectOrderedEdges(FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
+    private static void collectOrderedEdges(OpGraphForFile fgraph, IProgressMonitor monitor) throws InterruptedException {
         List<OperationNode> nodes = fgraph.getOperationNodes();
         for (int idx = 0; idx < nodes.size(); idx++) {
             OperationNode opnode = nodes.get(idx);
@@ -230,7 +230,7 @@ class OpGraphConstructor {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @exception InterruptedException if the operation detects a request to cancel
      */
-    private static void collectNoChangeEdges(FileOpGraph fgraph, IProgressMonitor monitor) throws InterruptedException {
+    private static void collectNoChangeEdges(OpGraphForFile fgraph, IProgressMonitor monitor) throws InterruptedException {
         List<ParseableSnapshot> snapshots = fgraph.getSnapshots();
         if (snapshots.size() < 2) {
             return;
@@ -258,7 +258,7 @@ class OpGraphConstructor {
      * @param srcsn the former snapshot that contains the Java constructs.
      * @param dstsn the latter snapshot that contains the Java constructs.
      */
-    private static void collectNoChangeEdgesByOffset(FileOpGraph fgraph, ParseableSnapshot srcsn, ParseableSnapshot dstsn) {
+    private static void collectNoChangeEdgesByOffset(OpGraphForFile fgraph, ParseableSnapshot srcsn, ParseableSnapshot dstsn) {
         for (JavaConstruct src : srcsn.getJavaClassMembers()) {
             for (JavaConstruct dst : dstsn.getJavaClassMembers()) {
                 
@@ -282,7 +282,7 @@ class OpGraphConstructor {
      * @param srcsn the former snapshot that contains the Java constructs.
      * @param dstsn the latter snapshot that contains the Java constructs.
      */
-    private static void collectNoChangeEdgesByName(FileOpGraph fgraph, ParseableSnapshot srcsn, ParseableSnapshot dstsn) {
+    private static void collectNoChangeEdgesByName(OpGraphForFile fgraph, ParseableSnapshot srcsn, ParseableSnapshot dstsn) {
         for (JavaConstruct src : srcsn.getJavaClassMembers()) {
             for (JavaConstruct dst : dstsn.getJavaClassMembers()) {
                 
@@ -327,7 +327,7 @@ class OpGraphConstructor {
      * Collects inter-edges across file operation history graphs within a project.
      * @param pgraph an operation history graph for the project
      */
-    static void collectInterEdges(ProjectOpGraph pgraph) {
+    static void collectInterEdges(OpGraphForProject pgraph) {
         CTProject pinfo = pgraph.getProject();
         Job job = new Job("Collecting operations from history files") {
             
@@ -361,7 +361,7 @@ class OpGraphConstructor {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @exception InterruptedException if the operation detects a request to cancel
      */
-    private static void collectCCPEdges(ProjectOpGraph pgraph, List<IChangeOperation> ops, IProgressMonitor monitor) throws InterruptedException {
+    private static void collectCCPEdges(OpGraphForProject pgraph, List<IChangeOperation> ops, IProgressMonitor monitor) throws InterruptedException {
         for (int idx = 0; idx < ops.size(); idx++) {
             monitor.subTask("Collecting ccp edges " + String.valueOf(idx + 1) + "/" + ops.size());
             IChangeOperation op = ops.get(idx);

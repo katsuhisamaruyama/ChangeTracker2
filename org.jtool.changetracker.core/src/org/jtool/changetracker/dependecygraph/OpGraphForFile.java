@@ -6,9 +6,9 @@
 
 package org.jtool.changetracker.dependecygraph;
 
+import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
-import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.repository.CTFile;
 import java.util.List;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.time.ZonedDateTime;
  * Stores information about an operation history graph for a file.
  * @author Katsuhisa Maruyama
  */
-public class FileOpGraph {
+public class OpGraphForFile {
     
     /**
      * The information about a file corresponding to this graph.
@@ -48,7 +48,7 @@ public class FileOpGraph {
      * Creates an instance that stores information about an operation history graph for a file.
      * @param finfo information of the file
      */
-    protected FileOpGraph(CTFile finfo) {
+    protected OpGraphForFile(CTFile finfo) {
         this.fileInfo = finfo;
     }
     

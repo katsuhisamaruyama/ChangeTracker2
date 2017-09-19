@@ -6,9 +6,9 @@
 
 package org.jtool.changetracker.dependecygraph;
 
-import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
 import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.operation.CodeOperation;
+import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -24,7 +24,7 @@ public class OpSlicer2 {
      * @param snip the code snippet
      * @return the collection of the change operation nodes in the backward slice
      */
-    static List<OperationNode> getOperationNodesInBackwardSlice(FileOpGraph fgraph, CodeSnippet snip) {
+    static List<OperationNode> getOperationNodesInBackwardSlice(OpGraphForFile fgraph, CodeSnippet snip) {
         List<OperationNode> ns = new ArrayList<OperationNode>();
         for (OperationNode node : getBackwardOperationNodes(fgraph, snip)) {
             collectReachableNodesTo(ns, node);
@@ -58,7 +58,7 @@ public class OpSlicer2 {
      * @param snip the code snippet
      * @return the collection of the change operation nodes
      */
-    static List<OperationNode> getBackwardOperationNodes(FileOpGraph fgraph, CodeSnippet snip) {
+    static List<OperationNode> getBackwardOperationNodes(OpGraphForFile fgraph, CodeSnippet snip) {
         List<OperationNode> ns = new ArrayList<OperationNode>();
         List<OperationNode> nodes = fgraph.getOperationNodesBefore(snip.getTime());
         for (OperationNode node : nodes) {
@@ -80,7 +80,7 @@ public class OpSlicer2 {
      * @param snippet the code snippet
      * @return the collection of the change operation nodes in the backward slice
      */
-    static List<OperationNode> getOperationNodesInForwardSlice(FileOpGraph fgraph, CodeSnippet snip) {
+    static List<OperationNode> getOperationNodesInForwardSlice(OpGraphForFile fgraph, CodeSnippet snip) {
         List<OperationNode> ns = new ArrayList<OperationNode>();
         for (OperationNode node : getForwardOperationNodes(fgraph, snip)) {
             collectReachableNodesFrom(ns, node);
@@ -114,7 +114,7 @@ public class OpSlicer2 {
      * @param snippet the code snippet
      * @return the collection of the change operation nodes
      */
-    static List<OperationNode> getForwardOperationNodes(FileOpGraph fgraph, CodeSnippet snip) {
+    static List<OperationNode> getForwardOperationNodes(OpGraphForFile fgraph, CodeSnippet snip) {
         List<OperationNode> ns = new ArrayList<OperationNode>();
         List<OperationNode> nodes = fgraph.getOperationNodesAfter(snip.getTime());
         for (OperationNode node : nodes) {

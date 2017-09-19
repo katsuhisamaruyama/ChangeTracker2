@@ -6,12 +6,11 @@
 
 package org.jtool.changetracker.dependecygraph;
 
+import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
-import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.CTProject;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -23,7 +22,7 @@ import java.util.HashSet;
  * Stores information about an operation history graph for a project.
  * @author Katsuhisa Maruyama
  */
-public class ProjectOpGraph {
+public class OpGraphForProject {
     
     /**
      * The information of a project corresponding to this graph.
@@ -33,7 +32,7 @@ public class ProjectOpGraph {
     /**
      * The collection of all operation history graphs for files within the project.
      */
-    private Map<String, FileOpGraph> fileGraphs = new HashMap<String, FileOpGraph>();
+    private Map<String, OpGraphForFile> fileGraphs = new HashMap<String, OpGraphForFile>();
     
     /**
      * The collection of edges that intertwines nodes existing in operation history graphs for different files.
@@ -44,7 +43,7 @@ public class ProjectOpGraph {
      * Creates an instance that stores information about an operation history graph for a project.
      * @param pinfo the information of the project
      */
-    protected ProjectOpGraph(CTProject pinfo) {
+    protected OpGraphForProject(CTProject pinfo) {
         this.projectInfo = pinfo;
     }
     
@@ -60,7 +59,7 @@ public class ProjectOpGraph {
      * Clears this graph.
      */
     void clear() {
-        for (FileOpGraph graph : fileGraphs.values()) {
+        for (OpGraphForFile graph : fileGraphs.values()) {
             graph.clear();
         }
         interEdges.clear();
@@ -71,7 +70,7 @@ public class ProjectOpGraph {
      * @param finfo information about the file
      * @return the operation history graph for the file, or <code>null</code> if none
      */
-    FileOpGraph get(CTFile finfo) {
+    OpGraphForFile get(CTFile finfo) {
         return fileGraphs.get(finfo.getQualifiedName());
     }
     
@@ -79,7 +78,7 @@ public class ProjectOpGraph {
      * Adds an operation history graph for a file.
      * @param fgraph the operation history graph to be added
      */
-    void add(FileOpGraph fgraph) {
+    void add(OpGraphForFile fgraph) {
         fileGraphs.put(fgraph.getFile().getQualifiedName(), fgraph);
     }
     
@@ -95,9 +94,9 @@ public class ProjectOpGraph {
      * Obtains all operation history graphs for files.
      * @return the collection of the operation history graphs
      */
-    public List<FileOpGraph> getFileGraphs() {
-        List<FileOpGraph> graphs = new ArrayList<FileOpGraph>();
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+    public List<OpGraphForFile> getFileGraphs() {
+        List<OpGraphForFile> graphs = new ArrayList<OpGraphForFile>();
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             graphs.add(fgraph);
         }
         return graphs;
@@ -176,7 +175,7 @@ public class ProjectOpGraph {
      */
     public Set<OpGraphNode> getNodes() {
         Set<OpGraphNode> nodes = new HashSet<OpGraphNode>();
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             nodes.addAll(fgraph.getNodes());
         }
         return nodes;
@@ -188,7 +187,7 @@ public class ProjectOpGraph {
      */
     public Set<OpGraphEdge> getEdges() {
         Set<OpGraphEdge> edges = new HashSet<OpGraphEdge>();
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             edges.addAll(fgraph.getEdges());
         }
         edges.addAll(interEdges);
@@ -201,7 +200,7 @@ public class ProjectOpGraph {
      */
     List<OperationNode> getOperationNodes() {
         List<OperationNode> ns = new ArrayList<OperationNode>();
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             ns.addAll(fgraph.getOperationNodes());
         }
         OpGraphNode.<OperationNode>sortNodes(ns);
@@ -214,7 +213,7 @@ public class ProjectOpGraph {
      */
     List<JavaMemberNode> getJavaConstructNodes() {
         List<JavaMemberNode> ns = new ArrayList<JavaMemberNode>();
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             ns.addAll(fgraph.getJavaConstructNodes());
         }
         OpGraphNode.<JavaMemberNode>sortNodes(ns);
@@ -227,7 +226,7 @@ public class ProjectOpGraph {
      */
     public List<ICodeOperation> getOperations() {
         List<ICodeOperation> operations = new ArrayList<ICodeOperation>();
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             operations.addAll(fgraph.getOperations());
         }
         return operations;
@@ -239,7 +238,7 @@ public class ProjectOpGraph {
      * @return the found operation node, or <code>null</code> if none
      */
     public OperationNode getOperationNode(ICodeOperation op) {
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             OperationNode node = fgraph.getOperationNode(op);
             if (node != null) {
                 return node;
@@ -254,7 +253,7 @@ public class ProjectOpGraph {
      * @param the found node, or <code>null</code> if none
      */
     public JavaMemberNode getJavaConstructNode(JavaConstruct con) {
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             JavaMemberNode node = fgraph.getJavaConstructNode(con);
             if (node != null) {
                 return node;
@@ -269,7 +268,7 @@ public class ProjectOpGraph {
      */
     public List<ParseableSnapshot> getSnapshots() {
         List<ParseableSnapshot> snapshots = new ArrayList<ParseableSnapshot>();
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             snapshots.addAll(fgraph.getSnapshots());
         }
         return snapshots;
@@ -368,7 +367,7 @@ public class ProjectOpGraph {
         buf.append("(" + getEdgeInfo(OpGraphEdge.Sort.CCP_EDITING) + ")");
         buf.append("(" + "I:" +interEdges.size() + ")" );
         buf.append(" SN=" + getSnapshots().size() + "\n");
-        for (FileOpGraph fgraph : fileGraphs.values()) {
+        for (OpGraphForFile fgraph : fileGraphs.values()) {
             buf.append("  " + fgraph.getFile().getQualifiedName());
             buf.append(fgraph.toSummaryString() + "\n");
         }

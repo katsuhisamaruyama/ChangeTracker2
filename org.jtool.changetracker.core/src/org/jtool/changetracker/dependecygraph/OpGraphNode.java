@@ -22,7 +22,7 @@ public abstract class OpGraphNode {
     /**
      * The operation history graph for a file that contains this node.
      */
-    protected FileOpGraph fileGraph;
+    protected OpGraphForFile fileGraph;
     
     /**
      * The collection of edges incoming to this node.
@@ -38,7 +38,7 @@ public abstract class OpGraphNode {
      * Creates a node of an operation dependence graph.
      * @param fgraph an operation history graph for a file that contains this node
      */
-    protected OpGraphNode(FileOpGraph fgraph) {
+    protected OpGraphNode(OpGraphForFile fgraph) {
         fileGraph = fgraph;
     }
     
@@ -46,7 +46,7 @@ public abstract class OpGraphNode {
      * Returns an operation history graph for a file that contains this node.
      * @return the operation history graph for the file
      */
-    public FileOpGraph getFileGraph() {
+    public OpGraphForFile getFileGraph() {
         return fileGraph;
     }
     

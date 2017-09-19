@@ -25,7 +25,7 @@ public class JavaMemberNode extends OpGraphNode {
      * @param fgraph an operation history graph for a file that contains this node
      * @param con the Java construct
      */
-    public JavaMemberNode(FileOpGraph fgraph, JavaConstruct con) {
+    public JavaMemberNode(OpGraphForFile fgraph, JavaConstruct con) {
         super(fgraph);
         this.construct = con;
     }

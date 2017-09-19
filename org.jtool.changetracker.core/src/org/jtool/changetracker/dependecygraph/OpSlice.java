@@ -6,9 +6,9 @@
 
 package org.jtool.changetracker.dependecygraph;
 
+import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.dependencyanalyzer.JavaConstruct;
 import org.jtool.changetracker.repository.CTFile;
-import org.jtool.changetracker.operation.ICodeOperation;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -21,12 +21,12 @@ public class OpSlice {
     /**
      * The operation history graph for the whole project.
      */
-    private ProjectOpGraph projectGraph;
+    private OpGraphForProject projectGraph;
     
     /**
      * The operation history graph for a file that contains a code fragment for a slice criterion.
      */
-    private FileOpGraph fileGraph;
+    private OpGraphForFile fileGraph;
     
     /**
      * A code snippet corresponding to a code fragment for a slice criterion.
@@ -60,7 +60,7 @@ public class OpSlice {
      * @param pgraph the operation history graph for the whole project
      * @param con a Java construct for a slice criterion
      */
-    public OpSlice(ProjectOpGraph pgraph, JavaConstruct con) {
+    public OpSlice(OpGraphForProject pgraph, JavaConstruct con) {
         this.projectGraph = pgraph;
         this.fileGraph = projectGraph.get(con.getFile());
         this.snippet = new CodeSnippet(con);
@@ -72,7 +72,7 @@ public class OpSlice {
      * @param pgraph the operation history graph for the whole project
      * @param jcnode a Java construct node for a slice criterion
      */
-    public OpSlice(ProjectOpGraph pgraph, JavaMemberNode jcnode) {
+    public OpSlice(OpGraphForProject pgraph, JavaMemberNode jcnode) {
         this.projectGraph = pgraph;
         this.fileGraph = projectGraph.get(jcnode.getJavaConstruct().getFile());
         this.snippet = new CodeSnippet(jcnode.getJavaConstruct());
@@ -85,7 +85,7 @@ public class OpSlice {
      * @param finfo information about a file containing a code snippet
      * @param snip the code snippet for a slice criterion
      */
-    public OpSlice(ProjectOpGraph pgraph, CTFile finfo, CodeSnippet snip) {
+    public OpSlice(OpGraphForProject pgraph, CTFile finfo, CodeSnippet snip) {
         this.projectGraph = pgraph;
         this.fileGraph = projectGraph.get(finfo);
         this.snippet = snip;
