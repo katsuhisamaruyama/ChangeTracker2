@@ -366,7 +366,7 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
         CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
         RefactoringOperation op = new RefactoringOperation(macro.getTime(), pathinfo, action);
-        op.setCommandId(macro.getName());
+        op.setName(macro.getName());
         op.setSelectionStart(macro.getSelectionStart());
         op.setSelectedText(macro.getSelectionText());
         op.setArguments(macro.getArguments());
