@@ -26,67 +26,6 @@ public interface ICodeOperation extends IChangeOperation {
     }
     
     /**
-     * Returns the qualified name of this change operation.
-     * @return the qualified name
-     */
-    public String getQualifiedName();
-    
-    /**
-     * Returns the time when this change operation was performed.
-     * @return the time of the change operation
-     */
-    public ZonedDateTime getTime();
-    
-    /**
-     * Returns the time when this change operation was performed.
-     * @return the <code>long</code> value that represents the time of the change operation
-     */
-    public long getTimeAsLong();
-    
-    /**
-     * Returns the path of the file on which this change operation was performed.
-     * @return the path of the change operation
-     */
-    public String getPath();
-    
-    /**
-     * The branch of the file on which this macro was performed.
-     * @return the branch of the change operation
-     */
-    public String getBranch();
-    
-    
-    /**
-     * Returns the name of a project containing a resource on which this change operation was performed.
-     * @return the project name
-     */
-    public String getProjectName();
-    
-    /**
-     * Returns the name of a package containing a resource on which this change operation was performed.
-     * @return the package name
-     */
-    public String getPackageName();
-    
-    /**
-     * Returns the action of this change operation.
-     * @return the action of the change operation
-     */
-    public String getAction();
-    
-    /**
-     * Returns the author name of this change operation.
-     * @return the author's name
-     */
-    public String getAuthor();
-    
-    /**
-     * Returns the description of this change operation.
-     * @return the description
-     */
-    public String getDescription();
-    
-    /**
      * Returns the leftmost offset of the text affected by this change operation.
      * @return the leftmost offset of the affected text
      */
