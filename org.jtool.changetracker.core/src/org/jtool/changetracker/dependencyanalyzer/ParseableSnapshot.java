@@ -6,8 +6,8 @@
 
 package org.jtool.changetracker.dependencyanalyzer;
 
-import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.operation.IChangeOperation;
+import org.jtool.changetracker.repository.CTFile;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.ZonedDateTime;

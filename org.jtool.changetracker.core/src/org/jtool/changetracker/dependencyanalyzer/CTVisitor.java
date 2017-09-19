@@ -9,7 +9,6 @@ package org.jtool.changetracker.dependencyanalyzer;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.jtool.changetracker.repository.CTFile;
 import org.eclipse.jdt.core.dom.Initializer;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -22,13 +21,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Stack;
-import java.time.ZonedDateTime;
 
 /**
  * Collects Java constructs within the source code to be parsed.
  * @author Katsuhisa Maruyama
  */
-class ChangeTrackerVisitor extends ASTVisitor {
+class CTVisitor extends ASTVisitor {
     
     /**
      * A flag that indicates if this visitor sets the range of
@@ -55,14 +53,14 @@ class ChangeTrackerVisitor extends ASTVisitor {
      * Creates a visitor visiting an AST.
      * @param body <code>true</code> if this visitor uses the whole of a method declaration
      */
-    ChangeTrackerVisitor(boolean whole) {
+    CTVisitor(boolean whole) {
         wholeMethod = whole;
     }
     
     /**
      * Creates a visitor visiting an AST.
      */
-    ChangeTrackerVisitor(ZonedDateTime time, int index, CTFile finfo) {
+    CTVisitor() {
         this(true);
     }
     

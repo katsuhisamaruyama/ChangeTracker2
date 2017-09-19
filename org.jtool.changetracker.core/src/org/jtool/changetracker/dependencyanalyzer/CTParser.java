@@ -19,7 +19,7 @@ import java.util.List;
  * Creates the abstract syntax tree (AST) of Java source code.
  * @author Katsuhisa Maruyama
  */
-class ChangeTrackerParser {
+class CTParser {
     
     /**
      * The Java compilier information
@@ -30,7 +30,7 @@ class ChangeTrackerParser {
     /**
      * Creates a parser that parses Java source code.
      */
-    ChangeTrackerParser() {
+    CTParser() {
     }
     
     /**
@@ -80,7 +80,7 @@ class ChangeTrackerParser {
      */
     List<JavaConstruct> getJavaConstructs(CompilationUnit cu) {
         assert cu != null;
-        ChangeTrackerVisitor visitor = new ChangeTrackerVisitor(true);
+        CTVisitor visitor = new CTVisitor(true);
         cu.accept(visitor);
         return visitor.getJavaConstructs();
     }
