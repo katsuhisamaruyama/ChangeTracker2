@@ -29,15 +29,15 @@ class XmlConstants {
     
     static final String VersionAttr = "version";
     
-    static final String TimeAttr        = "time";
-    static final String PathAttr        = "path";
-    static final String BranchAttr      = "branch";
-    static final String ProjectNameAttr = "project";
-    static final String PackageNameAttr = "package";
-    static final String ActionAttr      = "action";
-    static final String AuthorAttr      = "author";
-    static final String DescriptionAttr = "desc";
-    static final String CompoundAttr    = "cid";
+    static final String TimeAttr         = "time";
+    static final String PathAttr         = "path";
+    static final String BranchAttr       = "branch";
+    static final String ProjectNameAttr  = "project";
+    static final String PackageNameAttr  = "package";
+    static final String ActionAttr       = "action";
+    static final String AuthorAttr       = "author";
+    static final String DescriptionAttr  = "desc";
+    static final String CompoundTimeAttr = "ctime";
     
     static final String OffsetAttr      = "offset";
     static final String CharsetAttr     = "charset";

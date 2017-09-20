@@ -92,7 +92,7 @@ public class Operation2Xml {
             Element opElem = appendCommandOperationElement(doc, (CommandOperation)operation);
             parent.appendChild(opElem);
         } else if (operation.isRefactor()) {
-            Element opElem = appendRefactorOperationElement(doc, (RefactoringOperation)operation);
+            Element opElem = appendRefactoringOperationElement(doc, (RefactoringOperation)operation);
             parent.appendChild(opElem);
         } else {
             CTConsole.println("Unknown operation");
@@ -106,8 +106,7 @@ public class Operation2Xml {
      * @return the DOM element corresponding to the document operation
      */
     private static void setOperationElement(Document doc, Element elem, IChangeOperation operation) {
-        String timeValue = ChangeOperation.getTimeAsString(operation.getTime());
-        elem.setAttribute(XmlConstants.TimeAttr, timeValue);
+        elem.setAttribute(XmlConstants.TimeAttr, ChangeOperation.getTimeAsString(operation.getTime()));
         elem.setAttribute(XmlConstants.PathAttr, operation.getPath());
         elem.setAttribute(XmlConstants.BranchAttr, operation.getBranch());
         elem.setAttribute(XmlConstants.ProjectNameAttr, operation.getProjectName());
@@ -115,7 +114,7 @@ public class Operation2Xml {
         elem.setAttribute(XmlConstants.ActionAttr, operation.getAction());
         elem.setAttribute(XmlConstants.AuthorAttr, operation.getAuthor());
         elem.setAttribute(XmlConstants.DescriptionAttr, operation.getDescription());
-        elem.setAttribute(XmlConstants.CompoundAttr, String.valueOf(operation.getCompoundId()));
+        elem.setAttribute(XmlConstants.CompoundTimeAttr, ChangeOperation.getTimeAsString(operation.getCompoundTime()));
     }
     
     /**
@@ -196,7 +195,7 @@ public class Operation2Xml {
      * @param operation the command operation
      * @return the DOM element corresponding to the command operation
      */
-    private static Element appendRefactorOperationElement(Document doc, RefactoringOperation operation) {
+    private static Element appendRefactoringOperationElement(Document doc, RefactoringOperation operation) {
         Element elem = doc.createElement(XmlConstants.RefactorOperationElem);
         setOperationElement(doc, elem, operation);
         

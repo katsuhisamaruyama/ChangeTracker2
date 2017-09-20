@@ -185,10 +185,6 @@ public class RepositoryManager {
         
         try {
             IWorkbenchWindow window = Activator.getWorkbenchWindow();
-            
-            System.out.println(window);
-            
-            
             window.run(false, true, new IRunnableWithProgress() {
                 
                 /**

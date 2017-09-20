@@ -56,7 +56,7 @@ public abstract class ChangeOperation implements IChangeOperation {
     /**
      * The identification number for compounded change operation including this change operation.
      */
-    protected long compoundId = -1;
+    protected ZonedDateTime compoundTime = null;
     
     /**
      * The information about a file that this change operation affects.
@@ -281,24 +281,24 @@ public abstract class ChangeOperation implements IChangeOperation {
      */
     @Override
     public boolean isCompounded() {
-        return compoundId >= 0;
+        return compoundTime != null;
     }
     
     /**
-     * Returns the identification number for compounded change operations.
-     * @return the identification number for the compounded change operations
+     * Returns the time when the compounding change operation was performed.
+     * @return the time for the compounding change operation
      */
     @Override
-    public long getCompoundId() {
-        return compoundId;
+    public ZonedDateTime getCompoundTime() {
+        return compoundTime;
     }
     
     /**
-     * Sets the identification number for compounded change operations.
-     * @param cid the identification number for compounded change operations
+     * Sets the time when the compounding change operation was performed.
+     * @param ctime the time for the compounding change operation
      */
-    public void setCompoundId(long cid) {
-        compoundId = cid;
+    public void setCompoundTime(ZonedDateTime ctime) {
+        compoundTime = ctime;
     }
     
     /**
@@ -500,7 +500,7 @@ public abstract class ChangeOperation implements IChangeOperation {
         buf.append(" action=[" + action + "]");
         buf.append(" author=[" + author + "]");
         if (isCompounded()) {
-            buf.append(" compound=" + compoundId);
+            buf.append(" compound=" + getFormatedTime(compoundTime));
         }
         if (description.length() != 0) {
             buf.append(" description=[" + description + "]");

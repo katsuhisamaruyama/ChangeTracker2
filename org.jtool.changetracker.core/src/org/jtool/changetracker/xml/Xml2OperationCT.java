@@ -224,14 +224,14 @@ public class Xml2OperationCT {
      * @return the collection of change operations in the compound operation
      */
     private static List<IChangeOperation> getCompoundOperation(Element elem) {
-        long time = Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr));
+        ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
         NodeList childList = elem.getChildNodes();
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
         for (int i = 0; i < childList.getLength(); i++) {
             if (childList.item(i).getNodeType() == Node.ELEMENT_NODE) {
                 for (IChangeOperation op : getOperation((Element)childList.item(i))) {
                     if (op instanceof ChangeOperation) {
-                        ((ChangeOperation)op).setCompoundId(time);
+                        ((ChangeOperation)op).setCompoundTime(time);
                         ops.add(op);
                     }
                 }

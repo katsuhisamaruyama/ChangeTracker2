@@ -115,10 +115,10 @@ public interface IChangeOperation {
     public boolean isCompounded();
     
     /**
-     * Returns the identification number for compounded change operations.
-     * @return the identification number for the compounded change operations
+     * Returns the time when the compounding change operation was performed.
+     * @return the time for the compounding change operation
      */
-    public long getCompoundId();
+    public ZonedDateTime getCompoundTime();
     
     /**
      * Tests if this change operation edits any text of code.

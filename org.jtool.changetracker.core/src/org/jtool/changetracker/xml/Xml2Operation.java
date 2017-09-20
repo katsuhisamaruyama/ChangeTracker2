@@ -197,7 +197,7 @@ public class Xml2Operation {
         OperationAttribute attr = new OperationAttribute(elem);
         DocumentOperation op = new DocumentOperation(attr.time, attr.pathinfo, attr.action, attr.author);
         op.setDescription(attr.desc);
-        op.setCompoundId(attr.cid);
+        op.setCompoundTime(attr.ctime);
         op.setStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
         op.setInsertedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.InsertedElem)));
         op.setDeletedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.DeletedElem)));
@@ -213,7 +213,7 @@ public class Xml2Operation {
         OperationAttribute attr = new OperationAttribute(elem);
         CopyOperation op = new CopyOperation(attr.time, attr.pathinfo, attr.author);
         op.setDescription(attr.desc);
-        op.setCompoundId(attr.cid);
+        op.setCompoundTime(attr.ctime);
         op.setStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
         op.setCopiedText(getFirstChildText(elem.getElementsByTagName(XmlConstants.CopiedElem)));
         return op;
@@ -228,7 +228,7 @@ public class Xml2Operation {
         OperationAttribute attr = new OperationAttribute(elem);
         FileOperation op = new FileOperation(attr.time, attr.pathinfo, attr.action, attr.author);
         op.setDescription(attr.desc);
-        op.setCompoundId(attr.cid);
+        op.setCompoundTime(attr.ctime);
         op.setCharset(elem.getAttribute(XmlConstants.CharsetAttr));
         op.setSrcDstPath(elem.getAttribute(XmlConstants.SrcDstPathAttr));
         String code = getFirstChildText(elem.getElementsByTagName(XmlConstants.CodeElem));
@@ -245,7 +245,7 @@ public class Xml2Operation {
         OperationAttribute attr = new OperationAttribute(elem);
         CommandOperation op = new CommandOperation(attr.time, attr.pathinfo, attr.action, attr.author);
         op.setDescription(attr.desc);
-        op.setCompoundId(attr.cid);
+        op.setCompoundTime(attr.ctime);
         op.setCommandId(elem.getAttribute(XmlConstants.CommandIdAttr));
         return op;
     }
@@ -259,7 +259,7 @@ public class Xml2Operation {
         OperationAttribute attr = new OperationAttribute(elem);
         RefactoringOperation op = new RefactoringOperation(attr.time, attr.pathinfo, attr.action, attr.author);
         op.setDescription(attr.desc);
-        op.setCompoundId(attr.cid);
+        op.setCompoundTime(attr.ctime);
         op.setName(elem.getAttribute(XmlConstants.NameAttr));
         op.setSelectionStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
         op.setArguments(elem.getAttribute(XmlConstants.ArgumentAttr));
@@ -312,7 +312,7 @@ public class Xml2Operation {
         String action;
         String author;
         String desc;
-        long cid;
+        ZonedDateTime ctime;
         CTPath pathinfo;
         
         /**
@@ -324,7 +324,8 @@ public class Xml2Operation {
             action = elem.getAttribute(XmlConstants.ActionAttr);
             author = elem.getAttribute(XmlConstants.AuthorAttr);
             desc = elem.getAttribute(XmlConstants.DescriptionAttr);
-            cid = Long.parseLong(elem.getAttribute(XmlConstants.CompoundAttr));
+            ctime = ChangeOperation.getTime(elem.getAttribute(XmlConstants.CompoundTimeAttr));
+            
             String projectName = elem.getAttribute(XmlConstants.ProjectNameAttr);
             String packageName = elem.getAttribute(XmlConstants.PackageNameAttr);
             String path = elem.getAttribute(XmlConstants.PathAttr);
