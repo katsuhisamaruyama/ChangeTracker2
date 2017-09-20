@@ -157,7 +157,10 @@ public class OperationRecorder implements RepositoryChangedListener {
             for (Macro macro : cmacro.getMacros()) {
                 if (macro instanceof RefactoringMacro) {
                     rop = createOperation((RefactoringMacro)macro);
-                    recordChangeOperation(rop);
+                    if (rop != null) {
+                        rop.setCompoundTime(cmacro.getCommandMacro().getTime());
+                        recordChangeOperation(rop);
+                    }
                     break;
                 }
             }
@@ -175,7 +178,7 @@ public class OperationRecorder implements RepositoryChangedListener {
                         op.setAction(ICodeOperation.Action.REFACTORING.toString());
                     }
                 }
-                op.setCompoundTime(cmacro.getTime());
+                op.setCompoundTime(cmacro.getCommandMacro().getTime());
                 recordChangeOperation(op);
             }
         }
