@@ -17,7 +17,7 @@ import org.eclipse.ui.IWorkbench;
  * Manages the preference page.
  * @author Katsuhisa Maruyama
  */
-public class ChangeOperationRecorderPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public class OperationRecorderPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
     
     /**
      * Displays change operations on the console for debugging.
@@ -32,7 +32,7 @@ public class ChangeOperationRecorderPreferencePage extends FieldEditorPreference
     /**
      * Creates an object for a preference page.
      */
-    public ChangeOperationRecorderPreferencePage() {
+    public OperationRecorderPreferencePage() {
         super(GRID);
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
         setPreferenceStore(store);
@@ -52,7 +52,7 @@ public class ChangeOperationRecorderPreferencePage extends FieldEditorPreference
             @Override
             protected void doStore() {
                 super.doStore();
-                ChangeOperationRecorder changeRecorder = ChangeOperationRecorder.getInstance();
+                OperationRecorder changeRecorder = OperationRecorder.getInstance();
                 changeRecorder.displayOperationsOnConsole(getBooleanValue());
             }
         });
@@ -66,7 +66,7 @@ public class ChangeOperationRecorderPreferencePage extends FieldEditorPreference
             @Override
             protected void doStore() {
                 super.doStore();
-                ChangeOperationRecorder changeRecorder = ChangeOperationRecorder.getInstance();
+                OperationRecorder changeRecorder = OperationRecorder.getInstance();
                 changeRecorder.displayOperationsOnConsole(getBooleanValue());
             }
         });

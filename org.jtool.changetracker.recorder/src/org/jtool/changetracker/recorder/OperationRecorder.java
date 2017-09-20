@@ -29,14 +29,6 @@ import org.jtool.macrorecorder.macro.CodeCompletionMacro;
 import org.jtool.macrorecorder.macro.RefactoringMacro;
 import org.jtool.macrorecorder.macro.ResourceMacro;
 import org.jtool.macrorecorder.macro.GitMacro;
-import org.jtool.macrorecorder.recorder.IMacroListener;
-import org.jtool.macrorecorder.recorder.MacroEvent;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.progress.UIJob;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,12 +38,17 @@ import java.util.HashMap;
  * Records change operations that were performed on the Eclipse' editor.
  * @author Katsuhisa Maruyama
  */
-public class ChangeOperationRecorder implements IMacroListener, RepositoryChangedListener {
+public class OperationRecorder implements RepositoryChangedListener {
     
     /**
      * The single instance that records change operations.
      */
-    private static ChangeOperationRecorder instance = new ChangeOperationRecorder();
+    private static OperationRecorder instance = new OperationRecorder();
+    
+    /**
+     * The macro receiver binding to this change operation recorder.
+     */
+    private MacroReceiver macroReceiver;
     
     /**
      * A map that stores the collection of change operations for each file.
@@ -64,117 +61,62 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
     private boolean displayOperation = false;
     
     /**
-     * A flag that indicates if the recording is allowed or not.
-     */
-    private boolean recordingOk;
-    
-    /**
      * Creates an object that records change operations.
      */
-    public ChangeOperationRecorder() {
+    private OperationRecorder() {
     }
     
     /**
      * Returns the single instance that records change operations.
      * @return the change operation record
      */
-    public static ChangeOperationRecorder getInstance() {
+    public static OperationRecorder getInstance() {
         return instance;
     }
     
     /**
-     * Confirms the recording.
-     * @return <code>true</code> if the recording is allowed, otherwise <code>false</code>
+     * Sets a macro receiver binding to this change operation recorder.
+     * @param receiver a macro receiver
      */
-    public boolean recordingAllowed() {
-        recordingOk = false;
-        UIJob job = new UIJob("Confirm") {
-            
-            /**
-             * Run the job in the UI thread.
-             * @param monitor the progress monitor to use to display progress
-             */
-            @Override
-            public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (ChangeOperationRecorderPreferencePage.startWithoutPrompt()) {
-                    recordingOk = true;
-                } else {
-                    Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-                    ComfirmationDialog dialog = new ComfirmationDialog(shell);
-                    dialog.open();
-                    ChangeOperationRecorderPreferencePage.startWithoutPrompt(dialog.withoutPrompt());
-                    if (dialog.isOk()) {
-                        recordingOk = true;
-                    }
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-        
-        try {
-            job.join();
-        } catch (InterruptedException e) {
-            recordingOk = false;
-        }
-        return recordingOk;
+    void setMacroReceiver(MacroReceiver receiver) {
+        macroReceiver = receiver;
     }
     
     /**
-     * Initializes this handler immediately before starting the macro recording.
+     * Initializes this change operation recorder.
      */
-    @Override
-    public void initialize() {
+    void initialize() {
         operationMap.clear();
-        
-        displayOperationsOnConsole(ChangeOperationRecorderPreferencePage.displayOperations());
-        
+        displayOperationsOnConsole(OperationRecorderPreferencePage.displayOperations());
         RepositoryManager manager = RepositoryManager.getInstance();
         manager.getMainRepository().addEventListener(this);
     }
     
     /**
-     * Terminate this handler immediately after stopping the macro recording.
+     * Terminate this change operation recorder.
      */
-    @Override
-    public void terminate() {
+    void terminate() {
         storeAllChangeOerations();
-        
         operationMap.clear();
     }
     
     /**
-     * Receives a repository changed event.
-     * @param evt the received event
+     * Stops this change operation recorder.
      */
-    @Override
-    public void notify(RepositoryChangedEvent evt) {
-        RepositoryChangedEvent.Type type = evt.getType();
-        if (type.equals(RepositoryChangedEvent.Type.ABOUT_TO_LOCATION_CHANGE) ||
-            type.equals(RepositoryChangedEvent.Type.ABOUT_TO_REFRESH)) {
-            storeAllChangeOerations();
-        }
+    public void stop() {
+        macroReceiver.stop();
+        operationMap.clear();
     }
     
     /**
-     * Receives a macro event when a new macro is added.
-     * @param evt the macro event
+     * Records a macro.
+     * @param macro the macro
      */
-    @Override
-    public void macroAdded(MacroEvent evt) {
-        Macro macro = evt.getMacro();
+    void recordMacro(Macro macro) {
         ChangeOperation operation = createChangeOperation(macro);
         if (operation != null) {
             recordChangeOperation(operation);
         }
-    }
-    
-    /**
-     * Receives a macro event when a new raw macro is added.
-     * @param evt the raw macro event
-     */
-    @Override
-    public void rawMacroAdded(MacroEvent evt) {
     }
     
     /**
@@ -210,8 +152,6 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
      * @param macro the compound macro
      */
     private void createOperation(CompoundMacro cmacro) {
-        long compoundId = cmacro.getTimeAsLong();
-        
         RefactoringOperation rop = null;
         if (cmacro.getCommandMacro().isRefactoring()) {
             for (Macro macro : cmacro.getMacros()) {
@@ -235,7 +175,7 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
                         op.setAction(ICodeOperation.Action.REFACTORING.toString());
                     }
                 }
-                op.setCompoundId(compoundId);
+                op.setCompoundTime(cmacro.getTime());
                 recordChangeOperation(op);
             }
         }
@@ -440,6 +380,19 @@ public class ChangeOperationRecorder implements IMacroListener, RepositoryChange
     void notify(IChangeOperation op) {
         if (displayOperation) {
             CTConsole.println(op.toString());
+        }
+    }
+    
+    /**
+     * Receives a repository changed event.
+     * @param evt the received event
+     */
+    @Override
+    public void notify(RepositoryChangedEvent evt) {
+        RepositoryChangedEvent.Type type = evt.getType();
+        if (type.equals(RepositoryChangedEvent.Type.ABOUT_TO_LOCATION_CHANGE) ||
+            type.equals(RepositoryChangedEvent.Type.ABOUT_TO_REFRESH)) {
+            storeAllChangeOerations();
         }
     }
 }
