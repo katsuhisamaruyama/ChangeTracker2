@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.replayer.ui;
 
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.TimeRange;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
@@ -209,7 +209,7 @@ public class TimelineControl {
      * Collects time ranges during which a file is opened.
      */
     protected void collectFileOpenedRanges() {
-        ChangeTrackerFile finfo = codeChangeView.getFile();
+        CTFile finfo = codeChangeView.getFile();
         fileOpenedRanges.clear();
         List<IChangeOperation> ops = finfo.getOperations();
         IChangeOperation from = finfo.getFirstOperation();
@@ -295,7 +295,7 @@ public class TimelineControl {
      * @return the index number of the change operation, or <code>-1</code> if none
      */
     protected int getPresentTime(ZonedDateTime time) {
-        ChangeTrackerFile finfo = codeChangeView.getFile();
+        CTFile finfo = codeChangeView.getFile();
         if (finfo == null) {
             return -1;
         }

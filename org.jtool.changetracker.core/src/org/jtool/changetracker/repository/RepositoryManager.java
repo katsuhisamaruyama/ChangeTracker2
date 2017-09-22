@@ -95,6 +95,18 @@ public class RepositoryManager {
     }
     
     /**
+     * Creates a new repository.
+     * @param loc the location of the main repository
+     * @return the created repository
+     */
+    public Repository createRepository(String loc) {
+        Repository repo = new Repository(CTPreferencePage.getLocation());
+        collectChangeOperationsFromHistoryFiles(repo);
+        openRepository(repo);
+        return repo;
+    }
+    
+    /**
      * Returns the main repository that stores change operations.
      * @return the main repository, or <code>null</code> if none
      */

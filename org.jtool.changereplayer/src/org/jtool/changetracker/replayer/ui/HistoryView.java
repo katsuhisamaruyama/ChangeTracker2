@@ -6,9 +6,9 @@
 
 package org.jtool.changetracker.replayer.ui;
 
+import org.jtool.changetracker.repository.CTFile;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -210,7 +210,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * Returns information about a file related to the operation history.
      * @return the file information
      */
-    protected ChangeTrackerFile getFile() {
+    protected CTFile getFile() {
         return replayManager.getFile();
     }
     

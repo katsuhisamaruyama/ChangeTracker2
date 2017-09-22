@@ -7,9 +7,9 @@
 package org.jtool.changetracker.replayer.ui;
 
 import org.jtool.changetracker.repository.Repository;
-import org.jtool.changetracker.repository.ChangeTrackerProject;
-import org.jtool.changetracker.repository.ChangeTrackerPackage;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTProject;
+import org.jtool.changetracker.repository.CTPackage;
+import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.replayer.Activator;
@@ -172,8 +172,8 @@ public class ChangeExplorerView extends ViewPart {
                     if (element instanceof TreeNode) {
                         TreeNode node = (TreeNode)element;
                         Object value = node.getValue();
-                        if (value instanceof ChangeTrackerFile) {
-                            ChangeTrackerFile finfo = (ChangeTrackerFile)value;
+                        if (value instanceof CTFile) {
+                            CTFile finfo = (CTFile)value;
                             replayManager.open(finfo);
                         }
                     }
@@ -269,10 +269,10 @@ public class ChangeExplorerView extends ViewPart {
      * @return the collection of the project nodes
      */
     private TreeNode[] getProjectNodes() {
-        List<ChangeTrackerProject> projects = currentRepository.getProjectHistory();
+        List<CTProject> projects = currentRepository.getProjectHistory();
         TreeNode[] nodes = new TreeNode[projects.size()];
         for (int i = 0; i < projects.size(); i++) {
-            ChangeTrackerProject pinfo = projects.get(i);
+            CTProject pinfo = projects.get(i);
             TreeNode node = new TreeNode(pinfo);
             TreeNode[] packageNodes = getPackageNodes(pinfo, node);
             node.setChildren(packageNodes);
@@ -288,11 +288,11 @@ public class ChangeExplorerView extends ViewPart {
      * @param parent the parent of the created package nodes
      * @return the collection of the package nodes
      */
-    private TreeNode[] getPackageNodes(ChangeTrackerProject prjinfo, TreeNode parent) {
-        List<ChangeTrackerPackage> packages = prjinfo.getPackages();
+    private TreeNode[] getPackageNodes(CTProject prjinfo, TreeNode parent) {
+        List<CTPackage> packages = prjinfo.getPackages();
         TreeNode[] nodes = new TreeNode[packages.size()];
         for (int i = 0; i < packages.size(); i++) {
-            ChangeTrackerPackage pinfo = packages.get(i);
+            CTPackage pinfo = packages.get(i);
             TreeNode node = new TreeNode(pinfo);
             TreeNode[] fileNodes = getFileNodes(pinfo, node);
             node.setChildren(fileNodes);
@@ -308,11 +308,11 @@ public class ChangeExplorerView extends ViewPart {
      * @param parent the parent of the created file nodes
      * @return the collection of the file nodes
      */
-    private TreeNode[] getFileNodes(ChangeTrackerPackage pkginfo, TreeNode parent) {
-        List<ChangeTrackerFile> files = pkginfo.getFiles();
+    private TreeNode[] getFileNodes(CTPackage pkginfo, TreeNode parent) {
+        List<CTFile> files = pkginfo.getFiles();
         TreeNode[] nodes = new TreeNode[files.size()];
         for (int i = 0; i < files.size(); i++) {
-            ChangeTrackerFile finfo = files.get(i);
+            CTFile finfo = files.get(i);
             TreeNode node = new TreeNode(finfo);
             node.setChildren(null);
             node.setParent(parent);
@@ -343,11 +343,11 @@ class ProjectLabelProvider extends LabelProvider {
     public Image getImage(Object node) {
         if (node instanceof TreeNode) {
             Object value = ((TreeNode)node).getValue();
-            if (value instanceof ChangeTrackerProject) {
+            if (value instanceof CTProject) {
                 return projectImage;
-            } else if (value instanceof ChangeTrackerPackage) {
+            } else if (value instanceof CTPackage) {
                 return packageImage;
-            } else if (value instanceof ChangeTrackerFile) {
+            } else if (value instanceof CTFile) {
                 return fileImage;
             }
         }
@@ -362,20 +362,20 @@ class ProjectLabelProvider extends LabelProvider {
     public String getText(Object node) {
         if (node instanceof TreeNode) {
             Object value = ((TreeNode)node).getValue();
-            if (value instanceof ChangeTrackerProject) {
-                ChangeTrackerProject prjinfo = (ChangeTrackerProject)value;
+            if (value instanceof CTProject) {
+                CTProject prjinfo = (CTProject)value;
                 String timeInfo = "(" + ChangeOperation.getFormatedTime(prjinfo.getFromTime()) +
                                   " - " + ChangeOperation.getFormatedTime(prjinfo.getToTime()) + ")";
                 return prjinfo.getName() + " " + timeInfo;
             
-            } else if (value instanceof ChangeTrackerPackage) {
-                ChangeTrackerPackage pkginfo = (ChangeTrackerPackage)value;
+            } else if (value instanceof CTPackage) {
+                CTPackage pkginfo = (CTPackage)value;
                 String timeInfo = "(" + ChangeOperation.getFormatedTime(pkginfo.getFromTime()) +
                                   " - " + ChangeOperation.getFormatedTime(pkginfo.getToTime()) + ")";
                 return pkginfo.getName() + " " + timeInfo;
             
-            } else if (value instanceof ChangeTrackerFile) {
-                ChangeTrackerFile finfo = (ChangeTrackerFile)value;
+            } else if (value instanceof CTFile) {
+                CTFile finfo = (CTFile)value;
                 String timeInfo = "(" + ChangeOperation.getFormatedTime(finfo.getFromTime()) +
                                   " - " + ChangeOperation.getFormatedTime(finfo.getToTime()) + ")";
                 return finfo.getName() + " " + timeInfo + " [" + finfo.getNumberOfOprations() + "]";

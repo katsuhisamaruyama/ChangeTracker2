@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.replayer.ui;
 
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ICodeOperation;
 import org.jtool.changetracker.operation.DocumentOperation;
@@ -169,7 +169,7 @@ public class OperationTableViewer {
             return;
         }
         
-        ChangeTrackerFile finfo = historyView.getFile();
+        CTFile finfo = historyView.getFile();
         List<IChangeOperation> ops = finfo.getOperations();
         if (ops.size() == 0) {
             return;
@@ -293,7 +293,7 @@ public class OperationTableViewer {
         StringBuilder buf = new StringBuilder();
         buf.append(op.getAction().toString());
         buf.append(" ");
-        buf.append(op.getName());
+        buf.append(op.getCommandId());
         return buf.toString();
     }
     

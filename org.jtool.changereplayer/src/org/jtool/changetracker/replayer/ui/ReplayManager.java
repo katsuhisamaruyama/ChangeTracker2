@@ -6,8 +6,8 @@
 
 package org.jtool.changetracker.replayer.ui;
 
-import org.jtool.changetracker.core.ChangeTrackerConsole;
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.core.CTConsole;
+import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.RepositoryChangedEvent;
 import org.jtool.changetracker.repository.RepositoryChangedListener;
 import org.jtool.changetracker.operation.IChangeOperation;
@@ -40,7 +40,7 @@ public class ReplayManager implements RepositoryChangedListener {
     /**
      * The information about a file related to the operation history.
      */
-    private ChangeTrackerFile fileInfo = null;
+    private CTFile fileInfo = null;
     
     /**
      * The index number of a present change operation of interest in the operation history.
@@ -178,7 +178,7 @@ public class ReplayManager implements RepositoryChangedListener {
     /**
      * Opens a new code change view.
      */
-    void open(ChangeTrackerFile finfo) {
+    void open(CTFile finfo) {
         openHistoryView();
         openCodeChangeView();
         
@@ -248,7 +248,7 @@ public class ReplayManager implements RepositoryChangedListener {
      * Returns information about a file related to the operation history.
      * @return the file information
      */
-    ChangeTrackerFile getFile() {
+    CTFile getFile() {
         return fileInfo;
     }
     
@@ -256,7 +256,7 @@ public class ReplayManager implements RepositoryChangedListener {
      * Sets information about a file related to the operation history.
      * @param finfo the file information
      */
-     void setFile(ChangeTrackerFile finfo) {
+     void setFile(CTFile finfo) {
          fileInfo = finfo;
     }
     
@@ -332,7 +332,7 @@ public class ReplayManager implements RepositoryChangedListener {
             if (code != null) {
                 return code;
             } else {
-                ChangeTrackerConsole.println("### Error occurred during the replay = " + index);
+                CTConsole.println("### Error occurred during the replay = " + index);
             }
         }
         return "";
@@ -599,7 +599,7 @@ public class ReplayManager implements RepositoryChangedListener {
      * Restores the state of the source code viewer.
      * @param state the state of the source code viewer
      */
-    private void restoreReplayState(ChangeTrackerFile finfo) {
+    private void restoreReplayState(CTFile finfo) {
         ReplayState state = replayStates.get(finfo.getQualifiedName());
         if (state != null) {
             setPresentIndex(state.index);
