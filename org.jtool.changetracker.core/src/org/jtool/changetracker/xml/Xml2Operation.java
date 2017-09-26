@@ -324,7 +324,12 @@ public class Xml2Operation {
             action = elem.getAttribute(XmlConstants.ActionAttr);
             author = elem.getAttribute(XmlConstants.AuthorAttr);
             desc = elem.getAttribute(XmlConstants.DescriptionAttr);
-            ctime = ChangeOperation.getTime(elem.getAttribute(XmlConstants.CompoundTimeAttr));
+            String compoundTimeStr = elem.getAttribute(XmlConstants.CompoundTimeAttr);
+            if (compoundTimeStr.length() > 0) {
+                ctime = ChangeOperation.getTime(compoundTimeStr);
+            } else {
+                ctime = null;
+            }
             
             String projectName = elem.getAttribute(XmlConstants.ProjectNameAttr);
             String packageName = elem.getAttribute(XmlConstants.PackageNameAttr);
