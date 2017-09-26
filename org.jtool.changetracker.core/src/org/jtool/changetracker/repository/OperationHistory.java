@@ -362,8 +362,8 @@ public class OperationHistory {
                     }
                     if (!fromCode.equals(nextCode)) {
                         CTConsole.println("Inconsistent with change operations: " +
-                                fop.getFormatedTime() + " (" + fop.getTimeAsLong() + ") - (" +
-                                op.getFormatedTime() + "(" + op.getTimeAsLong() + ") by backward restoration");
+                                fop.getFormatedTime() + " (" + fop.getTimeAsLong() + ") - " +
+                                op.getFormatedTime() + " (" + op.getTimeAsLong() + ") by backward restoration");
                         success = false;
                     }
                 }
