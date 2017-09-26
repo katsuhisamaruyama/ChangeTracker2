@@ -51,6 +51,11 @@ public class OperationRecorder implements RepositoryChangedListener {
     private MacroReceiver macroReceiver;
     
     /**
+     * The manager for a repository that stores change operations.
+     */
+    private RepositoryManager repositoryManager;
+    
+    /**
      * A map that stores the collection of change operations for each file.
      */
     private Map<String, List<IChangeOperation>> operationMap = new HashMap<String, List<IChangeOperation>>();
@@ -88,8 +93,8 @@ public class OperationRecorder implements RepositoryChangedListener {
     void initialize() {
         operationMap.clear();
         displayOperationsOnConsole(OperationRecorderPreferencePage.displayOperations());
-        RepositoryManager manager = RepositoryManager.getInstance();
-        manager.getMainRepository().addEventListener(this);
+        repositoryManager = RepositoryManager.getInstance();
+        repositoryManager.getMainRepository().addEventListener(this);
     }
     
     /**
@@ -354,7 +359,7 @@ public class OperationRecorder implements RepositoryChangedListener {
      */
     private void storeChangeOerations(String key) {
         List<IChangeOperation> ops = operationMap.get(key);
-        RepositoryManager.getInstance().storeChangeOperations(ops);
+        repositoryManager.storeChangeOperations(ops);
         ops.clear();
     }
     
@@ -363,7 +368,7 @@ public class OperationRecorder implements RepositoryChangedListener {
      */
     private void storeAllChangeOerations() {
         for (List<IChangeOperation> ops : operationMap.values()) {
-            RepositoryManager.getInstance().storeChangeOperations(ops);
+            repositoryManager.storeChangeOperations(ops);
             ops.clear();
         }
     }
