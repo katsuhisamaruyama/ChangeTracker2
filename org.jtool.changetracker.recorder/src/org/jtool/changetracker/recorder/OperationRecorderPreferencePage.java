@@ -7,28 +7,17 @@
 package org.jtool.changetracker.recorder;
 
 import org.jtool.changetracker.recorder.Activator;
-import org.jtool.changetracker.repository.RepositoryManager;
-import org.jtool.changetracker.core.CTPreferencePage;
-import org.jtool.changetracker.core.CTDirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.jface.preference.BooleanFieldEditor;
-import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
-import java.io.File;
 
 /**
  * Manages the preference page.
  * @author Katsuhisa Maruyama
  */
 public class OperationRecorderPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-    
-    /**
-     * The location of a directory that stores the history files of recorded operations.
-     */
-    static final String REPOSITORY_LOCATION_FOR_RECORDING = "repository.location.recording";
     
     /**
      * Displays change operations on the console for debugging.
@@ -41,9 +30,9 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
     static final String START_WITHOUT_PROMPT = "start.recording.without.prompt";
     
     /**
-     * The field editor that specifies location of a repository. 
+     * A flag that indicates if recorded change operations are displayed on the console.
      */
-    private CTDirectoryFieldEditor fieldEditor;
+    private static boolean displayOperations;
     
     /**
      * Creates an object for a preference page.
@@ -52,6 +41,7 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
         super(GRID);
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
         setPreferenceStore(store);
+        displayOperations = store.getBoolean(DISPLAY_OPERATIONS);
     }
     
     /**
@@ -59,25 +49,6 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
      */
     @Override
     public void createFieldEditors() {
-        fieldEditor = new CTDirectoryFieldEditor(REPOSITORY_LOCATION_FOR_RECORDING,
-                "Repository: ", getFieldEditorParent()) {
-            
-            /**
-             * Stores the preference value from this field editor into the preference store.
-             */
-            @Override
-            protected void doStore() {
-                String location = CTPreferencePage.getLocation(fieldEditor.getStringValue());
-                if (location != null) {
-                    super.doStore();
-                    RepositoryManager.getInstance().changeMainRepository(location);
-                }
-            }
-        };
-        fieldEditor.setFilterPath(new File(getLocation()));
-        fieldEditor.setEmptyStringAllowed(false);
-        addField(fieldEditor);
-        
         addField(new BooleanFieldEditor(START_WITHOUT_PROMPT,
                 "Always starts recording change operations without prompt", getFieldEditorParent()) {
             
@@ -87,8 +58,7 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
             @Override
             protected void doStore() {
                 super.doStore();
-                OperationRecorder changeRecorder = OperationRecorder.getInstance();
-                changeRecorder.displayOperationsOnConsole(getBooleanValue());
+                displayOperations = getBooleanValue();
             }
         });
         
@@ -101,8 +71,7 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
             @Override
             protected void doStore() {
                 super.doStore();
-                OperationRecorder changeRecorder = OperationRecorder.getInstance();
-                changeRecorder.displayOperationsOnConsole(getBooleanValue());
+                displayOperations = getBooleanValue();
             }
         });
     }
@@ -112,15 +81,6 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
      */
     @Override
     public void init(IWorkbench workbench) {
-    }
-    
-    /**
-     * Returns the location of a directory that contains operation history files.
-     * @return the location of the directory
-     */
-    static String getLocation() {
-        IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
-        return store.getString(REPOSITORY_LOCATION_FOR_RECORDING);
     }
     
     /**
@@ -146,7 +106,6 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
      * @return <code>true</code> if the displaying is required, otherwise <code>false</code>
      */
     static boolean displayOperations() {
-        IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
-        return store.getBoolean(DISPLAY_OPERATIONS);
+        return displayOperations;
     }
 }

@@ -8,7 +8,6 @@ package org.jtool.changetracker.recorder;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.jtool.changetracker.core.CTPreferencePage;
 
 /**
  * Initializes the preference values.
@@ -22,8 +21,6 @@ public class OperationRecorderPreferenceInitializer extends AbstractPreferenceIn
     @Override
     public void initializeDefaultPreferences() {
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
-        String defaultPath = CTPreferencePage.getDefaultPath();
-        store.setDefault(OperationRecorderPreferencePage.REPOSITORY_LOCATION_FOR_RECORDING, defaultPath);
         store.setDefault(OperationRecorderPreferencePage.DISPLAY_OPERATIONS, false);
         store.setDefault(OperationRecorderPreferencePage.START_WITHOUT_PROMPT, false);
     }

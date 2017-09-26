@@ -21,7 +21,6 @@ public class CTPreferenceInitializer extends AbstractPreferenceInitializer {
     @Override
     public void initializeDefaultPreferences() {
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
-        String defaultLocation = CTPreferencePage.getDefaultLoaction();
-        store.setDefault(CTPreferencePage.REPOSITORY_LOCATION, defaultLocation);
+        store.setDefault(CTPreferencePage.REPOSITORY_LOCATION, CTPreferencePage.getDefaultPath());
     }
 }

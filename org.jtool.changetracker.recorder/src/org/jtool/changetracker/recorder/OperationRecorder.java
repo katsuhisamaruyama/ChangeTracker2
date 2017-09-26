@@ -18,6 +18,7 @@ import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.repository.RepositoryChangedEvent;
 import org.jtool.changetracker.repository.RepositoryChangedListener;
 import org.jtool.changetracker.repository.CTPath;
+import org.jtool.changetracker.core.CTPreferencePage;
 import org.jtool.changetracker.core.CTConsole;
 import org.jtool.macrorecorder.macro.Macro;
 import org.jtool.macrorecorder.macro.CommandMacro;
@@ -41,11 +42,6 @@ import java.util.HashMap;
 public class OperationRecorder implements RepositoryChangedListener {
     
     /**
-     * The single instance that records change operations.
-     */
-    private static OperationRecorder instance = new OperationRecorder();
-    
-    /**
      * The macro receiver binding to this change operation recorder.
      */
     private MacroReceiver macroReceiver;
@@ -61,29 +57,9 @@ public class OperationRecorder implements RepositoryChangedListener {
     private Map<String, List<IChangeOperation>> operationMap = new HashMap<String, List<IChangeOperation>>();
     
     /**
-     * A flag that indicates if recorded change operations are displayed on the console.
-     */
-    private boolean displayOperation = false;
-    
-    /**
      * Creates an object that records change operations.
      */
-    private OperationRecorder() {
-    }
-    
-    /**
-     * Returns the single instance that records change operations.
-     * @return the change operation record
-     */
-    public static OperationRecorder getInstance() {
-        return instance;
-    }
-    
-    /**
-     * Sets a macro receiver binding to this change operation recorder.
-     * @param receiver a macro receiver
-     */
-    void setMacroReceiver(MacroReceiver receiver) {
+    OperationRecorder(MacroReceiver receiver) {
         macroReceiver = receiver;
     }
     
@@ -92,8 +68,8 @@ public class OperationRecorder implements RepositoryChangedListener {
      */
     void initialize() {
         operationMap.clear();
-        displayOperationsOnConsole(OperationRecorderPreferencePage.displayOperations());
         repositoryManager = RepositoryManager.getInstance();
+        repositoryManager.setMainRepository(CTPreferencePage.getLocation());
         repositoryManager.getMainRepository().addEventListener(this);
     }
     
@@ -343,7 +319,7 @@ public class OperationRecorder implements RepositoryChangedListener {
             operationMap.put(key, ops);
         }
         ops.add(op);
-        notify(op);
+        print(op);
         if (op.isFile()) {
             FileOperation fop = (FileOperation)op;
             if (fop.isRemoved() || fop.isClosed() || fop.isSaved()) {
@@ -374,19 +350,11 @@ public class OperationRecorder implements RepositoryChangedListener {
     }
     
     /**
-     * Sets a flag that indicate if change operations are displayed on the console.
-     * @param bool <code>true</code> if recorded change operations are displayed, otherwise <code>false</code>
-     */
-    void displayOperationsOnConsole(boolean bool) {
-        displayOperation = bool;
-    }
-    
-    /**
      * Sends a code change operation event to all the listeners.
      * @param op the code change operation
      */
-    void notify(IChangeOperation op) {
-        if (displayOperation) {
+    private void print(IChangeOperation op) {
+        if (OperationRecorderPreferencePage.displayOperations()) {
             CTConsole.println(op.toString());
         }
     }
@@ -399,6 +367,7 @@ public class OperationRecorder implements RepositoryChangedListener {
     public void notify(RepositoryChangedEvent evt) {
         RepositoryChangedEvent.Type type = evt.getType();
         if (type.equals(RepositoryChangedEvent.Type.ABOUT_TO_LOCATION_CHANGE) ||
+            type.equals(RepositoryChangedEvent.Type.ABOUT_TO_CLOSE) ||
             type.equals(RepositoryChangedEvent.Type.ABOUT_TO_REFRESH)) {
             storeAllChangeOerations();
         }
