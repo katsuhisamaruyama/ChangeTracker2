@@ -156,7 +156,10 @@ public abstract class ChangeOperation implements IChangeOperation {
      * @return the string corresponding the time
      */
     public static String getTimeAsString(ZonedDateTime time) {
-        return time.format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+        if (time != null) {
+            return time.format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+        }
+        return "";
     }
     
     /**
@@ -165,7 +168,10 @@ public abstract class ChangeOperation implements IChangeOperation {
      * @return the formatted information about the time
      */
     public static String getFormatedTime(ZonedDateTime time) {
-        return time.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS"));
+        if (time != null) {
+            return time.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS"));
+        }
+        return "";
     }
     
     /**
