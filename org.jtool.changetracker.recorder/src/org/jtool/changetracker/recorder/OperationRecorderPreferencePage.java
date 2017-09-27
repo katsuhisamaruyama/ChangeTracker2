@@ -23,11 +23,6 @@ import java.io.File;
 public class OperationRecorderPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
     
     /**
-     * The change operation recorder.
-     */
-    private static OperationRecorder operationRecorder;
-    
-    /**
      * The location of a directory that stores the history files of recorded change operations.
      */
     static final String REPOSITORY_LOCATION_FOR_RECORDING = "repository.location.recording";
@@ -73,7 +68,7 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
                     String location = CTPreferencePage.getLocation(fieldEditor.getStringValue());
                     if (location != null) {
                         super.doStore();
-                        operationRecorder.changeRepository(location);
+                        OperationRecorder.getInstance().changeRepository(location);
                     }
                 }
             }
@@ -94,7 +89,7 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
             @Override
             protected void doStore() {
                 super.doStore();
-                operationRecorder.displayOperations(getBooleanValue());
+                OperationRecorder.getInstance().displayOperations(getBooleanValue());
             }
         });
     }
@@ -104,20 +99,6 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
      */
     @Override
     public void init(IWorkbench workbench) {
-    }
-    
-    /**
-     * Initializes preference values.
-     * @param recorder a change operation recorder
-     */
-    public static void init(OperationRecorder recorder) {
-        operationRecorder = recorder;
-        
-        String location = getLocation();
-        if (location == null || location.length() == 0) {
-            setLocation(CTPreferencePage.getDefaultLoaction());
-        }
-        operationRecorder.displayOperations(displayOperations());
     }
     
     /**

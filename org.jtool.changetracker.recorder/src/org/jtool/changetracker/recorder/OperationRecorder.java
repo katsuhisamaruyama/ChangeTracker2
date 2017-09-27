@@ -19,6 +19,7 @@ import org.jtool.changetracker.repository.Repository;
 import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.core.CTConsole;
 import org.jtool.changetracker.core.CTDialog;
+import org.jtool.changetracker.core.CTPreferencePage;
 import org.jtool.macrorecorder.macro.Macro;
 import org.jtool.macrorecorder.macro.CommandMacro;
 import org.jtool.macrorecorder.macro.CompoundMacro;
@@ -46,6 +47,11 @@ import java.util.HashMap;
 public class OperationRecorder {
     
     /**
+     * The single instance of this operation history manager.
+     */
+    private static OperationRecorder instance = new OperationRecorder();
+    
+    /**
      * The macro receiver binding to this change operation recorder.
      */
     private MacroReceiver macroReceiver;
@@ -66,9 +72,24 @@ public class OperationRecorder {
     private boolean displayOperations;
     
     /**
-     * Creates an object that records change operations.
+     * Creates a singleton operation recorder.
      */
-    OperationRecorder(MacroReceiver receiver) {
+    private OperationRecorder() {
+    }
+    
+    /**
+     * Returns the single instance for the operation recorder.
+     * @return the operation recorder
+     */
+    public static OperationRecorder getInstance() {
+        return instance;
+    }
+    
+    /**
+     * Sets the receiver for change macros.
+     * @param receiver the macro receiver
+     */
+    void setMacroReceiver(MacroReceiver receiver) {
         macroReceiver = receiver;
     }
     
@@ -77,7 +98,11 @@ public class OperationRecorder {
      */
     void initialize() {
         operationMap.clear();
-        OperationRecorderPreferencePage.init(this);
+        displayOperations = OperationRecorderPreferencePage.displayOperations();
+        String location = OperationRecorderPreferencePage.getLocation();
+        if (location == null || location.length() == 0) {
+            OperationRecorderPreferencePage.setLocation(CTPreferencePage.getDefaultLoaction());
+        }
         setRepository(OperationRecorderPreferencePage.getLocation());
     }
     

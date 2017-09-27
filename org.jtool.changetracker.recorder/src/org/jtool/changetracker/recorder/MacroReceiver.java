@@ -42,7 +42,8 @@ public class MacroReceiver implements IMacroHandler {
      * Creates an object that records change operations.
      */
     public MacroReceiver() {
-        operationRecorder = new OperationRecorder(this);
+        operationRecorder = OperationRecorder.getInstance();
+        operationRecorder.setMacroReceiver(this);
     }
     
     /**
