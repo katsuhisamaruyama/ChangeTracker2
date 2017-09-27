@@ -51,9 +51,9 @@ public class OperationRecorder {
     private MacroReceiver macroReceiver;
     
     /**
-     * The repository that stores recorded change operations.
+     * The repository that continuously stores recorded change operations.
      */
-    private Repository repository = null;
+    private Repository onlineRepository = null;
     
     /**
      * A map that stores the collection of change operations for each file.
@@ -90,7 +90,6 @@ public class OperationRecorder {
         operationMap.clear();
     }
     
-    
     /**
      * Sets the location of the repository.
      * @param location the location of the repository
@@ -100,8 +99,8 @@ public class OperationRecorder {
             return;
         }
         
-        repository = new Repository(location);
-        RepositoryManager.getInstance().setRecordingRepository(repository.getLocation());
+        onlineRepository = new Repository(location);
+        RepositoryManager.getInstance().setOnlineRepository(onlineRepository);
     }
     
     /**
@@ -109,7 +108,7 @@ public class OperationRecorder {
      * @param location the location of the main repository
      */
     void changeRepository(String location) {
-        if (repository == null || location == null || location.length() == 0) {
+        if (onlineRepository == null || location == null || location.length() == 0) {
             return;
         }
         
@@ -120,10 +119,10 @@ public class OperationRecorder {
         storeAllChangeOerations();
         closeAllEditors();
         
-        repository.clear();
-        repository = new Repository(location);
-        repository.collectChangeOperationsFromHistoryFiles();
-        RepositoryManager.getInstance().setRecordingRepository(repository.getLocation());
+        onlineRepository.clear();
+        onlineRepository = new Repository(location);
+        onlineRepository.collectChangeOperationsFromHistoryFiles();
+        RepositoryManager.getInstance().setOnlineRepository(onlineRepository);
     }
     
     /**
@@ -384,7 +383,7 @@ public class OperationRecorder {
      */
     private void storeChangeOerations(String key) {
         List<IChangeOperation> ops = operationMap.get(key);
-        repository.storeChangeOperations(ops);
+        onlineRepository.storeChangeOperations(ops);
         ops.clear();
     }
     
@@ -393,7 +392,7 @@ public class OperationRecorder {
      */
     private void storeAllChangeOerations() {
         for (List<IChangeOperation> ops : operationMap.values()) {
-            repository.storeChangeOperations(ops);
+            onlineRepository.storeChangeOperations(ops);
             ops.clear();
         }
     }
