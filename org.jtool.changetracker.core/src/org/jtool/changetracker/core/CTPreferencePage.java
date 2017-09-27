@@ -6,7 +6,6 @@
 
 package org.jtool.changetracker.core;
 
-import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.xml.XmlFileManager;
 import org.jtool.changetracker.xml.XmlConverter;
 import org.jtool.changetracker.xml.ZipArchiveExporter;
@@ -45,11 +44,6 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
     static String DEFAULT_DIRECTORY_PATH = "#history";
     
     /**
-     * The field editor that specifies location of a repository. 
-     */
-    private CTDirectoryFieldEditor fieldEditor;
-    
-    /**
      * Creates an object for a preference page.
      */
     public CTPreferencePage() {
@@ -57,7 +51,7 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
         setPreferenceStore(store);
         if (getLocation().length() == 0) {
-            store.setValue(REPOSITORY_LOCATION, getDefaultPath());
+            setLocation(getDefaultLoaction());
         }
     }
     
@@ -66,26 +60,6 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
      */
     @Override
     public void createFieldEditors() {
-        fieldEditor = new CTDirectoryFieldEditor(REPOSITORY_LOCATION,
-                "Repository: ", getFieldEditorParent()) {
-            
-            /**
-             * Stores the preference value from this field editor into the preference store.
-             */
-            @Override
-            protected void doStore() {
-                if (!getLocation().equals(fieldEditor.getStringValue())) {
-                    String location = CTPreferencePage.getLocation(fieldEditor.getStringValue());
-                    if (location != null) {
-                        super.doStore();
-                        RepositoryManager.getInstance().changeMainRepository(location);
-                    }
-                }
-            }
-        };
-        fieldEditor.setFilterPath(new File(getLocation()));
-        fieldEditor.setEmptyStringAllowed(false);
-        addField(fieldEditor);
     }
     
     /**
@@ -121,25 +95,16 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
      */
     public static String getLocation() {
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
-        return store.getString(REPOSITORY_LOCATION);
+        return getLocation(store.getString(REPOSITORY_LOCATION));
     }
     
     /**
-     * Returns the path of a directory that contains history files.
-     * @return the directory path, or <code>null</code> if the directory does not exist
+     * Sets the location of a directory that contains operation history files.
+     * @param location the location of the directory
      */
-    static String getPath(String location) {
-        if (!checkLocation(location)) {
-            return null;
-        }
-        
-        IPath workspaceDir = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-        String workspacePath = workspaceDir.toOSString();
-        if (location.startsWith(workspacePath)) {
-            String postfix = location.substring(workspacePath.length());
-            return WORKSPACE_PATH_PREFIX + postfix;
-        }
-        return location;
+    public static void setLocation(String location) {
+        IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
+        store.setValue(REPOSITORY_LOCATION, getPath(location));
     }
     
     /**
@@ -147,7 +112,7 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
      * @param the relative path of the directory
      * @return the directory location, or <code>null</code> if the directory does not exist
      */
-    static String getLocation(String path) {
+    public static String getLocation(String path) {
         IPath workspaceDir = ResourcesPlugin.getWorkspace().getRoot().getLocation();
         String location;
         if (path.startsWith(WORKSPACE_PATH_PREFIX)) {
@@ -174,10 +139,28 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
     }
     
     /**
+     * Returns the path of a directory that contains history files.
+     * @return the directory path, or <code>null</code> if the directory does not exist
+     */
+    public static String getPath(String location) {
+        if (!checkLocation(location)) {
+            return null;
+        }
+        
+        IPath workspaceDir = ResourcesPlugin.getWorkspace().getRoot().getLocation();
+        String workspacePath = workspaceDir.toOSString();
+        if (location.startsWith(workspacePath)) {
+            String postfix = location.substring(workspacePath.length());
+            return WORKSPACE_PATH_PREFIX + postfix;
+        }
+        return location;
+    }
+    
+    /**
      * Returns the path of the default directory that contains history files.
      * @return the default directory path.
      */
-    static String getDefaultPath() {
+    public static String getDefaultPath() {
         return getPath(getDefaultLoaction());
     }
     
@@ -185,7 +168,7 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
      * Returns the absolute location of the default directory that contains history files.
      * @return the default directory location.
      */
-    static String getDefaultLoaction() {
+    public static String getDefaultLoaction() {
         String location = getLocation(WORKSPACE_PATH_PREFIX + File.separator + DEFAULT_DIRECTORY_PATH);
         
         File file = new File(location);

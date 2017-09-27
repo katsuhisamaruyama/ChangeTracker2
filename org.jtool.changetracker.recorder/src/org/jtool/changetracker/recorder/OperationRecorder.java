@@ -14,12 +14,11 @@ import org.jtool.changetracker.operation.CopyOperation;
 import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.operation.CommandOperation;
 import org.jtool.changetracker.operation.RefactoringOperation;
-import org.jtool.changetracker.repository.RepositoryManager;
-import org.jtool.changetracker.repository.RepositoryChangedEvent;
-import org.jtool.changetracker.repository.RepositoryChangedListener;
 import org.jtool.changetracker.repository.CTPath;
-import org.jtool.changetracker.core.CTPreferencePage;
+import org.jtool.changetracker.repository.Repository;
+import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.core.CTConsole;
+import org.jtool.changetracker.core.CTDialog;
 import org.jtool.macrorecorder.macro.Macro;
 import org.jtool.macrorecorder.macro.CommandMacro;
 import org.jtool.macrorecorder.macro.CompoundMacro;
@@ -30,6 +29,11 @@ import org.jtool.macrorecorder.macro.CodeCompletionMacro;
 import org.jtool.macrorecorder.macro.RefactoringMacro;
 import org.jtool.macrorecorder.macro.ResourceMacro;
 import org.jtool.macrorecorder.macro.GitMacro;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -39,7 +43,7 @@ import java.util.HashMap;
  * Records change operations that were performed on the Eclipse' editor.
  * @author Katsuhisa Maruyama
  */
-public class OperationRecorder implements RepositoryChangedListener {
+public class OperationRecorder {
     
     /**
      * The macro receiver binding to this change operation recorder.
@@ -47,14 +51,19 @@ public class OperationRecorder implements RepositoryChangedListener {
     private MacroReceiver macroReceiver;
     
     /**
-     * The manager for a repository that stores change operations.
+     * The repository that stores recorded change operations.
      */
-    private RepositoryManager repositoryManager;
+    private Repository repository = null;
     
     /**
      * A map that stores the collection of change operations for each file.
      */
     private Map<String, List<IChangeOperation>> operationMap = new HashMap<String, List<IChangeOperation>>();
+    
+    /**
+     * A flag that indicates if recorded change operations are displayed on the console.
+     */
+    private boolean displayOperations;
     
     /**
      * Creates an object that records change operations.
@@ -68,9 +77,8 @@ public class OperationRecorder implements RepositoryChangedListener {
      */
     void initialize() {
         operationMap.clear();
-        repositoryManager = RepositoryManager.getInstance();
-        repositoryManager.setMainRepository(CTPreferencePage.getLocation());
-        repositoryManager.getMainRepository().addEventListener(this);
+        OperationRecorderPreferencePage.init(this);
+        setRepository(OperationRecorderPreferencePage.getLocation());
     }
     
     /**
@@ -78,15 +86,56 @@ public class OperationRecorder implements RepositoryChangedListener {
      */
     void terminate() {
         storeAllChangeOerations();
+        macroReceiver.stop();
         operationMap.clear();
     }
     
+    
     /**
-     * Stops this change operation recorder.
+     * Sets the location of the repository.
+     * @param location the location of the repository
      */
-    public void stop() {
-        macroReceiver.stop();
-        operationMap.clear();
+    void setRepository(String location) {
+        if (location == null || location.length() == 0) {
+            return;
+        }
+        
+        repository = new Repository(location);
+        RepositoryManager.getInstance().setRecordingRepository(repository.getLocation());
+    }
+    
+    /**
+     * Changes the location of the main repository.
+     * @param location the location of the main repository
+     */
+    void changeRepository(String location) {
+        if (repository == null || location == null || location.length() == 0) {
+            return;
+        }
+        
+        boolean result = CTDialog.yesnoDialog("Repository Change", "Are you Ok to close all editors?");
+        if (!result) {
+            return;
+        }
+        storeAllChangeOerations();
+        closeAllEditors();
+        
+        repository.clear();
+        repository = new Repository(location);
+        repository.collectChangeOperationsFromHistoryFiles();
+        RepositoryManager.getInstance().setRecordingRepository(repository.getLocation());
+    }
+    
+    /**
+     * Closes all the editors that are visible on the page.
+     */
+    private void closeAllEditors() {
+        IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        IWorkbenchPage page = workbenchWindow.getActivePage();
+        for (IEditorReference editorRef : page.getEditorReferences()) {
+            IEditorPart editor = editorRef.getEditor(true);
+            page.closeEditor(editor, true);
+        }
     }
     
     /**
@@ -335,7 +384,7 @@ public class OperationRecorder implements RepositoryChangedListener {
      */
     private void storeChangeOerations(String key) {
         List<IChangeOperation> ops = operationMap.get(key);
-        repositoryManager.storeChangeOperations(ops);
+        repository.storeChangeOperations(ops);
         ops.clear();
     }
     
@@ -344,9 +393,17 @@ public class OperationRecorder implements RepositoryChangedListener {
      */
     private void storeAllChangeOerations() {
         for (List<IChangeOperation> ops : operationMap.values()) {
-            repositoryManager.storeChangeOperations(ops);
+            repository.storeChangeOperations(ops);
             ops.clear();
         }
+    }
+    
+    /**
+     * Sets the flag that indicates if recorded change operations will be displayed.
+     * @return <code>true</code> if the displaying is required, otherwise <code>false</code>
+     */
+    void displayOperations(boolean bool) {
+        displayOperations = bool;
     }
     
     /**
@@ -354,22 +411,8 @@ public class OperationRecorder implements RepositoryChangedListener {
      * @param op the code change operation
      */
     private void print(IChangeOperation op) {
-        if (OperationRecorderPreferencePage.displayOperations()) {
+        if (displayOperations) {
             CTConsole.println(op.toString());
-        }
-    }
-    
-    /**
-     * Receives a repository changed event.
-     * @param evt the received event
-     */
-    @Override
-    public void notify(RepositoryChangedEvent evt) {
-        RepositoryChangedEvent.Type type = evt.getType();
-        if (type.equals(RepositoryChangedEvent.Type.ABOUT_TO_LOCATION_CHANGE) ||
-            type.equals(RepositoryChangedEvent.Type.ABOUT_TO_CLOSE) ||
-            type.equals(RepositoryChangedEvent.Type.ABOUT_TO_REFRESH)) {
-            storeAllChangeOerations();
         }
     }
 }

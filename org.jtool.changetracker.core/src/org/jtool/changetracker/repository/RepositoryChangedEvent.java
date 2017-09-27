@@ -17,9 +17,7 @@ public class RepositoryChangedEvent {
      */
     public enum Type {
         OPERATION_ADDED,
-        OPENED, CLOSED, ABOUT_TO_CLOSE,
-        LOCATION_CHANGED, ABOUT_TO_LOCATION_CHANGE,
-        REFRESHED, ABOUT_TO_REFRESH;
+        ABOUT_TO_OPEN, OPENED, ABOUT_TO_CLOSE, CLOSED, ABOUT_TO_REFRESH, REFRESHED;
     }
     
     /**

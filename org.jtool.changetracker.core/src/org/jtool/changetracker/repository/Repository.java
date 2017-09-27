@@ -10,12 +10,20 @@ import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.operation.CodeOperation;
 import org.jtool.changetracker.operation.FileOperation;
+import org.jtool.changetracker.core.CTConsole;
 import org.jtool.changetracker.dependencyanalyzer.DependencyDetector;
 import org.jtool.changetracker.dependencyanalyzer.ParseableSnapshot;
+import org.jtool.changetracker.xml.Operation2Xml;
+import org.jtool.changetracker.xml.Xml2Operation;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.progress.UIJob;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.File;
 
 /**
  * Stores information about the repository for projects, packages, and files.
@@ -55,16 +63,16 @@ public class Repository {
     
     /**
      * Creates an instance that stores information about the repository.
-     * @param loc the path of the location of the repository
+     * @param location the path of the location of the repository
      */
-    public Repository(String loc) {
-        this.location = loc;
+    public Repository(String location) {
+        this.location = location;
     }
     
     /**
      * Clears the whole information about this repository.
      */
-    public  void clear() {
+    public void clear() {
         projectMap.clear();
         packageMap.clear();
         fileMap.clear();
@@ -116,10 +124,63 @@ public class Repository {
     }
     
     /**
+     * Stores change operations into the main repository.
+     * @param ops the collection of the change operations to be stored
+     */
+    public void storeChangeOperations(List<IChangeOperation> ops) {
+        if (ops == null || ops.size() == 0) {
+            return;
+        }
+        
+        ChangeOperation.sort(ops);
+        ops = OperationCompactor.compact(ops);
+        addOperationAll(ops);
+        fire(new RepositoryChangedEvent(this, RepositoryChangedEvent.Type.OPERATION_ADDED));
+        
+        storeChangeOperationsIntoHistoryFile(ops);
+    }
+    
+    /**
+     * Stores a code change operation into the main repository.
+     * @param op the change operation to be stored
+     */
+    public void storeOperation(IChangeOperation op) {
+        if (op == null) {
+            return;
+        }
+        
+        addOperation(op);
+        fire(new RepositoryChangedEvent(this, RepositoryChangedEvent.Type.OPERATION_ADDED));
+        
+        List<IChangeOperation> ops = new ArrayList<IChangeOperation>(1);
+        ops.add(op);
+        storeChangeOperationsIntoHistoryFile(ops);
+    }
+    
+    /**
+     * Stores change operations into a history file.
+     * @param ops the collection of the change operations
+     */
+    private void storeChangeOperationsIntoHistoryFile(List<IChangeOperation> ops) {
+        if (ops.size() == 0) {
+            return;
+        }
+        
+        try {
+            long time = ops.get(0).getTimeAsLong();
+            String filename = location + File.separatorChar + String.valueOf(time);
+            Operation2Xml.storeOperations(ops, filename);
+        } catch (Exception e) {
+            CTConsole.println("Failed to store change operations into a history file: " + e.toString());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
      * Stores change operations related to the same file into this repository.
      * @param ops the collection of the change operations to be stored
      */
-    void storeOperationAll(List<? extends IChangeOperation> ops) {
+    private void addOperations(List<? extends IChangeOperation> ops) {
         if (ops == null || ops.size() == 0) {
             return;
         }
@@ -142,17 +203,6 @@ public class Repository {
         for (int idx = 0; idx < ops.size(); idx++) {
             addOperation(ops.get(idx), projectInfo, packageInfo, fileInfo);
         }
-    }
-    
-    /**
-     * Stores a code change operation into this repository.
-     * @param op the change operation to be stored
-     */
-    void storeOperation(IChangeOperation op) {
-        if (op == null) {
-            return;
-        }
-        addOperation(op);
     }
     
     /**
@@ -230,6 +280,64 @@ public class Repository {
         if (op.isDocumentOrCopy()) {
             detectAffectedJavaConstructs((CodeOperation)op, finfo);
         }
+    }
+    
+    /**
+     * Collects change operations from history files and stores them into this repository.
+     */
+    public void collectChangeOperationsFromHistoryFiles() {
+        File dir = new File(location);
+        if (!dir.isDirectory()) {
+            return;
+        }
+        
+        UIJob job = new UIJob("Collect") {
+            
+            /**
+             * Run the job in the UI thread.
+             * @param monitor the progress monitor to use to display progress
+             */
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                try {
+                    List<File> files = Xml2Operation.getHistoryFiles(location);
+                    monitor.beginTask("Reading change operations from history files", files.size());
+                    readHistoryFiles(files, monitor);
+                } catch (InterruptedException e) {
+                    clear();
+                    return Status.CANCEL_STATUS;
+                } finally {
+                    monitor.done();
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.setUser(true);
+        job.schedule();
+    }
+    
+    /**
+     * Reads history files and stores change operations into this repository.
+     * @param repo the repository that stores the change operations
+     * @param files the collection of the history files
+     * @param monitor the progress monitor to use to display progress and receive requests for cancellation
+     * @throws Exception if a request to cancel or any failure is detected
+     */
+    public void readHistoryFiles(List<File> files, IProgressMonitor monitor) throws InterruptedException {
+        for (File file : files) {
+            String path = file.getAbsolutePath();
+            addOperations(Xml2Operation.getOperations(path));
+            
+            if (monitor.isCanceled()) {
+                clear();
+                monitor.done();
+                throw new InterruptedException("User interrupted");
+            }
+            monitor.worked(1);
+        }
+        restoreCodeOnFileOperation();
+        compactOperations();
+        checkOperationConsistency();
     }
     
     /**

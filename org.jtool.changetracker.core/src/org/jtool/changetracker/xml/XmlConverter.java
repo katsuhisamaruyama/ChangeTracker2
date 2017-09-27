@@ -6,29 +6,27 @@
 
 package org.jtool.changetracker.xml;
 
-import org.jtool.changetracker.core.Activator;
 import org.jtool.changetracker.core.CTDialog;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.repository.Repository;
-import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.xml.XmlFileManager;
 import org.jtool.changetracker.xml.Xml2Operation;
 import org.jtool.changetracker.xml.Operation2Xml;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.ui.IWorkbenchWindow;
-import java.lang.reflect.InvocationTargetException;
-import java.io.File;
+import org.eclipse.ui.progress.UIJob;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.File;
 import java.time.ZonedDateTime;
 
 /**
@@ -54,6 +52,9 @@ public class XmlConverter {
             public void widgetSelected(SelectionEvent evt) {
                 DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
                 String path = dialog.open();
+                if (path == null) {
+                    return;
+                }
                 
                 if (Xml2Operation.isChangeTrackerVersion2(path)) {
                     CTDialog.errorDialog("Convert Format",
@@ -91,20 +92,19 @@ public class XmlConverter {
      */
     private boolean convert(List<File> files, final String dirpath) {
         Repository repo = new Repository(dirpath);
-        try {
-            IWorkbenchWindow window = Activator.getWorkbenchWindow();
-            window.run(false, true, new IRunnableWithProgress() {
-                
-                /**
-                 * Reads history files existing in the specified directory.
-                 * @param monitor the progress monitor to use to display progress and receive requests for cancellation
-                 * @exception InterruptedException if the operation detects a request to cancel
-                 */
-                @Override
-                public void run(IProgressMonitor monitor) throws InterruptedException {
+        
+        UIJob job = new UIJob("Convert") {
+            
+            /**
+             * Run the job in the UI thread.
+             * @param monitor the progress monitor to use to display progress
+             */
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                try {
                     List<File> files = Xml2Operation.getHistoryFiles(dirpath);
                     monitor.beginTask("Reading change operations from history files", files.size() * 2);
-                    RepositoryManager.getInstance().readHistoryFiles(repo, files, monitor);
+                    repo.readHistoryFiles(files, monitor);
                     Map<FileOperation, String> map = storeCodeOnFileOperation(repo.getOperations());
                     for (File file : files) {
                         List<IChangeOperation> ops = Xml2Operation.getOperations(file.getAbsolutePath());
@@ -113,13 +113,21 @@ public class XmlConverter {
                         Operation2Xml.storeOperations(ops, dirpath + File.separatorChar + file.getName().substring(0, index));
                         monitor.worked(1);
                     }
+                } catch (InterruptedException e) {
+                    return Status.CANCEL_STATUS;
+                } finally {
                     monitor.done();
                 }
-            });
-            return true;
-        } catch (InterruptedException | InvocationTargetException e) {
-            return false;
-        }
+                return Status.OK_STATUS;
+            }
+        };
+        job.setUser(true);
+        job.schedule();
+        try {
+            job.join();
+            return job.getResult().equals(Status.OK_STATUS);
+        } catch (InterruptedException e) { /* empty */ }
+        return false;
     }
     
     /**

@@ -13,14 +13,14 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Compacts the history of change operations.
+ * Compacts change operations.
  * @author Katsuhisa Maruyama
  */
-class OperationHistoryCompactor {
+class OperationCompactor {
     
     /**
-     * Compacts the history of change operations.
-     * @param ops the change operations in the history
+     * Compacts change operations.
+     * @param ops the change operations
      * @return the collection of change operations after the compaction
      */
     static List<IChangeOperation> compact(List<IChangeOperation> ops) {

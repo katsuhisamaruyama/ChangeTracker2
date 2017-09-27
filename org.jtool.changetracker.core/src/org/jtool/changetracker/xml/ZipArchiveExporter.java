@@ -6,15 +6,14 @@
 
 package org.jtool.changetracker.xml;
 
-import org.jtool.changetracker.repository.Repository;
-import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.xml.XmlFileManager;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import java.io.File;
 import java.time.ZonedDateTime;
 
@@ -39,13 +38,16 @@ public class ZipArchiveExporter {
              */
             @Override
             public void widgetSelected(SelectionEvent evt) {
-                FileDialog dialog = new FileDialog(parent.getShell(), SWT.SAVE);
+                DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
+                String path = dialog.open();
+                if (path == null) {
+                    return;
+                }
+                
+                String prefix = new Path(path).removeLastSegments(1).toOSString();
                 String timeString = String.valueOf(ZonedDateTime.now().toInstant().toEpochMilli());
-                String filename = "history-" + timeString + ".zip";
-                dialog.setFileName(filename);
-                String filepath = dialog.open();
-                Repository repo = RepositoryManager.getInstance().getMainRepository();
-                XmlFileManager.makeZip(filepath, new File(repo.getLocation()));
+                String filename = prefix + File.separator + "history-" + timeString + ".zip";
+                XmlFileManager.makeZip(filename, new File(path));
             }
             
             /**

@@ -7,17 +7,35 @@
 package org.jtool.changetracker.recorder;
 
 import org.jtool.changetracker.recorder.Activator;
+import org.jtool.changetracker.core.CTDirectoryFieldEditor;
+import org.jtool.changetracker.core.CTPreferencePage;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbench;
+import java.io.File;
 
 /**
  * Manages the preference page.
  * @author Katsuhisa Maruyama
  */
 public class OperationRecorderPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+    
+    /**
+     * The change operation recorder.
+     */
+    private static OperationRecorder operationRecorder;
+    
+    /**
+     * The location of a directory that stores the history files of recorded change operations.
+     */
+    static final String REPOSITORY_LOCATION_FOR_RECORDING = "repository.location.recording";
+    
+    /**
+     * The field editor that specifies location of a repository. 
+     */
+    private CTDirectoryFieldEditor fieldEditor;
     
     /**
      * Displays change operations on the console for debugging.
@@ -30,18 +48,12 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
     static final String START_WITHOUT_PROMPT = "start.recording.without.prompt";
     
     /**
-     * A flag that indicates if recorded change operations are displayed on the console.
-     */
-    private static boolean displayOperations;
-    
-    /**
      * Creates an object for a preference page.
      */
     public OperationRecorderPreferencePage() {
         super(GRID);
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
         setPreferenceStore(store);
-        displayOperations = store.getBoolean(DISPLAY_OPERATIONS);
     }
     
     /**
@@ -49,18 +61,29 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
      */
     @Override
     public void createFieldEditors() {
-        addField(new BooleanFieldEditor(START_WITHOUT_PROMPT,
-                "Always starts recording change operations without prompt", getFieldEditorParent()) {
+        fieldEditor = new CTDirectoryFieldEditor(REPOSITORY_LOCATION_FOR_RECORDING,
+                "Repository: ", getFieldEditorParent()) {
             
             /**
              * Stores the preference value from this field editor into the preference store.
              */
             @Override
             protected void doStore() {
-                super.doStore();
-                displayOperations = getBooleanValue();
+                if (!getLocation().equals(fieldEditor.getStringValue())) {
+                    String location = CTPreferencePage.getLocation(fieldEditor.getStringValue());
+                    if (location != null) {
+                        super.doStore();
+                        operationRecorder.changeRepository(location);
+                    }
+                }
             }
-        });
+        };
+        fieldEditor.setFilterPath(new File(getLocation()));
+        fieldEditor.setEmptyStringAllowed(false);
+        addField(fieldEditor);
+        
+        addField(new BooleanFieldEditor(START_WITHOUT_PROMPT,
+                "Always starts recording change operations without prompt", getFieldEditorParent()));
         
         addField(new BooleanFieldEditor(DISPLAY_OPERATIONS,
                 "Displays recorded change operations on the console", getFieldEditorParent()) {
@@ -71,7 +94,7 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
             @Override
             protected void doStore() {
                 super.doStore();
-                displayOperations = getBooleanValue();
+                operationRecorder.displayOperations(getBooleanValue());
             }
         });
     }
@@ -84,10 +107,42 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
     }
     
     /**
+     * Initializes preference values.
+     * @param recorder a change operation recorder
+     */
+    public static void init(OperationRecorder recorder) {
+        operationRecorder = recorder;
+        
+        String location = getLocation();
+        if (location == null || location.length() == 0) {
+            setLocation(CTPreferencePage.getDefaultLoaction());
+        }
+        operationRecorder.displayOperations(displayOperations());
+    }
+    
+    /**
+     * Returns the location of a directory that contains operation history files.
+     * @return the location of the directory
+     */
+    public static String getLocation() {
+        IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
+        return CTPreferencePage.getLocation(store.getString(REPOSITORY_LOCATION_FOR_RECORDING));
+    }
+    
+    /**
+     * Sets the location of a directory that contains operation history files.
+     * @param location the location of the directory
+     */
+    public static void setLocation(String location) {
+        IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
+        store.setValue(REPOSITORY_LOCATION_FOR_RECORDING, CTPreferencePage.getPath(location));
+    }
+    
+    /**
      * Tests if the recorder starts recording change operations without prompt.
      * @return <code>true</code> if the recording is started without prompt, otherwise <code>false</code>
      */
-    static boolean startWithoutPrompt() {
+    public static boolean startWithoutPrompt() {
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
         return store.getBoolean(START_WITHOUT_PROMPT);
     }
@@ -96,7 +151,7 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
      * Sets if the recorder starts recording change operations without prompt.
      * @param bool <code>true</code> if the recording is started without prompt, otherwise <code>false</code>
      */
-    static void startWithoutPrompt(boolean bool) {
+    public static void startWithoutPrompt(boolean bool) {
         IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
         store.setValue(START_WITHOUT_PROMPT, bool);
     }
@@ -105,7 +160,8 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
      * Tests if recorded change operations will be displayed.
      * @return <code>true</code> if the displaying is required, otherwise <code>false</code>
      */
-    static boolean displayOperations() {
-        return displayOperations;
+    public static boolean displayOperations() {
+        IPreferenceStore store = Activator.getPlugin().getPreferenceStore();
+        return store.getBoolean(DISPLAY_OPERATIONS);
     }
 }

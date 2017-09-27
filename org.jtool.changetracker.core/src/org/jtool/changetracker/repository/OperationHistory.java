@@ -334,7 +334,7 @@ public class OperationHistory {
      * Compacts the history of change operations.
      */
     public void compact() {
-        operations = OperationHistoryCompactor.compact(operations);
+        operations = OperationCompactor.compact(operations);
     }
     
     /**

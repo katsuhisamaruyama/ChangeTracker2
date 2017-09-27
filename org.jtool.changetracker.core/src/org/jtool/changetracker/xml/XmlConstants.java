@@ -39,10 +39,10 @@ class XmlConstants {
     static final String DescriptionAttr  = "desc";
     static final String CompoundTimeAttr = "ctime";
     
-    static final String OffsetAttr      = "offset";
-    static final String CharsetAttr     = "charset";
-    static final String SrcDstPathAttr  = "srcdst";
-    static final String CommandIdAttr   = "commandId";
-    static final String NameAttr        = "name";
-    static final String ArgumentAttr    = "args";
+    static final String OffsetAttr     = "offset";
+    static final String CharsetAttr    = "charset";
+    static final String SrcDstPathAttr = "srcdst";
+    static final String CommandIdAttr  = "commandId";
+    static final String NameAttr       = "name";
+    static final String ArgumentAttr   = "args";
 }

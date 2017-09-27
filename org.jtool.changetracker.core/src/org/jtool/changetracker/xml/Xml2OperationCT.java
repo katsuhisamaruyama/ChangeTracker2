@@ -20,10 +20,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.util.List;
 import java.util.ArrayList;
-import java.time.ZonedDateTime;
-import java.io.File;
-import java.time.ZoneId;
 import java.util.Calendar;
+import java.io.File;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
 
 /**
  * Converts the XML representation into the history of change operations recorded by ChangeTracker-v1.
