@@ -7,10 +7,6 @@
 package org.jtool.changetracker.replayer;
 
 import org.jtool.changetracker.repository.IRepositoryHandler;
-import org.jtool.changetracker.ui.OperationVisualizer;
-import org.jtool.changetracker.ui.HistoryView;
-import org.jtool.changetracker.ui.CodeComparingView;
-import org.jtool.changetracker.ui.CodeAnimatingView;
 
 /**
  * Replays operation changes.

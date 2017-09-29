@@ -4,7 +4,7 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.ui;
+package org.jtool.changetracker.replayer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;

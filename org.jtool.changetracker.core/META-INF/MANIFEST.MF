@@ -23,5 +23,4 @@ Export-Package: org.jtool.changetracker.core,
  org.jtool.changetracker.dependencyanalyzer,
  org.jtool.changetracker.operation,
  org.jtool.changetracker.repository,
- org.jtool.changetracker.ui,
  org.jtool.changetracker.xml

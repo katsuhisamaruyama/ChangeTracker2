@@ -4,8 +4,9 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.ui;
+package org.jtool.changetracker.replayer;
 
+import org.jtool.changetracker.replayer.ViewStateChangedEvent.Type;
 import org.jtool.changetracker.repository.CTFile;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;

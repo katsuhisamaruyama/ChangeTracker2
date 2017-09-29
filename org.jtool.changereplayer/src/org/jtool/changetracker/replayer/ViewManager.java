@@ -4,13 +4,12 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.ui;
+package org.jtool.changetracker.replayer;
 
 import org.jtool.changetracker.core.Activator;
+import org.jtool.changetracker.replayer.ViewStateChangedEvent;
 import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.RepositoryEvent;
-import org.jtool.changetracker.ui.ViewStateChangedEvent;
-import org.jtool.changetracker.ui.ViewStateChangedListener;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
