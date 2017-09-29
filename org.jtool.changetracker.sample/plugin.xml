@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="false"
+            category="org.jtool.changetracker.replayer.ui.views.category"
+            class="org.jtool.changetracker.sample.CodeComparingViewSample"
+            icon="icons/cr.gif"
+            id="org.jtool.changetracker.sample.CodeComparingViewSample"
+            name="Comparing Changes+"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+          point="org.eclipse.ui.views">
+       <view
+             category="org.jtool.changetracker.replayer.ui.views.category"
+             class="org.jtool.changetracker.sample.CodeAnimatingViewSample"
+             icon="icons/cr.gif"
+             id="org.jtool.changetracker.sample.CodeAnimatingViewSample"
+             name="CodeAnimatingView+"
+             restorable="true">
+       </view>
+   </extension>
+   <extension
+         point="org.jtool.changetracker.repository.handlers">
+      <handler
+            class="org.jtool.changetracker.sample.OperationReplayerSample"
+            commandId="org.jtool.changetracker.sample.OperationReplayerSample">
+      </handler>
+   </extension>
+   
+</plugin>
