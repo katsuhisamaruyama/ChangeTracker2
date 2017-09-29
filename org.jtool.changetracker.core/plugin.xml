@@ -17,13 +17,6 @@
       </page>
    </extension>
    <extension
-         point="org.eclipse.ui.views">
-      <category
-            id="org.jtool.changetracker.ui.views.category"
-            name="Change Tracker">
-      </category>
-   </extension>
-   <extension
          point="org.eclipse.ui.startup">
       <startup
             class="org.jtool.changetracker.core.Activator">
