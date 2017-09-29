@@ -3,10 +3,17 @@
 <plugin>
    <extension
          point="org.eclipse.ui.views">
+      <category
+            id="org.jtool.changetracker.replayer.ui.views.category"
+            name="Change Replayer">
+      </category>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
       <view
             allowMultiple="false"
-            category="org.jtool.changetracker.ui.views.category"
-            class="org.jtool.changetracker.ui.ChangeExplorerView"
+            category="org.jtool.changetracker.replayer.ui.views.category"
+            class="org.jtool.changetracker.replayer.ui.ChangeExplorerView"
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.ChangeExplorerView"
             name="Change Explorer"
@@ -17,8 +24,8 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="false"
-            category="org.jtool.changetracker.ui.views.category"
-            class="org.jtool.changetracker.ui.HistoryView"
+            category="org.jtool.changetracker.replayer.ui.views.category"
+            class="org.jtool.changetracker.replayer.ui.HistoryView"
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.HistoryView"
             name="Change History"
@@ -29,8 +36,8 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="false"
-            category="org.jtool.changetracker.ui.views.category"
-            class="org.jtool.changetracker.ui.CodeComparingView"
+            category="org.jtool.changetracker.replayer.ui.views.category"
+            class="org.jtool.changetracker.replayer.ui.CodeComparingView"
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.CodeComparingView"
             name="Comparing Changes"
@@ -41,8 +48,8 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="false"
-            category="org.jtool.changetracker.ui.views.category"
-            class="org.jtool.changetracker.ui.CodeAnimatingView"
+            category="org.jtool.changetracker.replayer.ui.views.category"
+            class="org.jtool.changetracker.replayer.ui.CodeAnimatingView"
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.CodeAnimatingView"
             name="Animating Changes"

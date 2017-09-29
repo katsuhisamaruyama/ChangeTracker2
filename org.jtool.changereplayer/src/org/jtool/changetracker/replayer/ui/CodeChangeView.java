@@ -4,52 +4,52 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer;
+package org.jtool.changetracker.replayer.ui;
 
-import org.jtool.changetracker.replayer.ViewStateChangedEvent.Type;
 import org.jtool.changetracker.repository.CTFile;
-import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import java.time.ZonedDateTime;
 
 /**
- * A view that displays the history of change operations.
+ * A view that shows changes of code.
  * @author Katsuhisa Maruyama
  */
-public class HistoryView extends ViewPart implements ViewStateChangedListener {
-    
-    /**
-     * The identification string that is used to register this view.
-     */
-    public static final String ID = "org.jtool.changetracker.replayer.ui.HistoryView";
+public abstract class CodeChangeView extends ViewPart implements ViewStateChangedListener {
     
     /**
      * The instance that visualizes change operations.
      */
-    protected static OperationVisualizer operationVisualizer;
+    protected OperationVisualizer operationVisualizer;
     
     /**
-     * The control for the replay table.
+     * The control for the code viewer.
      */
-    protected TableControl tableControl;
+    protected Control codeViewerControl;
     
     /**
-     * The control for the replay buttons.
+     * The control for the time-line bar.
      */
-    protected ButtonControl buttonControl;
+    protected TimelineControl timelineControl;
     
     /**
-     * Creates an instance of this operation history view.
-     * @param manager the replay manager
+     * The actions for buttons.
      */
-    public HistoryView() {
+    protected ToolBarAction toolbarAction;
+    
+    /**
+     * Creates a code change view.
+     */
+    protected CodeChangeView() {
         ViewManager.getInstance().addEventListener(this);
         if (ViewManager.getInstance().getChangeExplorerView() != null) {
             operationVisualizer = ViewManager.getInstance().getOperationVisualizer();
@@ -59,7 +59,7 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
     }
     
     /**
-     * Creates this operation history view.
+     * Creates this code compare view.
      * @param parent the parent control
      */
     @Override
@@ -68,42 +68,58 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
         FormLayout layout = new FormLayout();
         composite.setLayout(layout);
         
-        buttonControl = new NullButtonControl(this);
-        buttonControl.createButtons(composite);
+        toolbarAction = new ToolBarAction(this);
+        toolbarAction.createActions();
         
-        tableControl = new TableControl(this);
-        tableControl.createTable(composite);
+        timelineControl = new TimelineControl(this);
+        timelineControl.createTimeline(composite);
         
-        FormData opdata = new FormData();
-        opdata.top = new FormAttachment(0, 0);
-        if (buttonControl.getControl() != null) {
-            opdata.bottom = new FormAttachment(buttonControl.getControl(), -2);
-        } else {
-            opdata.bottom = new FormAttachment(100, 0);
-        }
-        opdata.left = new FormAttachment(0, 0);
-        opdata.right = new FormAttachment(100, 0);
-        tableControl.getControl().setLayoutData(opdata);
+        codeViewerControl = createCodeView(composite);
+        
+        FormData cvdata = new FormData();
+        cvdata.top = new FormAttachment(timelineControl.getControl(), 2);
+        cvdata.bottom = new FormAttachment(100, 0);
+        cvdata.left = new FormAttachment(0, 0);
+        cvdata.right = new FormAttachment(100, 0);
+        codeViewerControl.setLayoutData(cvdata);
     }
+    
+    /**
+     * Creates a code viewer.
+     * @return the control for the created code viewer
+     */
+    protected abstract Control createCodeView(Composite parent);
+    
+    /**
+     * Selects the code viewer.
+     */
+    protected abstract void selectCodeViewer();
+    
+    /**
+     * Updates the code viewer.
+     */
+    protected abstract void updateCodeViewer();
+    
+    /**
+     * Resets the code viewer.
+     */
+    protected abstract void resetCodeViewer();
     
     /**
      * Sets the focus to this view.
      */
     @Override
     public void setFocus() {
-        tableControl.setFocus();
+        codeViewerControl.setFocus();
     }
     
     /**
-     * Disposes this this view.
+     * Disposes this view.
      */
     @Override
     public void dispose() {
-        if (tableControl != null) {
-            tableControl.dispose();
-        }
-        if (buttonControl != null) {
-            buttonControl.dispose();
+        if (codeViewerControl != null) {
+            codeViewerControl.dispose();
         }
         ViewManager.getInstance().removeEventListener(this);
         super.dispose();
@@ -144,8 +160,9 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
                 if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
-                tableControl.select();
-                buttonControl.update();
+                selectCodeViewer();
+                timelineControl.select();
+                toolbarAction.select();
                 return Status.OK_STATUS;
             }
         };
@@ -167,8 +184,7 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
                 if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
-                tableControl.mark();
-                buttonControl.update();
+                toolbarAction.update();
                 return Status.OK_STATUS;
             }
         };
@@ -180,8 +196,8 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
      */
     protected void open() {
         update();
-        setFocus();
     }
+    
     /**
      * Updates this view.
      */
@@ -197,8 +213,9 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
                 if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
-                tableControl.update();
-                buttonControl.update();
+                updateCodeViewer();
+                timelineControl.update();
+                toolbarAction.update();
                 return Status.OK_STATUS;
             }
         };
@@ -220,8 +237,9 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
                 if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
-                tableControl.reset();
-                buttonControl.reset();
+                resetCodeViewer();
+                timelineControl.reset();
+                toolbarAction.reset();
                 return Status.OK_STATUS;
             }
         };
@@ -242,6 +260,14 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
      */
     protected boolean readyToVisualize() {
         return operationVisualizer != null && operationVisualizer.readyToVisualize();
+    }
+    
+    /**
+     * Returns the time when the present change operation was performed.
+     * @return the time of the change operation, or <code>null</code> if the present time is invalid.
+     */
+    protected ZonedDateTime getPresentTime() {
+        return operationVisualizer.getPresentTime();
     }
     
     /**
@@ -275,7 +301,6 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
     protected int getSuccessiveOperationIndex() {
         return operationVisualizer.getSuccessiveOperationIndex();
     }
-    
     /**
      * Returns the first change operation.
      * @return the first change operation, <code>-1</code> if node
@@ -309,34 +334,56 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
     }
     
     /**
-     * Marks or unmarks all the change operations.
-     * @param mark <code>true</code> if the change operations will be marked, otherwise <code>false</code>
+     * Returns the present contents of the source code.
+     * @return the present source code.
      */
-    protected void setAllMarks(boolean mark) {
-        operationVisualizer.setAllMarks(mark);
+    protected String getPresentCode() {
+        return operationVisualizer.getPresentCode();
     }
     
     /**
-     * Return information about marked and unmarked change operations.
-     * @return the array that memorizes which change operations are marked
+     * Returns the precedent contents of the source code.
+     * @return the precedent source code, or the empty string if there is no precedent source code found.
      */
-    protected boolean[] getPresentMarks() {
-        return operationVisualizer.getPresentMarks();
+    protected String getPrecedentCode() {
+        return operationVisualizer.getPrecedentCode();
     }
     
     /**
-     * Marks a change operation.
-     * @param index the index number of the change operation to be marked
+     * Returns the successive contents of the source code.
+     * @return the successive source code, or the empty string if there is no successive source code found.
      */
-    protected void markOperation(int index) {
-        operationVisualizer.markOperation(index);
+    protected String getSucessiveCode() {
+        return operationVisualizer.getSucessiveCode();
     }
     
     /**
-     * Unmarks a change operation.
-     * @param index the index number of the change operation to be unmarked
+     * Returns the scale for the time range.
+     * @return the percentage of the scale
      */
-    protected void unmarkOperation(int index) {
-        operationVisualizer.unmarkOperation(index);
+    protected int getTimeScale() {
+        return operationVisualizer.getTimeScale();
+    }
+    
+    /**
+     * Sets the scale for the time range.
+     * @param scale the percentage of the scale
+     */
+    protected void setTimeScale(int scale) {
+        operationVisualizer.setTimeScale(scale);
+    }
+    
+    /**
+     * Zooms in the time range.
+     */
+    protected void zoominTimeScale() {
+        operationVisualizer.zoominTimeScale() ;
+    }
+    
+    /**
+     * Zooms out the time range.
+     */
+    protected void zoomoutTimeScale() {
+        operationVisualizer.zoomoutTimeScale();
     }
 }

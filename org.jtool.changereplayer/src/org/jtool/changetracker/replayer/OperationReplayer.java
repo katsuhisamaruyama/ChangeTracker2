@@ -6,6 +6,10 @@
 
 package org.jtool.changetracker.replayer;
 
+import org.jtool.changetracker.replayer.ui.CodeAnimatingView;
+import org.jtool.changetracker.replayer.ui.CodeComparingView;
+import org.jtool.changetracker.replayer.ui.HistoryView;
+import org.jtool.changetracker.replayer.ui.OperationVisualizer;
 import org.jtool.changetracker.repository.IRepositoryHandler;
 
 /**
@@ -13,7 +17,6 @@ import org.jtool.changetracker.repository.IRepositoryHandler;
  * @author Katsuhisa Maruyama
  */
 public class OperationReplayer extends OperationVisualizer implements IRepositoryHandler {
-    
     
     /**
      * Creates an object that replays change operations.

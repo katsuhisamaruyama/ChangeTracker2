@@ -4,15 +4,13 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer;
+package org.jtool.changetracker.replayer.ui;
 
 import org.jtool.changetracker.core.CTConsole;
 import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.IRepositoryListener;
 import org.jtool.changetracker.repository.RepositoryEvent;
 import org.jtool.changetracker.operation.IChangeOperation;
-import org.jtool.changetracker.replayer.ViewStateChangedEvent;
-
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;

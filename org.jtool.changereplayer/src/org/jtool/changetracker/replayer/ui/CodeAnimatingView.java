@@ -1,10 +1,10 @@
 /*
- *  Copyright 2015
+ *  Copyright 2017
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer;
+package org.jtool.changetracker.replayer.ui;
 
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.DocumentOperation;
@@ -30,7 +30,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
-
 import java.util.List;
 import java.util.ArrayList;
 

@@ -4,7 +4,7 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer;
+package org.jtool.changetracker.replayer.ui;
 
 import org.jtool.changetracker.core.Activator;
 import org.jtool.changetracker.repository.Repository;
