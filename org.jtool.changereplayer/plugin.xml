@@ -5,8 +5,8 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="false"
-            category="org.jtool.changetracker.core.views.category"
-            class="org.jtool.changetracker.replayer.ui.ChangeExplorerView"
+            category="org.jtool.changetracker.ui.views.category"
+            class="org.jtool.changetracker.ui.ChangeExplorerView"
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.ChangeExplorerView"
             name="Change Explorer"
@@ -16,8 +16,9 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            category="org.jtool.changetracker.core.views.category"
-            class="org.jtool.changetracker.replayer.ui.HistoryView"
+            allowMultiple="false"
+            category="org.jtool.changetracker.ui.views.category"
+            class="org.jtool.changetracker.ui.HistoryView"
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.HistoryView"
             name="Change History"
@@ -27,18 +28,33 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            category="org.jtool.changetracker.core.views.category"
-            class="org.jtool.changetracker.replayer.ui.CodeChangeView"
+            allowMultiple="false"
+            category="org.jtool.changetracker.ui.views.category"
+            class="org.jtool.changetracker.ui.CodeComparingView"
             icon="icons/cr.gif"
-            id="org.jtool.changetracker.replayer.ui.CodeChangeView"
-            name="Code Change"
+            id="org.jtool.changetracker.replayer.ui.CodeComparingView"
+            name="Comparing Changes"
             restorable="true">
       </view>
    </extension>
    <extension
-         point="org.eclipse.ui.startup">
-      <startup
-            class="org.jtool.changetracker.replayer.Activator">
-      </startup>
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="false"
+            category="org.jtool.changetracker.ui.views.category"
+            class="org.jtool.changetracker.ui.CodeAnimatingView"
+            icon="icons/cr.gif"
+            id="org.jtool.changetracker.replayer.ui.CodeAnimatingView"
+            name="Animating Changes"
+            restorable="true">
+      </view>
    </extension>
+   <extension
+         point="org.jtool.changetracker.repository.handlers">
+      <handler
+            class="org.jtool.changetracker.replayer.OperationReplayer"
+            commandId="org.jtool.changetracker.replayer.OperationReplayer">
+      </handler>
+   </extension>
+   
 </plugin>
