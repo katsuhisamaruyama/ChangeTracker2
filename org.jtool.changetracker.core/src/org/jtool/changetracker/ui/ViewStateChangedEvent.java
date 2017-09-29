@@ -4,7 +4,7 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
 import java.util.EventObject;
 
@@ -12,7 +12,7 @@ import java.util.EventObject;
  * Manages an event that represents the change of replay state.
  * @author Katsuhisa Maruyama
  */
-public class ReplayStateChangedEvent extends EventObject {
+public class ViewStateChangedEvent extends EventObject {
     
     private static final long serialVersionUID = 1L;
     
@@ -32,7 +32,7 @@ public class ReplayStateChangedEvent extends EventObject {
      * Creates an event that represents the change of replay state.
      * @param source the instance on which the event initially occurred
      */
-    public ReplayStateChangedEvent(Object source) {
+    public ViewStateChangedEvent(Object source) {
         super(source);
     }
     
@@ -41,7 +41,7 @@ public class ReplayStateChangedEvent extends EventObject {
      * @param source the instance on which the event initially occurred
      * @param the type of an event
      */
-    public ReplayStateChangedEvent(Object source, Type type) {
+    public ViewStateChangedEvent(Object source, Type type) {
         this(source);
         this.type = type;
     }
@@ -50,7 +50,7 @@ public class ReplayStateChangedEvent extends EventObject {
      * Returns the type of the event.
      * @return the event type
      */
-    public ReplayStateChangedEvent.Type getType() {
+    public ViewStateChangedEvent.Type getType() {
         return type;
     }
 }

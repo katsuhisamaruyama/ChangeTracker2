@@ -4,8 +4,9 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
+import org.jtool.changetracker.operation.ChangeOperation;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareUI;
 import org.eclipse.compare.CompareViewerSwitchingPane;
@@ -17,51 +18,47 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
-import org.jtool.changetracker.operation.ChangeOperation;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 /**
- * A viewer that shows the results of comparing between two source codes.
+ * A view that shows the results of comparing between two contents of code.
  * @author Katsuhisa Maruyama
  */
-public class SourceCodeViewer {
+public class CodeComparingView extends CodeChangeView {
     
     /**
-     * The identification string that is used to register a pop-up menu on this viewer.
+     * The identification string that is used to register this view.
      */
-    public static String ID = "org.jtool.changetracker.replayer.ui.sourcecodeview.popup";
+    public static final String ID = "org.jtool.changetracker.replayer.ui.CodeComparingView";
     
     /**
-     * A code change view that contains the source code viewer.
+     * The identification string that is used to register a pop-up menu on this code viewer.
      */
-    private CodeChangeView codeChangeView;
+    public static String POPUP_ID = "org.jtool.changetracker.replayer.ui.CodeComparingView.popup";
     
     /**
      * The viewer that displays differences between codes before and after a change
      */
-    private CompareViewerSwitchingPane compareView;
+    protected CompareViewerSwitchingPane compareView;
     
     /**
-     * Creates a source code viewer.
-     * @param view the code change view that contains the source code viewer
+     * Creates a code view.
      */
-    public SourceCodeViewer(CodeChangeView view) {
-        codeChangeView = view;
+    public CodeComparingView() {
+        super();
     }
     
     /**
-     * Creates a source code viewer.
-     * @param bottom the control that is located on the bottom of source code viewer
-     * @return the composite that contains the source code viewer
+     * Creates a code viewer.
+     * @return the control for the created code viewer
      */
-    public Composite createSourceCodeViewer(Composite parent, Composite top) {
+    @Override
+    protected Control createCodeView(Composite parent) {
         final CompareConfiguration compareConfiguration = new CompareConfiguration();
         compareConfiguration.setLeftLabel("Before the change"); 
         compareConfiguration.setLeftEditable(false);
@@ -77,55 +74,46 @@ public class SourceCodeViewer {
              * @return a viewer for the given input, or <code>null</code> if no viewer can be determined
              */
             protected Viewer getViewer(Viewer oviewer, Object input) {
-                String name = codeChangeView.getFile().getName();
-                String timeStr = ChangeOperation.getFormatedTime(codeChangeView.getPresentTime());
+                String name = getFile().getName();
+                String timeStr = ChangeOperation.getFormatedTime(getPresentTime());
                 Viewer viewer = CompareUI.findContentViewer(oviewer, input, this, compareConfiguration);
                 viewer.getControl().setData(CompareUI.COMPARE_VIEWER_TITLE, name + "  -  " + timeStr);
                 return viewer;
             }
         };
         compareView.setContent(compareView.getViewer().getControl());
-        FormData cvdata = new FormData();
-        if (top != null) {
-            cvdata.top = new FormAttachment(top, 2);
-        } else {
-            cvdata.top = new FormAttachment(0, 0);
-        }
-        cvdata.bottom = new FormAttachment(100, 0);
-        cvdata.left = new FormAttachment(0, 0);
-        cvdata.right = new FormAttachment(100, 0);
-        compareView.setLayoutData(cvdata);
-        
-        MenuManager menuManager = new MenuManager();
-        menuManager.setRemoveAllWhenShown(true);
-        Menu menu = menuManager.createContextMenu(parent);
-        parent.setMenu(menu); 
-        codeChangeView.getSite().registerContextMenu(SourceCodeViewer.ID, menuManager, compareView.getViewer());
-        
         return compareView;
     }
     
     /**
-     * Sets the focus to the control of the source code viewer.
+     * Obtains a menu manager attached to the code viewer.
+     * @return the menu manager
      */
-    protected void setFocus() {
-        compareView.setFocus();
+    protected MenuManager getMenuManager() {
+        MenuManager menuManager = new MenuManager();
+        menuManager.setRemoveAllWhenShown(true);
+        Menu menu = menuManager.createContextMenu(compareView);
+        compareView.setMenu(menu);
+        getSite().registerContextMenu(POPUP_ID, menuManager, compareView.getViewer());
+        return menuManager;
     }
     
     /**
-     * Disposes the control of the source code viewer.
+     * Selects the code viewer.
      */
-    public void dispose() {
-        compareView.dispose();
+    @Override
+    protected void selectCodeViewer() {
+        updateCodeViewer();
     }
     
     /**
-     * Updates the time-line bar.
+     * Updates the code viewer.
      */
-    protected void update() {
+    @Override
+    protected void updateCodeViewer() {
         if (!compareView.isDisposed()) {
-            String before = codeChangeView.getPrecedentCode();
-            String after = codeChangeView.getPresentCode();
+            String before = getPrecedentCode();
+            String after = getPresentCode();
             TypedElement left = new TypedElement(before);
             TypedElement right = new TypedElement(after);
             compareView.setInput(new DiffNode(left, right));
@@ -133,9 +121,10 @@ public class SourceCodeViewer {
     }
     
     /**
-     * Resets the time-line bar.
+     * Resets the code viewer.
      */
-    protected void reset() {
+    @Override
+    protected void resetCodeViewer() {
         if (!compareView.isDisposed()) {
             TypedElement left = new TypedElement("");
             TypedElement right = new TypedElement("");

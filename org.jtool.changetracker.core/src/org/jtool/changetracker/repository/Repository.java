@@ -59,7 +59,7 @@ public class Repository {
     /**
      * The collection of listeners that receives repository change events.
      */
-    protected List<RepositoryChangedListener> listeners = new ArrayList<RepositoryChangedListener>();
+    protected List<IRepositoryListener> listeners = new ArrayList<IRepositoryListener>();
     
     /**
      * Creates an instance that stores information about the repository.
@@ -134,8 +134,9 @@ public class Repository {
         
         ChangeOperation.sort(ops);
         ops = OperationCompactor.compact(ops);
+        fireAboutTo(RepositoryEvent.Type.OPERATION_ADD);
         addOperationAll(ops);
-        fire(new RepositoryChangedEvent(this, RepositoryChangedEvent.Type.OPERATION_ADDED));
+        fireChanged(RepositoryEvent.Type.OPERATION_ADD);
         
         storeChangeOperationsIntoHistoryFile(ops);
     }
@@ -149,8 +150,9 @@ public class Repository {
             return;
         }
         
+        fireAboutTo(RepositoryEvent.Type.OPERATION_ADD);
         addOperation(op);
-        fire(new RepositoryChangedEvent(this, RepositoryChangedEvent.Type.OPERATION_ADDED));
+        fireChanged(RepositoryEvent.Type.OPERATION_ADD);
         
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>(1);
         ops.add(op);
@@ -192,6 +194,10 @@ public class Repository {
      * @param ops the collection of the change operations to be added
      */
     private void addOperationAll(List<? extends IChangeOperation> ops) {
+        if (ops.size() == 0) {
+            return;
+        }
+        
         IChangeOperation op = ops.get(0);
         CTPath pathinfo = new CTPath(op);
         if (op.isFile()) {
@@ -285,7 +291,7 @@ public class Repository {
     /**
      * Collects change operations from history files and stores them into this repository.
      */
-    public void collectChangeOperationsFromHistoryFiles() {
+    public void collectFromHistoryFiles() {
         File dir = new File(location);
         if (!dir.isDirectory()) {
             return;
@@ -440,7 +446,7 @@ public class Repository {
      * Adds the listener that receives repository changed events.
      * @param listener the repository changed listener to be added
      */
-    public void addEventListener(RepositoryChangedListener listener) {
+    public void addEventListener(IRepositoryListener listener) {
         if (listener != null && !listeners.contains(listener)) {
             listeners.add(listener);
         }
@@ -450,19 +456,31 @@ public class Repository {
      * Removes the listener that no longer receives repository changed events.
      * @param listener the repository changed listener to be removed
      */
-    public void removeEventListener(RepositoryChangedListener listener) {
+    public void removeEventListener(IRepositoryListener listener) {
         if (listener != null && listeners.contains(listener)) {
             listeners.remove(listener);
         }
     }
     
     /**
-     * Sends a repository changed event to all the listeners.
-     * @param evt the changed event.
+     * Sends a repository change event to all the listeners before the event is about to occur.
+     * @param type the type of a repository changed event.
      */
-    public void fire(RepositoryChangedEvent evt) {
-        for (RepositoryChangedListener listener : listeners) {
-            listener.notify(evt);
+    void fireAboutTo(RepositoryEvent.Type type) {
+        RepositoryEvent evt = new RepositoryEvent(this, type);
+        for (IRepositoryListener listener : listeners) {
+            listener.aboutTo(evt);
+        }
+    }
+    
+    /**
+     * Sends a repository change event to all the listeners after the event occurred.
+     * @param type the type of a repository changed event.
+     */
+    void fireChanged(RepositoryEvent.Type type) {
+        RepositoryEvent evt = new RepositoryEvent(this, type);
+        for (IRepositoryListener listener : listeners) {
+            listener.changed(evt);
         }
     }
     

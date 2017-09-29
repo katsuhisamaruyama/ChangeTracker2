@@ -8,11 +8,13 @@ package org.jtool.changetracker.repository;
 
 import org.jtool.changetracker.core.CTPreferencePage;
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Collection;
 
 /**
- * Manages the repository that stores information about change operations.
+ * Manages the repositories that store change operations.
  * @author Katsuhisa Maruyama
  */
 public class RepositoryManager {
@@ -23,24 +25,25 @@ public class RepositoryManager {
     private static RepositoryManager instance = new RepositoryManager();
     
     /**
+     * The collection of repository handlers that are loaded from the extension point.
+     */
+    private Set<IRepositoryHandler> repositoryHandlers = new HashSet<IRepositoryHandler>();
+    
+    /**
      * The collection of all repositories that were opened in the past.
      */
     private Map<String, Repository> repositories = new HashMap<String, Repository>();
     
     /**
-     * The current repository that is focused on.
+     * The collection of repositories that continuously store change operations.
      */
-    private Repository currentRepository;
-    
-    /**
-     * The repository that continuously stores online change operations.
-     */
-    private Repository onlineRepository;
+    private Set<Repository> onlineRepositories = new HashSet<Repository>();
     
     /**
      * Prohibits the creation of an instance.
      */
     private RepositoryManager() {
+        repositoryHandlers = RepositoryHandlerLoader.load();
     }
     
     /**
@@ -55,12 +58,9 @@ public class RepositoryManager {
      * Initializes the whole information about the main repository.
      */
     public void initialize() {
-        String location = CTPreferencePage.getLocation();
-        if (location == null || location.length() == 0) {
-            CTPreferencePage.setLocation(CTPreferencePage.getDefaultLoaction());
+        for (IRepositoryHandler handler : repositoryHandlers) {
+            handler.initialize();
         }
-        
-        createRepository(location);
     }
     
     /**
@@ -68,36 +68,10 @@ public class RepositoryManager {
      */
     public void terminate() {
         repositories.clear();
-        currentRepository = null;
-        onlineRepository = null;
-    }
-    
-    /**
-     * Sets the repository that continuously stores online change operations.
-     * @param repo the online repository
-     */
-    public void setOnlineRepository(Repository repo) {
-        onlineRepository = repo;
-    }
-    
-    /**
-     * Returns the repository that continuously stores online change operations.
-     * @return the online repository
-     */
-    public Repository getOnlineRepository() {
-        return onlineRepository;
-    }
-    
-    /**
-     * Specifies if the online repository is used.
-     * @param bool <code>true</code> if the online repository is used, otherwise <code>false</code>
-     */
-    public void useOnlineRepository(boolean bool) {
-        if (onlineRepository != null && bool) {
-            onlineRepository.collectChangeOperationsFromHistoryFiles();
-        } else {
-            onlineRepository.clear();
-            onlineRepository = null;
+        onlineRepositories.clear();
+        
+        for (IRepositoryHandler handler : repositoryHandlers) {
+            handler.terminate();
         }
     }
     
@@ -122,42 +96,24 @@ public class RepositoryManager {
     }
     
     /**
-     * Returns the current repository that is focused on.
-     * @return the current repository
+     * Opens a repository.
+     * @param location the location of the repository
+     * @return the opened repository
      */
-    public Repository getCurrentRepository() {
-        return currentRepository;
-    }
-    
-    /**
-     * Creates a new repository.
-     * @param location the location of the main repository
-     * @return the created repository
-     */
-    public Repository createRepository(String location) {
+    public Repository openRepository(String location) {
         Repository repo = getRepository(location);
         if (repo != null) {
             repo.clear();
         }
         repo = new Repository(location);
-        repo.collectChangeOperationsFromHistoryFiles();
-        repositories.put(location, repo);
-        return repo;
-    }
-    
-    /**
-     * Opens a repository.
-     * @param repo the repository to be opened
-     */
-    public void openRepository(Repository repo) {
-        if (repo == null) {
-            return;
+        for (IRepositoryHandler handler: repositoryHandlers) {
+            repo.addEventListener(handler);
         }
-        
-        fire(repo, RepositoryChangedEvent.Type.ABOUT_TO_OPEN);
-        currentRepository = repo;
-        CTPreferencePage.setLocation(currentRepository.getLocation());
-        fire(repo, RepositoryChangedEvent.Type.OPENED);
+        repo.fireAboutTo(RepositoryEvent.Type.OPEN);
+        repo.collectFromHistoryFiles();
+        repositories.put(location, repo);
+        repo.fireChanged(RepositoryEvent.Type.OPEN);
+        return repo;
     }
     
     /**
@@ -169,10 +125,10 @@ public class RepositoryManager {
             return;
         }
         
-        fire(repo, RepositoryChangedEvent.Type.ABOUT_TO_CLOSE);
+        repo.fireAboutTo(RepositoryEvent.Type.CLOSE);
         repo.clear();
+        repo.fireChanged(RepositoryEvent.Type.CLOSE);
         repo = null;
-        fire(repo, RepositoryChangedEvent.Type.CLOSED);
     }
     
     /**
@@ -184,19 +140,60 @@ public class RepositoryManager {
             return;
         }
         
-        fire(repo, RepositoryChangedEvent.Type.ABOUT_TO_REFRESH);
+        repo.fireAboutTo(RepositoryEvent.Type.REFRESH);
         repo.clear();
         repo = new Repository(repo.getLocation());
-        repo.collectChangeOperationsFromHistoryFiles();
-        fire(repo, RepositoryChangedEvent.Type.REFRESHED);
+        repo.collectFromHistoryFiles();
+        repo.fireChanged(RepositoryEvent.Type.REFRESH);
     }
     
     /**
-     * Sends a repository changed event to all the listeners.
-     * @param evt the changed event.
+     * Returns the collection of repositories that continuously store change operations.
+     * @return the online repositories
      */
-    private void fire(Repository repo, RepositoryChangedEvent.Type type) {
-        RepositoryChangedEvent event = new RepositoryChangedEvent(repo, type);
-        repo.fire(event);
+    public Set<Repository> getOnlineRepositories() {
+        return onlineRepositories;
+    }
+    
+    /**
+     * Adds a repository that continuously stores change operations.
+     * @param repo the online repository to be added
+     */
+    public void addOnlineRepository(Repository repo) {
+        onlineRepositories.add(repo);
+        for (IRepositoryHandler handler: repositoryHandlers) {
+            repo.addEventListener(handler);
+        }
+    }
+    
+    /**
+     * Removes a repository that continuously stores change operations.
+     * @param repo the online repository to be removed
+     */
+    public void removeOnlineRepository(Repository repo) {
+        onlineRepositories.remove(repo);
+        for (IRepositoryHandler handler: repositoryHandlers) {
+            repo.removeEventListener(handler);
+        }
+    }
+    
+    /**
+     * Loads a repository from the preferences.
+     * @return the repository
+     */
+    public Repository loadRepository() {
+        String location = CTPreferencePage.getLocation();
+        if (location == null || location.length() == 0) {
+            CTPreferencePage.setLocation(CTPreferencePage.getDefaultLoaction());
+        }
+        return openRepository(location);
+    }
+    
+    /**
+     * Stores a repository into the preferences.
+     * @param repo the repository to be stored
+     */
+    public void storeRepository(Repository repo) {
+        CTPreferencePage.setLocation(repo.getLocation());
     }
 }

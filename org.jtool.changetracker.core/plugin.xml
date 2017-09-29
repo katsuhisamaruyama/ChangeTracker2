@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="org.jtool.changetracker.repository.handlers" name="org.jtool.changetracker.repository.handlers" schema="schema/org.jtool.changetracker.repository.exsd"/>
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
@@ -18,8 +19,8 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            id="org.jtool.changetracker.core.views.category"
-            name="Chnage Tracker">
+            id="org.jtool.changetracker.ui.views.category"
+            name="Change Tracker">
       </category>
    </extension>
    <extension

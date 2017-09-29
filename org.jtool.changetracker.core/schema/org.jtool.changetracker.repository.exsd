@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jtool.changetracker.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="org.jtool.changetracker.core" id="org.jtool.changetracker.repository.handlers" name="org.jtool.changetracker.repository.handlers"/>
+      </appinfo>
+      <documentation>
+         The extension point of macro handlers that receive repository change events.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="handler"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="handler">
+      <complexType>
+         <attribute name="commandId" type="string" use="default" value="org.eclipse.changetracker.repository.handler">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":org.jtool.changetracker.repository.IRepositoryHandler"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+
+   <annotation>
+      <appinfo>
+         <meta.section type="examples"/>
+      </appinfo>
+      <documentation>
+         &lt;p&gt;
+&lt;pre&gt;
+ &lt;extension
+         point=&quot;org.jtool.changetracker.repository.handlers&quot;&gt;
+      &lt;handler
+            class=&quot;org.jtool.changetracker.replayer.OperationReplayer&quot;
+            commandId=&quot;org.jtool.changetracker.replayer.OperationReplayer&quot;&gt;
+      &lt;/handler&gt;
+&lt;/extension&gt;
+&lt;/pre&gt;
+&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="apiinfo"/>
+      </appinfo>
+      <documentation>
+         &lt;p&gt;
+A handler must implements the four methods defined in &lt;code&gt;org.jtool.macrorecorder.recorder.IMacroListener&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;pre&gt;
+public interface IRepositoryListener {
+    
+    /**
+     * Invoked before a repository change event is about to occur.
+     * @param evt the sent event
+     */
+    public void aboutTo(RepositoryEvent evt);
+    
+    
+    /**
+     * Invoked after a repository change event occurred.
+     * @param evt the sent event
+     */
+    public void changed(RepositoryEvent evt);
+}
+&lt;/pre&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;pre&gt;
+public interface IRepositoryHandler extends IRepositoryChangedListener {
+    
+    /**
+     * Invoked to initialize this handler before receiving repository change events.
+     */
+    public void initialize();
+    
+    /**
+     * Invoked to terminate this handler.
+     */
+    public void terminate();
+}
+&lt;/pre&gt;&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+
+   <annotation>
+      <appinfo>
+         <meta.section type="copyright"/>
+      </appinfo>
+      <documentation>
+         Copyright 2017
+Software Science and Technology Lab.
+Department of Computer Science, Ritsumeikan University
+      </documentation>
+   </annotation>
+
+</schema>

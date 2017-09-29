@@ -4,7 +4,7 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -13,6 +13,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 
@@ -25,7 +26,12 @@ public class ButtonControl {
     /**
      * A history view that contains this button control.
      */
-    private HistoryView historyView;
+    protected HistoryView historyView;
+    
+    /**
+     * The composite for the buttons.
+     */
+    protected Composite buttons;
     
     /**
      * The button for going backward to the precedent change operation.
@@ -71,12 +77,11 @@ public class ButtonControl {
     }
     
     /**
-     * Creates a control of the replay buttons.
+     * Creates a control of the buttons.
      * @param parent the parent control
-     * @return the composite that contains the replay buttons
      */
-    protected Composite createButtons(Composite parent) {
-        Composite buttons = new Composite(parent, SWT.NONE);
+    public void createButtons(Composite parent) {
+        buttons = new Composite(parent, SWT.NONE);
         buttonSelectionListener = new ButtonSelectionListener();
         
         goFirstButton = new Button(buttons, SWT.FLAT);
@@ -141,13 +146,20 @@ public class ButtonControl {
         btdata.left = new FormAttachment(0, 0);
         btdata.right = new FormAttachment(100, 0);
         buttons.setLayoutData(btdata);
+    }
+    
+    /**
+     * Returns the control for the buttons.
+     * @return the buttons control
+     */
+    public Control getControl() {
         return buttons;
     }
     
     /**
      * Disposes the control of the replay buttons.
      */
-    protected void dispose() {
+    public void dispose() {
         if (!goFirstButton.isDisposed()) {
             goFirstButton.removeSelectionListener(buttonSelectionListener);
         }
@@ -177,7 +189,7 @@ public class ButtonControl {
     /**
      * Updates the replay buttons.
      */
-    protected void update() {
+    public void update() {
         int index = historyView.getFirstOperationIndex();
         if (historyView.getPresentIndex() != index) {
             goFirstButton.setEnabled(true);
@@ -219,7 +231,7 @@ public class ButtonControl {
     /**
      * Resets the replay buttons.
      */
-    protected void reset() {
+    public void reset() {
         if (!goFirstButton.isDisposed()) {
             goFirstButton.setEnabled(false);
         }
@@ -265,7 +277,7 @@ public class ButtonControl {
          */
         @Override
         public void widgetSelected(SelectionEvent evt) {
-            if (!historyView.readyToReplay()) {
+            if (!historyView.readyToVisualize()) {
                 return;
             }
             
@@ -288,50 +300,5 @@ public class ButtonControl {
                 historyView.goTo(index);
             }
         }
-    }
-}
-
-/**
- * Buttons that are not shown in the history view.
- * @author Katsuhisa Maruyama
- */
-class NullButtonControl extends ButtonControl {
-    
-    /**
-     * Creates replay buttons.
-     * @param view the history view that contains the button control
-     */
-    protected NullButtonControl(HistoryView view) {
-        super(view);
-    }
-    
-    /**
-     * Creates a control of the replay buttons.
-     * @param parent the parent control
-     * @return always <code>null</code>
-     */
-    @Override
-    protected Composite createButtons(Composite parent) {
-        return null;
-    }
-    /**
-     * Disposes the control of the replay buttons.
-     */
-    @Override
-    protected void dispose() {
-    }
-    
-    /**
-     * Updates the replay buttons.
-     */
-    @Override
-    protected void update() {
-    }
-    
-    /**
-     * Resets the replay buttons.
-     */
-    @Override
-    protected void reset() {
     }
 }

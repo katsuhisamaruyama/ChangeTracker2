@@ -4,7 +4,7 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
 import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.TimeRange;
@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -45,12 +46,12 @@ public class TimelineControl {
     /**
      * A code change view that contains this table control.
      */
-    private CodeChangeView codeChangeView;
+    protected CodeChangeView codeChangeView;
     
     /**
      * The collection of time ranges during which the file is opened.
      */
-    private List<FileOpenedRange> fileOpenedRanges = new ArrayList<FileOpenedRange>();
+    protected List<FileOpenedRange> fileOpenedRanges = new ArrayList<FileOpenedRange>();
     
     /**
      * The canvas on which the time-line bar displays.
@@ -111,11 +112,10 @@ public class TimelineControl {
     }
     
     /**
-     * Creates a control of the time-time bar.
+     * Creates a control of a time-time bar.
      * @param parent the parent control
-     * @return the composite that contains the time-line bar
      */
-    public Composite createTimeline(Composite parent) {
+    public void createTimeline(Composite parent) {
         canvas = new Canvas(parent, SWT.DOUBLE_BUFFERED | SWT.H_SCROLL);
         paintListener = new PaintListenerImpl();
         canvas.addPaintListener(paintListener);
@@ -139,13 +139,20 @@ public class TimelineControl {
         data.right = new FormAttachment(100, 0);
         data.height = TIMELINE_HEIGHT;
         canvas.setLayoutData(data);
+    }
+    
+    /**
+     * Returns the control for the time-line bar.
+     * @return the time-line bar control
+     */
+    public Control getControl() {
         return canvas;
     }
     
     /**
      * Sets the focus to the control of the time-line bar.
      */
-    protected void setFocus() {
+    public void setFocus() {
         canvas.setFocus();
     }
     
@@ -169,7 +176,7 @@ public class TimelineControl {
     /**
      * Selects a change operation in the time-line bar.
      */
-    protected void select() {
+    public void select() {
         reveal();
         canvas.redraw();
         canvas.update();
@@ -178,8 +185,8 @@ public class TimelineControl {
     /**
      * Updates this view.
      */
-    protected void update() {
-        if (!codeChangeView.readyToReplay()) {
+    public void update() {
+        if (!codeChangeView.readyToVisualize()) {
             return;
         }
         collectFileOpenedRanges();
@@ -189,7 +196,7 @@ public class TimelineControl {
     /**
      * Resets this view.
      */
-    protected void reset() {
+    public void reset() {
         if (!canvas.isDisposed()) {
             fileOpenedRanges.clear();
             redraw();
@@ -199,7 +206,7 @@ public class TimelineControl {
     /**
      * Redraws this view.
      */
-    protected void redraw() {
+    public void redraw() {
         updateFileOpenedTimeRange();
         canvas.redraw();
         canvas.update();
@@ -430,7 +437,7 @@ public class TimelineControl {
          */
         @Override
         public void paintControl(PaintEvent evt) {
-            if (!codeChangeView.readyToReplay()) {
+            if (!codeChangeView.readyToVisualize()) {
                 return;
             }
             
@@ -541,7 +548,7 @@ public class TimelineControl {
          */
         @Override
         public void mouseDoubleClick(MouseEvent evt) {
-            if (!codeChangeView.readyToReplay()) {
+            if (!codeChangeView.readyToVisualize()) {
                 return;
             }
             if (evt.y < 0 && canvas.getBounds().height < evt.y) {
@@ -592,7 +599,7 @@ public class TimelineControl {
          */
         @Override
         public void mouseMove(MouseEvent evt) {
-            if (!codeChangeView.readyToReplay()) {
+            if (!codeChangeView.readyToVisualize()) {
                 return;
             }
             if (evt.y < 0 && canvas.getBounds().height < evt.y) {
@@ -624,7 +631,7 @@ public class TimelineControl {
          */
         @Override
         public void handleEvent(Event evt) {
-            if (!codeChangeView.readyToReplay()) {
+            if (!codeChangeView.readyToVisualize()) {
                 return;
             }
             if (evt.y < 0 && canvas.getBounds().height < evt.y) {
@@ -670,7 +677,7 @@ public class TimelineControl {
          */
         @Override
         public void widgetSelected(SelectionEvent evt) {
-            if (!codeChangeView.readyToReplay()) {
+            if (!codeChangeView.readyToVisualize()) {
                 return;
             }
             
@@ -681,58 +688,5 @@ public class TimelineControl {
                 moveX = 0;
             }
         }
-    }
-}
-
-/**
- * A time-line bar that is not shown in the history view.
- * @author Katsuhisa Maruyama
- */
-class NullTimelineControl extends TimelineControl {
-    
-    /**
-     * Creates a time-line bar.
-     * @param view the code change view that contains the table control
-     */
-    public NullTimelineControl(CodeChangeView view) {
-        super(view);
-    }
-    
-    /**
-     * Creates a control of the time-time bar.
-     * @param parent the parent control
-     * @return always <code>null</code>
-     */
-    @Override
-    public Composite createTimeline(Composite parent) {
-        return null;
-    }
-    
-    /**
-     * Disposes the control of the time-line bar.
-     */
-    @Override
-    public void dispose() {
-    }
-    
-    /**
-     * Selects a change operation in the time-line bar.
-     */
-    @Override
-    protected void select() {
-    }
-    
-    /**
-     * Updates this view.
-     */
-    @Override
-    protected void update() {
-    }
-    
-    /**
-     * Resets this view.
-     */
-    @Override
-    protected void reset() {
     }
 }

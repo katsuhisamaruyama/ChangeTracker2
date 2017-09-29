@@ -4,19 +4,20 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
+import org.jtool.changetracker.core.Activator;
 import org.jtool.changetracker.repository.Repository;
 import org.jtool.changetracker.repository.CTProject;
 import org.jtool.changetracker.repository.CTPackage;
 import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.changetracker.operation.ChangeOperation;
-import org.jtool.changetracker.replayer.Activator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -49,51 +50,57 @@ public class ChangeExplorerView extends ViewPart {
     public static String ID = "org.jtool.changetracker.replayer.ui.ChangeExplorerView";
     
     /**
-     * The manager that manages the history of change operations.
+     * The instance that manages the repositories that store change operations.
      */
-    private ReplayManager replayManager;
+    protected RepositoryManager repositoryManager;
+    
+    /**
+     * The instance that visualizes change operations.
+     */
+    protected static OperationVisualizer operationVisualizer2;
+    
+    /**
+     * The current repository that is focused on.
+     */
+    protected Repository currentRepository;
     
     /**
      * The icon images.
      */
-    private static ImageDescriptor repositoryIcon = Activator.getImageDescriptor("icons/history_rep.gif");
+    protected static ImageDescriptor repositoryIcon = Activator.getImageDescriptor("icons/history_rep.gif");
     
     /**
      * The table viewer for project/package/file selection.
      */
-    private TreeViewer viewer;
-    
-    /**
-     * The collection of repositories that were opened in the past.
-     */
-    private Map<String, Repository> repositories = new HashMap<String, Repository>();
-    
-    /**
-     * A repository that is shown in this view.
-     */
-    private Repository currentRepository;
+    protected TreeViewer viewer;
     
     /**
      * The collection of actions that open each of the repositories.
      */
-    private Map<String, Action> actions = new HashMap<String, Action>();
+    protected Map<String, Action> actions = new HashMap<String, Action>();
     
     /**
      * The shell of this view.
      */
-    private Shell shell;
+    protected Shell shell;
     
     /**
      * The action that opens a new repository.
      */
-    private Action openAction;
+    protected Action newAction;
+    
+    /**
+     * The string attached to online repositories.
+     */
+    protected final static String PREFIX_FOR_ONLINE_REPOSITORY = "*";
     
     /**
      * Creates a change explorer view.
      */
     public ChangeExplorerView() {
-        replayManager = ReplayManager.getInstance();
-        currentRepository = RepositoryManager.getInstance().getMainRepository();
+        repositoryManager = RepositoryManager.getInstance();
+        currentRepository = repositoryManager.loadRepository();
+        ViewManager.getInstance().setChangeExplorerView(this);
     }
     
     /**
@@ -107,12 +114,93 @@ public class ChangeExplorerView extends ViewPart {
         viewer.setContentProvider(new TreeNodeContentProvider());
         viewer.setLabelProvider(new ProjectLabelProvider());
         
-        currentRepository.addEventListener(replayManager);
-        addRepositoryInToolBarMenu(currentRepository);
-        addOpenRepositoryItemInToolBarMenu();
+        newInToolBarMenu();
+        openInToolBarMenu(currentRepository.getLocation());
         
-        registerFileSelectAction();
+        fileSelectAction();
         update();
+    }
+    
+    /**
+     * Add an action that opens a new repository to the tool bar menu.
+     */
+    private void newInToolBarMenu() {
+        newAction = new Action("Open a new repository...") {
+            
+            /**
+             * Runs an action.
+             */
+            @Override
+            public void run() {
+                DirectoryDialog dialog = new DirectoryDialog(shell);
+                String location = dialog.open();
+                Repository repo = repositoryManager.getRepository(location);
+                if (repo == null) {
+                    currentRepository = repositoryManager.openRepository(location);
+                    openInToolBarMenu(currentRepository.getLocation());
+                }
+            }
+        };
+        
+        newAction.setEnabled(true);
+        newAction.setId("OpenRepository");
+        IMenuManager manager = getViewSite().getActionBars().getMenuManager();
+        manager.add(newAction);
+        manager.addMenuListener(new IMenuListener() {
+            
+            /**
+             * Invoked when the menu is about to be shown.
+             * @param manager the menu manager
+             */
+            @Override
+            public void menuAboutToShow(IMenuManager m) {
+                for (Action action : actions.values()) {
+                    action.setImageDescriptor(null);
+                    
+                    for (Repository repo: repositoryManager.getOnlineRepositories()) {
+                        if (action.getId().equals(repo.getLocation())) {
+                            action.setText(PREFIX_FOR_ONLINE_REPOSITORY + action.getId());
+                        } else {
+                            action.setText(action.getId());
+                        }
+                    }
+                }
+                
+                Action action = actions.get(currentRepository.getLocation());
+                if (action != null) {
+                    action.setImageDescriptor(repositoryIcon);
+                }
+            }
+        });
+    }
+    
+    /**
+     * Opens a repository in the tool bar menu.
+     * @param location the location of the repository to be opened
+     */
+    private void openInToolBarMenu(String location) {
+        Action action = new Action(location) {
+            
+            /**
+             * Runs an action.
+             */
+            @Override
+            public void run() {
+                currentRepository = repositoryManager.openRepository(getId());
+                refresh();
+            }
+        };
+        
+        action.setEnabled(true);
+        action.setId(location);
+        IMenuManager manager = getViewSite().getActionBars().getMenuManager();
+        if (repositoryManager.getAllRepositories().size() == 0) {
+            manager.add(action);
+        } else {
+            manager.insertBefore(newAction.getId(), action);
+        }
+        actions.put(location, action);
+        refresh();
     }
     
     /**
@@ -128,6 +216,9 @@ public class ChangeExplorerView extends ViewPart {
      */
     @Override
     public void dispose() {
+        ViewManager.getInstance().setChangeExplorerView(null);
+        ViewManager.getInstance().close();
+        
         viewer.getTree().dispose();
         super.dispose();
     }
@@ -135,7 +226,15 @@ public class ChangeExplorerView extends ViewPart {
     /**
      * Updates this view.
      */
-    void update() {
+    protected void update() {
+        currentRepository = repositoryManager.openRepository(currentRepository.getLocation());
+        refresh();
+    }
+    
+    /**
+     * Refreshes this view.
+     */
+    protected void refresh() {
         UIJob job = new UIJob("Update") {
             
             /**
@@ -158,13 +257,14 @@ public class ChangeExplorerView extends ViewPart {
     /**
      * Registers an action when a file is double-clicked.
      */
-    private void registerFileSelectAction() {
+    private void fileSelectAction() {
         viewer.addDoubleClickListener(new IDoubleClickListener() {
             
             /**
              * Receives an event when a double click is performed.
              * @param evt event describing the double-click
              */
+            @Override
             public void doubleClick(DoubleClickEvent evt) {
                 if (viewer.getSelection() instanceof IStructuredSelection) {
                     IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
@@ -174,94 +274,12 @@ public class ChangeExplorerView extends ViewPart {
                         Object value = node.getValue();
                         if (value instanceof CTFile) {
                             CTFile finfo = (CTFile)value;
-                            replayManager.open(finfo);
+                            ViewManager.getInstance().show(finfo);
                         }
                     }
                 }
             }
         });
-    }
-    
-    /**
-     * Add an action that specifies a repository to the tool bar menu.
-     * @param repo the repository to be added
-     */
-    private void addRepositoryInToolBarMenu(Repository repo) {
-        Action action = new Action(repo.getLocation()) {
-            
-            /**
-             * Runs an action.
-             */
-            @Override
-            public void run() {
-                if (!repo.getLocation().equals(currentRepository.getLocation())) {
-                    currentRepository.removeEventListener(replayManager);
-                    currentRepository = repo;
-                    currentRepository.addEventListener(replayManager);
-                    RepositoryManager.getInstance().openRepository(currentRepository);
-                    update();
-                    updateToolBarMenu();
-                }
-            }
-        };
-        action.setEnabled(true);
-        action.setId(repo.getLocation());
-        IMenuManager manager = getViewSite().getActionBars().getMenuManager();
-        if (repositories.size() == 0) {
-            manager.add(action);
-        } else {
-            manager.insertBefore(openAction.getId(), action);
-        }
-        currentRepository.removeEventListener(replayManager);
-        currentRepository = repo;
-        currentRepository.addEventListener(replayManager);
-        RepositoryManager.getInstance().openRepository(currentRepository);
-        repositories.put(currentRepository.getLocation(), repo);
-        actions.put(currentRepository.getLocation(), action);
-        update();
-        updateToolBarMenu();
-    }
-    
-    /**
-     * Add an action that opens a new repository to the tool bar menu.
-     */
-    private void addOpenRepositoryItemInToolBarMenu() {
-        openAction = new Action("Open a new repository...") {
-            
-            /**
-             * Runs an action.
-             */
-            @Override
-            public void run() {
-                DirectoryDialog dialog = new DirectoryDialog(shell);
-                String loc = dialog.open();
-                if (loc != null) {
-                    Repository repo = repositories.get(loc);
-                    if (repo != null) {
-                        return;
-                    }
-                    repo = RepositoryManager.getInstance().createRepository(loc);
-                    addRepositoryInToolBarMenu(repo);
-                }
-            }
-        };
-        openAction.setEnabled(true);
-        openAction.setId("OpenRepository");
-        IMenuManager manager = getViewSite().getActionBars().getMenuManager();
-        manager.add(openAction);
-    }
-    
-    /**
-     * Updates menu items in the tool bar.
-     */
-    private void updateToolBarMenu() {
-        for (Action action : actions.values()) {
-            action.setImageDescriptor(null);
-        }
-        Action action = actions.get(currentRepository.getLocation());
-        if (action != null) {
-            action.setImageDescriptor(repositoryIcon);
-        }
     }
     
     /**

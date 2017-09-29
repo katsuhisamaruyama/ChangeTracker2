@@ -10,14 +10,13 @@ package org.jtool.changetracker.repository;
  * Manages an event indicating that the state of the repository has been changed.
  * @author Katsuhisa Maruyama
  */
-public class RepositoryChangedEvent {
+public class RepositoryEvent {
     
     /**
      * Defines the type of a repository changed event.
      */
     public enum Type {
-        OPERATION_ADDED,
-        ABOUT_TO_OPEN, OPENED, ABOUT_TO_CLOSE, CLOSED, ABOUT_TO_REFRESH, REFRESHED;
+        OPERATION_ADD, OPEN, CLOSE, REFRESH;
     }
     
     /**
@@ -40,7 +39,7 @@ public class RepositoryChangedEvent {
      * @param repo the source of this event
      * @param type the type of this event
      */
-    public RepositoryChangedEvent(Repository repo, Type type) {
+    public RepositoryEvent(Repository repo, Type type) {
         this.repository = repo;
         this.type = type;
     }
@@ -51,7 +50,7 @@ public class RepositoryChangedEvent {
      * @param type the type of this event
      * @param obj the object sent by this event
      */
-    public RepositoryChangedEvent(Repository repo, Type type, Object obj) {
+    public RepositoryEvent(Repository repo, Type type, Object obj) {
         this(repo, type);
         this.object = obj;
     }

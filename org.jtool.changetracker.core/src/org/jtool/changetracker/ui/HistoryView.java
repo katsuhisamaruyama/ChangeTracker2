@@ -4,7 +4,7 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
 import org.jtool.changetracker.repository.CTFile;
 import org.eclipse.ui.part.ViewPart;
@@ -13,6 +13,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 
@@ -20,7 +22,7 @@ import org.eclipse.swt.widgets.Composite;
  * A view that displays the history of change operations.
  * @author Katsuhisa Maruyama
  */
-public class HistoryView extends ViewPart implements ReplayStateChangedListener {
+public class HistoryView extends ViewPart implements ViewStateChangedListener {
     
     /**
      * The identification string that is used to register this view.
@@ -28,14 +30,14 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
     public static final String ID = "org.jtool.changetracker.replayer.ui.HistoryView";
     
     /**
-     * The manager that manages the history of change operations.
+     * The instance that visualizes change operations.
      */
-    private ReplayManager replayManager;
+    protected static OperationVisualizer operationVisualizer;
     
     /**
      * The control for the replay table.
      */
-    protected OperationTableViewer tableControl;
+    protected TableControl tableControl;
     
     /**
      * The control for the replay buttons.
@@ -47,8 +49,12 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @param manager the replay manager
      */
     public HistoryView() {
-        replayManager = ReplayManager.getInstance();
-        replayManager.addEventListener(this);
+        ViewManager.getInstance().addEventListener(this);
+        if (ViewManager.getInstance().getChangeExplorerView() != null) {
+            operationVisualizer = ViewManager.getInstance().getOperationVisualizer();
+        } else {
+            ViewManager.getInstance().hideView(this);
+        }
     }
     
     /**
@@ -62,9 +68,21 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
         composite.setLayout(layout);
         
         buttonControl = new NullButtonControl(this);
-        Composite buttons = buttonControl.createButtons(composite);
-        tableControl = new OperationTableViewer(this);
-        tableControl.createTable(composite, buttons);
+        buttonControl.createButtons(composite);
+        
+        tableControl = new TableControl(this);
+        tableControl.createTable(composite);
+        
+        FormData opdata = new FormData();
+        opdata.top = new FormAttachment(0, 0);
+        if (buttonControl.getControl() != null) {
+            opdata.bottom = new FormAttachment(buttonControl.getControl(), -2);
+        } else {
+            opdata.bottom = new FormAttachment(100, 0);
+        }
+        opdata.left = new FormAttachment(0, 0);
+        opdata.right = new FormAttachment(100, 0);
+        tableControl.getControl().setLayoutData(opdata);
     }
     
     /**
@@ -80,10 +98,13 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      */
     @Override
     public void dispose() {
-        replayManager.close();
-        tableControl.dispose();
-        buttonControl.dispose();
-        replayManager.removeEventListener(this);
+        if (tableControl != null) {
+            tableControl.dispose();
+        }
+        if (buttonControl != null) {
+            buttonControl.dispose();
+        }
+        ViewManager.getInstance().removeEventListener(this);
         super.dispose();
     }
     
@@ -92,17 +113,17 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @param evt the event
      */
     @Override
-    public void notify(ReplayStateChangedEvent evt) {
-        ReplayStateChangedEvent.Type type = evt.getType();
-        if (type.equals(ReplayStateChangedEvent.Type.INDEX_CHANGED)) {
+    public void notify(ViewStateChangedEvent evt) {
+        ViewStateChangedEvent.Type type = evt.getType();
+        if (type.equals(ViewStateChangedEvent.Type.INDEX_CHANGED)) {
             select();
-        } if (type.equals(ReplayStateChangedEvent.Type.MARK_CHANGED)) {
+        } if (type.equals(ViewStateChangedEvent.Type.MARK_CHANGED)) {
             mark();
-        } else if (type.equals(ReplayStateChangedEvent.Type.FILE_OPENED)) {
+        } else if (type.equals(ViewStateChangedEvent.Type.FILE_OPENED)) {
             open();
-        } else if (type.equals(ReplayStateChangedEvent.Type.UPDATE)) {
+        } else if (type.equals(ViewStateChangedEvent.Type.UPDATE)) {
             update();
-        } else if (type.equals(ReplayStateChangedEvent.Type.RESET)) {
+        } else if (type.equals(ViewStateChangedEvent.Type.RESET)) {
             reset();
         }
     }
@@ -119,7 +140,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
              */
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (!replayManager.readyToReplay()) {
+                if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
                 tableControl.select();
@@ -142,7 +163,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
              */
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (!replayManager.readyToReplay()) {
+                if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
                 tableControl.mark();
@@ -172,7 +193,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
              */
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (!replayManager.readyToReplay()) {
+                if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
                 tableControl.update();
@@ -195,7 +216,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
              */
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (!replayManager.readyToReplay()) {
+                if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
                 tableControl.reset();
@@ -211,15 +232,15 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the file information
      */
     protected CTFile getFile() {
-        return replayManager.getFile();
+        return operationVisualizer.getFile();
     }
     
     /**
-     * Tests if change operations are ready to be replayed.
-     * @return <code>true</code> if change operations are ready to be replayed, otherwise <code>false</code>
+     * Tests if change operations are ready to be visualized.
+     * @return <code>true</code> if change operations are ready to be visualized, otherwise <code>false</code>
      */
-    protected boolean readyToReplay() {
-        return replayManager.readyToReplay();
+    protected boolean readyToVisualize() {
+        return operationVisualizer != null && operationVisualizer.readyToVisualize();
     }
     
     /**
@@ -227,7 +248,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @param index the index number of the change operation
      */
     protected void goTo(int index) {
-        replayManager.goTo(index);
+        operationVisualizer.goTo(index);
     }
     
     /**
@@ -235,7 +256,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the index number of the change operation
      */
     protected int getPresentIndex() {
-        return replayManager.getPresentIndex();
+        return operationVisualizer.getPresentIndex();
     }
     
     /**
@@ -243,7 +264,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the index number of the precedent change operation, <code>-1</code> if node
      */
     protected int getPrecedentOperationIndex() {
-        return replayManager.getPrecedentOperationIndex();
+        return operationVisualizer.getPrecedentOperationIndex();
     }
     
     /**
@@ -251,7 +272,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the index number of the successive change operation, <code>-1</code> if node
      */
     protected int getSuccessiveOperationIndex() {
-        return replayManager.getSuccessiveOperationIndex();
+        return operationVisualizer.getSuccessiveOperationIndex();
     }
     
     /**
@@ -259,7 +280,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the first change operation, <code>-1</code> if node
      */
     protected int getFirstOperationIndex() {
-        return replayManager.getFirstOperationIndex();
+        return operationVisualizer.getFirstOperationIndex();
     }
     
     /**
@@ -267,7 +288,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the last change operation, <code>-1</code> if node
      */
     protected int getLastOperationIndex() {
-        return replayManager.getLastOperationIndex();
+        return operationVisualizer.getLastOperationIndex();
     }
     
     /**
@@ -275,7 +296,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the index number of the previous change operation, or <code>-1</code> if none
      */
     protected int getPreviousMarkedOperationIndex() {
-        return replayManager.getPreviousMarkedOperationIndex();
+        return operationVisualizer.getPreviousMarkedOperationIndex();
     }
     
     /**
@@ -283,15 +304,15 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the index number of the next change operation, or <code>-1</code> if none
      */
     protected int getNextMarkedOperationIndex() {
-        return replayManager.getNextMarkedOperationIndex();
+        return operationVisualizer.getNextMarkedOperationIndex();
     }
     
     /**
      * Marks or unmarks all the change operations.
      * @param mark <code>true</code> if the change operations will be marked, otherwise <code>false</code>
      */
-    void setAllMarks(boolean mark) {
-        replayManager.setAllMarks(mark);
+    protected void setAllMarks(boolean mark) {
+        operationVisualizer.setAllMarks(mark);
     }
     
     /**
@@ -299,7 +320,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @return the array that memorizes which change operations are marked
      */
     protected boolean[] getPresentMarks() {
-        return replayManager.getPresentMarks();
+        return operationVisualizer.getPresentMarks();
     }
     
     /**
@@ -307,7 +328,7 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @param index the index number of the change operation to be marked
      */
     protected void markOperation(int index) {
-        replayManager.markOperation(index);
+        operationVisualizer.markOperation(index);
     }
     
     /**
@@ -315,6 +336,6 @@ public class HistoryView extends ViewPart implements ReplayStateChangedListener 
      * @param index the index number of the change operation to be unmarked
      */
     protected void unmarkOperation(int index) {
-        replayManager.unmarkOperation(index);
+        operationVisualizer.unmarkOperation(index);
     }
 }

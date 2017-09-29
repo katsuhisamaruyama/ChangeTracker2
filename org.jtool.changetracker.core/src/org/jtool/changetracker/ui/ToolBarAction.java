@@ -4,12 +4,12 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
+import org.jtool.changetracker.core.Activator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.jtool.changetracker.replayer.Activator;
 
 /**
  * Tool-bar actions that move the selection of change operations.
@@ -20,7 +20,7 @@ public class ToolBarAction {
     /**
      * A code change view that the tool-bar actions attach to.
      */
-    private CodeChangeView codeChangeView;
+    protected CodeChangeView codeChangeView;
     
     /**
      * The action for going backward to the precedent change operation.
@@ -73,7 +73,7 @@ public class ToolBarAction {
     /**
      * Creates tool-bar actions that move the selection of change operations.
      */
-    protected void createActions() {
+    public void createActions() {
         goFirstAction = new Action("First") {
             
             /**
@@ -186,9 +186,16 @@ public class ToolBarAction {
     }
     
     /**
+     * Selects the tool-bar actions.
+     */
+    public void select() {
+        update();
+    }
+    
+    /**
      * Updates the tool-bar actions.
      */
-    protected void update() {
+    public void update() {
         int index = codeChangeView.getFirstOperationIndex();
         if (codeChangeView.getPresentIndex() != index) {
             goFirstAction.setEnabled(true);
@@ -230,7 +237,7 @@ public class ToolBarAction {
     /**
      * Resets the tool-bar actions.
      */
-    protected void reset() {
+    public void reset() {
         goFirstAction.setEnabled(false);
         goPrecAction.setEnabled(false);
         fastRewindAction.setEnabled(false);

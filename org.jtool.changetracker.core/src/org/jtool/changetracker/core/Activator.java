@@ -8,6 +8,7 @@ package org.jtool.changetracker.core;
 
 import org.jtool.changetracker.repository.RepositoryManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -90,5 +91,14 @@ public class Activator extends AbstractUIPlugin implements IStartup {
      */
     public static IWorkbenchPage getWorkbenchPage() {
         return getWorkbenchWindow().getActivePage();
+    }
+    
+    /**
+     * Returns the image descriptor for an image file.
+     * @param path the image file
+     * @return the image descriptor
+     */
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
     }
 }

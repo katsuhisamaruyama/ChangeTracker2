@@ -4,7 +4,7 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
 import org.jtool.changetracker.repository.CTFile;
 import org.jtool.changetracker.operation.IChangeOperation;
@@ -15,9 +15,8 @@ import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.operation.CommandOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
@@ -35,12 +34,12 @@ import java.util.List;
  * A viewer for a table that displays change operations and select them.
  * @author Katsuhisa Maruyama
  */
-public class OperationTableViewer {
+public class TableControl {
     
     /**
      * A history view that contains this table control.
      */
-    private HistoryView historyView;
+    protected HistoryView historyView;
     
     /**
      * The table the displays change operations.
@@ -71,17 +70,15 @@ public class OperationTableViewer {
      * Creates a control of the replay table.
      * @param view the history view that contains the table control
      */
-    protected OperationTableViewer(HistoryView view) {
+    public TableControl(HistoryView view) {
         historyView = view;
     }
     
     /**
-     * Creates a table viewer.
+     * Creates a table.
      * @param parent the parent control
-     * @param bottom the control that is located on the bottom of the table viewer
-     * @return the composite that contains the table viewer
      */
-    protected Composite createTable(Composite parent,Composite bottom) {
+    public void createTable(Composite parent) {
         operationTable = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.CHECK | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL);
         operationTable.setLinesVisible(true);
         operationTable.setHeaderVisible(true);
@@ -98,17 +95,6 @@ public class OperationTableViewer {
         detailsColumn.setWidth(400);
         detailsColumn.setResizable(true);
         
-        FormData opdata = new FormData();
-        opdata.top = new FormAttachment(0, 0);
-        if (bottom != null) {
-            opdata.bottom = new FormAttachment(bottom, -2);
-        } else {
-            opdata.bottom = new FormAttachment(100, 0);
-        }
-        opdata.left = new FormAttachment(0, 0);
-        opdata.right = new FormAttachment(100, 0);
-        operationTable.setLayoutData(opdata);
-        
         selectionListener = new SelectionListenerImpl();
         operationTable.addSelectionListener(selectionListener);
         checkListener = new CheckListenerImpl();
@@ -117,21 +103,27 @@ public class OperationTableViewer {
         operationTable.addKeyListener(keyListener);
         traverseListener = new TraverseListenerImpl();
         operationTable.addTraverseListener(traverseListener);
-        
+    }
+    
+    /**
+     * Returns the control for the table.
+     * @return the buttons control
+     */
+    public Control getControl() {
         return operationTable;
     }
     
     /**
      * Sets the focus to the control of the table viewer.
      */
-    protected void setFocus() {
+    public void setFocus() {
         operationTable.setFocus();
     }
     
     /**
      * Disposes the control of the table viewer.
      */
-    protected void dispose() {
+    public void dispose() {
         if (!operationTable.isDisposed()) {
             operationTable.removeSelectionListener(selectionListener);
             operationTable.removeKeyListener(keyListener);
@@ -144,7 +136,7 @@ public class OperationTableViewer {
     /**
      * Selects a change operation in the table viewer.
      */
-    protected void select() {
+    public void select() {
         reveal();
         operationTable.select(historyView.getPresentIndex());
         setFocus();
@@ -153,7 +145,7 @@ public class OperationTableViewer {
     /**
      * Changes the mark states of a change operations in the table viewer.
      */
-    protected void mark() {
+    public void mark() {
         boolean[] marks = historyView.getPresentMarks();
         for (int index = 0; index < marks.length; index++) {
             TableItem item = operationTable.getItem(index);
@@ -164,8 +156,8 @@ public class OperationTableViewer {
     /**
      * Updates the table viewer.
      */
-    protected void update() {
-        if (!historyView.readyToReplay()) {
+    public void update() {
+        if (!historyView.readyToVisualize()) {
             return;
         }
         
@@ -188,7 +180,7 @@ public class OperationTableViewer {
     /**
      * Resets the table viewer.
      */
-    protected void reset() {
+    public void reset() {
         if (!operationTable.isDisposed()) {
             operationTable.removeAll();
             operationTable.update();
@@ -439,7 +431,7 @@ public class OperationTableViewer {
     /**
      * Deals with a traverse event.
      */
-    class TraverseListenerImpl implements TraverseListener {
+    protected class TraverseListenerImpl implements TraverseListener {
         
         /**
          * Creates a listener that deals with a traverse event.

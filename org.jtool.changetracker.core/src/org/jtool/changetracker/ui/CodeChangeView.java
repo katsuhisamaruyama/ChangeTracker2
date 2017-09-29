@@ -4,39 +4,38 @@
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.replayer.ui;
+package org.jtool.changetracker.ui;
 
-import org.jtool.changetracker.repository.ChangeTrackerFile;
+import org.jtool.changetracker.repository.CTFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+
 import java.time.ZonedDateTime;
 
 /**
- * A view that shows the results of comparing between two source codes.
+ * A view that shows changes of code.
  * @author Katsuhisa Maruyama
  */
-public class CodeChangeView extends ViewPart implements ReplayStateChangedListener {
+public abstract class CodeChangeView extends ViewPart implements ViewStateChangedListener {
     
     /**
-     * The identification string that is used to register this view.
+     * The instance that visualizes change operations.
      */
-    public static final String ID = "org.jtool.changetracker.replayer.ui.CodeChangeView";
+    protected OperationVisualizer operationVisualizer;
     
     /**
-     * The manager that manages the history of change operations.
+     * The control for the code viewer.
      */
-    private ReplayManager replayManager;
-    
-    /**
-     * The control for the source code viewer.
-     */
-    protected SourceCodeViewer sourceCodeViewer;
+    protected Control codeViewerControl;
     
     /**
      * The control for the time-line bar.
@@ -49,11 +48,15 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
     protected ToolBarAction toolbarAction;
     
     /**
-     * Creates a code compare view.
+     * Creates a code change view.
      */
-    public CodeChangeView() {
-        replayManager = ReplayManager.getInstance();
-        replayManager.addEventListener(this);
+    protected CodeChangeView() {
+        ViewManager.getInstance().addEventListener(this);
+        if (ViewManager.getInstance().getChangeExplorerView() != null) {
+            operationVisualizer = ViewManager.getInstance().getOperationVisualizer();
+        } else {
+            ViewManager.getInstance().hideView(this);
+        }
     }
     
     /**
@@ -66,20 +69,49 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
         FormLayout layout = new FormLayout();
         composite.setLayout(layout);
         
-        timelineControl = new TimelineControl(this);
-        Composite timeline = timelineControl.createTimeline(composite);
-        sourceCodeViewer = new SourceCodeViewer(this);
-        sourceCodeViewer.createSourceCodeViewer(composite, timeline);
         toolbarAction = new ToolBarAction(this);
         toolbarAction.createActions();
+        
+        timelineControl = new TimelineControl(this);
+        timelineControl.createTimeline(composite);
+        
+        codeViewerControl = createCodeView(composite);
+        
+        FormData cvdata = new FormData();
+        cvdata.top = new FormAttachment(timelineControl.getControl(), 2);
+        cvdata.bottom = new FormAttachment(100, 0);
+        cvdata.left = new FormAttachment(0, 0);
+        cvdata.right = new FormAttachment(100, 0);
+        codeViewerControl.setLayoutData(cvdata);
     }
+    
+    /**
+     * Creates a code viewer.
+     * @return the control for the created code viewer
+     */
+    protected abstract Control createCodeView(Composite parent);
+    
+    /**
+     * Selects the code viewer.
+     */
+    protected abstract void selectCodeViewer();
+    
+    /**
+     * Updates the code viewer.
+     */
+    protected abstract void updateCodeViewer();
+    
+    /**
+     * Resets the code viewer.
+     */
+    protected abstract void resetCodeViewer();
     
     /**
      * Sets the focus to this view.
      */
     @Override
     public void setFocus() {
-        sourceCodeViewer.setFocus();
+        codeViewerControl.setFocus();
     }
     
     /**
@@ -87,10 +119,10 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      */
     @Override
     public void dispose() {
-        replayManager.close();
-        sourceCodeViewer.dispose();
-        timelineControl.dispose();
-        replayManager.removeEventListener(this);
+        if (codeViewerControl != null) {
+            codeViewerControl.dispose();
+        }
+        ViewManager.getInstance().removeEventListener(this);
         super.dispose();
     }
     
@@ -99,17 +131,17 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @param evt the event
      */
     @Override
-    public void notify(ReplayStateChangedEvent evt) {
-        ReplayStateChangedEvent.Type type = evt.getType();
-        if (type.equals(ReplayStateChangedEvent.Type.INDEX_CHANGED)) {
+    public void notify(ViewStateChangedEvent evt) {
+        ViewStateChangedEvent.Type type = evt.getType();
+        if (type.equals(ViewStateChangedEvent.Type.INDEX_CHANGED)) {
             select();
-        } if (type.equals(ReplayStateChangedEvent.Type.MARK_CHANGED)) {
+        } if (type.equals(ViewStateChangedEvent.Type.MARK_CHANGED)) {
             mark();
-        } else if (type.equals(ReplayStateChangedEvent.Type.FILE_OPENED)) {
+        } else if (type.equals(ViewStateChangedEvent.Type.FILE_OPENED)) {
             open();
-        } else if (type.equals(ReplayStateChangedEvent.Type.UPDATE)) {
+        } else if (type.equals(ViewStateChangedEvent.Type.UPDATE)) {
             update();
-        } else if (type.equals(ReplayStateChangedEvent.Type.RESET)) {
+        } else if (type.equals(ViewStateChangedEvent.Type.RESET)) {
             reset();
         }
     }
@@ -126,12 +158,12 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
              */
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (!replayManager.readyToReplay()) {
+                if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
-                sourceCodeViewer.update();
+                selectCodeViewer();
                 timelineControl.select();
-                toolbarAction.update();
+                toolbarAction.select();
                 return Status.OK_STATUS;
             }
         };
@@ -150,7 +182,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
              */
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (!replayManager.readyToReplay()) {
+                if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
                 toolbarAction.update();
@@ -170,7 +202,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
     /**
      * Updates this view.
      */
-    private void update() {
+    protected void update() {
         UIJob job = new UIJob("Update") {
             
             /**
@@ -179,10 +211,10 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
              */
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (!replayManager.readyToReplay()) {
+                if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
-                sourceCodeViewer.update();
+                updateCodeViewer();
                 timelineControl.update();
                 toolbarAction.update();
                 return Status.OK_STATUS;
@@ -194,7 +226,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
     /**
      * Resets this view.
      */
-    private void reset() {
+    protected void reset() {
         UIJob job = new UIJob("Reset") {
             
             /**
@@ -203,10 +235,10 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
              */
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
-                if (!replayManager.readyToReplay()) {
+                if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
-                sourceCodeViewer.reset();
+                resetCodeViewer();
                 timelineControl.reset();
                 toolbarAction.reset();
                 return Status.OK_STATUS;
@@ -219,16 +251,16 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * Returns information about a file related to the operation history.
      * @return the file information
      */
-    protected ChangeTrackerFile getFile() {
-        return replayManager.getFile();
+    protected CTFile getFile() {
+        return operationVisualizer.getFile();
     }
     
     /**
-     * Tests if change operations are ready to be replayed.
-     * @return <code>true</code> if change operations are ready to be replayed, otherwise <code>false</code>
+     * Tests if change operations are ready to be visualized.
+     * @return <code>true</code> if change operations are ready to be visualized, otherwise <code>false</code>
      */
-    protected boolean readyToReplay() {
-        return replayManager.readyToReplay();
+    protected boolean readyToVisualize() {
+        return operationVisualizer != null && operationVisualizer.readyToVisualize();
     }
     
     /**
@@ -236,7 +268,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the time of the change operation, or <code>null</code> if the present time is invalid.
      */
     protected ZonedDateTime getPresentTime() {
-        return replayManager.getPresentTime();
+        return operationVisualizer.getPresentTime();
     }
     
     /**
@@ -244,7 +276,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @param index the index number of the change operation
      */
     protected void goTo(int index) {
-        replayManager.goTo(index);
+        operationVisualizer.goTo(index);
     }
     
     /**
@@ -252,7 +284,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the index number of the change operation
      */
     protected int getPresentIndex() {
-        return replayManager.getPresentIndex();
+        return operationVisualizer.getPresentIndex();
     }
     
     /**
@@ -260,7 +292,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the index number of the precedent change operation, <code>-1</code> if node
      */
     protected int getPrecedentOperationIndex() {
-        return replayManager.getPrecedentOperationIndex();
+        return operationVisualizer.getPrecedentOperationIndex();
     }
     
     /**
@@ -268,14 +300,14 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the index number of the successive change operation, <code>-1</code> if node
      */
     protected int getSuccessiveOperationIndex() {
-        return replayManager.getSuccessiveOperationIndex();
+        return operationVisualizer.getSuccessiveOperationIndex();
     }
     /**
      * Returns the first change operation.
      * @return the first change operation, <code>-1</code> if node
      */
     protected int getFirstOperationIndex() {
-        return replayManager.getFirstOperationIndex();
+        return operationVisualizer.getFirstOperationIndex();
     }
     
     /**
@@ -283,7 +315,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the last change operation, <code>-1</code> if node
      */
     protected int getLastOperationIndex() {
-        return replayManager.getLastOperationIndex();
+        return operationVisualizer.getLastOperationIndex();
     }
     
     /**
@@ -291,7 +323,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the index number of the previous change operation, or <code>-1</code> if none
      */
     protected int getPreviousMarkedOperationIndex() {
-        return replayManager.getPreviousMarkedOperationIndex();
+        return operationVisualizer.getPreviousMarkedOperationIndex();
     }
     
     /**
@@ -299,7 +331,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the index number of the next change operation, or <code>-1</code> if none
      */
     protected int getNextMarkedOperationIndex() {
-        return replayManager.getNextMarkedOperationIndex();
+        return operationVisualizer.getNextMarkedOperationIndex();
     }
     
     /**
@@ -307,7 +339,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the present source code.
      */
     protected String getPresentCode() {
-        return replayManager.getPresentCode();
+        return operationVisualizer.getPresentCode();
     }
     
     /**
@@ -315,7 +347,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the precedent source code, or the empty string if there is no precedent source code found.
      */
     protected String getPrecedentCode() {
-        return replayManager.getPrecedentCode();
+        return operationVisualizer.getPrecedentCode();
     }
     
     /**
@@ -323,7 +355,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the successive source code, or the empty string if there is no successive source code found.
      */
     protected String getSucessiveCode() {
-        return replayManager.getSucessiveCode();
+        return operationVisualizer.getSucessiveCode();
     }
     
     /**
@@ -331,7 +363,7 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @return the percentage of the scale
      */
     protected int getTimeScale() {
-        return replayManager.getTimeScale();
+        return operationVisualizer.getTimeScale();
     }
     
     /**
@@ -339,20 +371,20 @@ public class CodeChangeView extends ViewPart implements ReplayStateChangedListen
      * @param scale the percentage of the scale
      */
     protected void setTimeScale(int scale) {
-        replayManager.setTimeScale(scale);
+        operationVisualizer.setTimeScale(scale);
     }
     
     /**
      * Zooms in the time range.
      */
     protected void zoominTimeScale() {
-        replayManager.zoominTimeScale() ;
+        operationVisualizer.zoominTimeScale() ;
     }
     
     /**
      * Zooms out the time range.
      */
     protected void zoomoutTimeScale() {
-        replayManager.zoomoutTimeScale();
+        operationVisualizer.zoomoutTimeScale();
     }
 }
