@@ -47,7 +47,7 @@ import java.util.HashMap;
 public class OperationRecorder {
     
     /**
-     * The single instance of this operation history manager.
+     * The single instance of this operation recorder.
      */
     private static OperationRecorder instance = new OperationRecorder();
     
@@ -125,7 +125,7 @@ public class OperationRecorder {
         }
         
         onlineRepository = new Repository(location);
-        RepositoryManager.getInstance().setOnlineRepository(onlineRepository);
+        RepositoryManager.getInstance().addOnlineRepository(onlineRepository);
     }
     
     /**
@@ -144,10 +144,11 @@ public class OperationRecorder {
         storeAllChangeOerations();
         closeAllEditors();
         
+        RepositoryManager.getInstance().removeOnlineRepository(onlineRepository);
         onlineRepository.clear();
         onlineRepository = new Repository(location);
-        onlineRepository.collectChangeOperationsFromHistoryFiles();
-        RepositoryManager.getInstance().setOnlineRepository(onlineRepository);
+        onlineRepository.collectFromHistoryFiles();
+        RepositoryManager.getInstance().addOnlineRepository(onlineRepository);
     }
     
     /**
