@@ -9,6 +9,7 @@ package org.jtool.changetracker.replayer;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -100,5 +101,14 @@ public class Activator extends AbstractUIPlugin {
      */
     public static IWorkbenchPage getWorkbenchPage() {
         return getWorkbenchWindow().getActivePage();
+    }
+    
+    /**
+     * Returns the image descriptor for an image file.
+     * @param path the image file
+     * @return the image descriptor
+     */
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
     }
 }

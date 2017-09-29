@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.replayer.ui;
 
-import org.jtool.changetracker.core.Activator;
+import org.jtool.changetracker.replayer.Activator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
