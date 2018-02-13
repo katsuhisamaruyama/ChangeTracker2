@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -209,7 +209,7 @@ public class OperationRecorder {
      */
     private void createOperation(CompoundMacro cmacro) {
         RefactoringOperation rop = null;
-        if (cmacro.getCommandMacro().isRefactoring()) {
+        if (cmacro.getCommandMacro() != null && cmacro.getCommandMacro().isRefactoring()) {
             for (Macro macro : cmacro.getMacros()) {
                 if (macro instanceof RefactoringMacro) {
                     rop = createOperation((RefactoringMacro)macro);
@@ -234,7 +234,7 @@ public class OperationRecorder {
                         op.setAction(ICodeOperation.Action.REFACTORING.toString());
                     }
                 }
-                op.setCompoundTime(cmacro.getCommandMacro().getTime());
+                op.setCompoundTime(cmacro.getTime());
                 recordChangeOperation(op);
             }
         }
@@ -403,13 +403,13 @@ public class OperationRecorder {
             return null;
         }
         
-        ResourceOperation.Target target = ResourceOperation.Target.NONE;
+        String target = ResourceOperation.Target.NONE.toString();
         if (macro.isFileChange()) {
-            target = ResourceOperation.Target.FILE;
+            target = ResourceOperation.Target.FILE.toString();
         } else if  (macro.isPackageChange()) {
-            target = ResourceOperation.Target.PACKAGE;
+            target = ResourceOperation.Target.PACKAGE.toString();
         } else if  (macro.isProjectChange()) {
-            target = ResourceOperation.Target.PROJECT;
+            target = ResourceOperation.Target.PROJECT.toString();
         }  else {
             return null;
         }
@@ -417,6 +417,7 @@ public class OperationRecorder {
         CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
         ResourceOperation op = new ResourceOperation(macro.getTime(), pathinfo, action, target);
+        op.setTarget(target);
         op.setSrcDstPath(macro.getSrcDstPath());
         return op;
     }

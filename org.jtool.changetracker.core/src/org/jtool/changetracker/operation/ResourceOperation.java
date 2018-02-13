@@ -32,7 +32,7 @@ public class ResourceOperation extends ChangeOperation {
     /**
      * The kind of the target of the resource.
      */
-    protected Target target;
+    protected String target;
     
     /**
      * The path of the source or destination of the resource.
@@ -44,24 +44,37 @@ public class ResourceOperation extends ChangeOperation {
      * @param time the time when the file operation was performed
      * @param pathinfo information about path of a resource on which the file operation was performed
      * @param action the action of the file operation
-     * @param target the kind of the target of the resource
      * @param author the author's name
      */
-    public ResourceOperation(ZonedDateTime time, CTPath pathinfo, String action, Target target, String author) {
-        super(time, Type.FILE, pathinfo, action, author);
-        this.target = target;
+    public ResourceOperation(ZonedDateTime time, CTPath pathinfo, String action, String author) {
+        super(time, Type.RESOURCE, pathinfo, action, author);
     }
     
     /**
      * Creates an instance storing information about this file operation.
      * @param time the time when the file operation was performed
      * @param pathinfo information about path of a resource on which the file operation was performed
-     * @param target the kind of the target of the resource
      * @param action the action of the file operation
      */
-    public ResourceOperation(ZonedDateTime time, CTPath pathinfo, String action, Target target) {
-        super(time, Type.FILE, pathinfo, action);
+    public ResourceOperation(ZonedDateTime time, CTPath pathinfo, String action) {
+        super(time, Type.RESOURCE, pathinfo, action);
+    }
+    
+    /**
+     * Sets the kind of the target of the resource.
+     * @param target the kind of the target of the resource
+     */
+    public void setTarget(String target) {
+        assert target != null;
         this.target = target;
+    }
+    
+    /**
+     * Returns the kind of the target of the resource.
+     * @param target the kind of the target of the resource
+     */
+    public String getTarget() {
+        return target;
     }
     
     /**
@@ -73,7 +86,7 @@ public class ResourceOperation extends ChangeOperation {
     }
     
     /**
-     * Returns the path of the source or destination for the rename or move.
+     * Sets the path of the source or destination for the rename or move.
      * @param the source or destination path for the rename or move
      */
     public void setSrcDstPath(String sdpath) {
@@ -86,7 +99,7 @@ public class ResourceOperation extends ChangeOperation {
      * @return <code>true</code> if the changed resource is a project, otherwise <code>false</code>
      */
     public boolean isProjectChange() {
-        return target == Target.PROJECT;
+        return target.equals(Target.PROJECT.toString());
     }
     
     /**
@@ -94,7 +107,7 @@ public class ResourceOperation extends ChangeOperation {
      * @return <code>true</code> if the changed resource is a package, otherwise <code>false</code>
      */
     public boolean isPackageChange() {
-        return target == Target.PACKAGE;
+        return target.equals(Target.PACKAGE.toString());
     }
     
     /**
@@ -102,7 +115,7 @@ public class ResourceOperation extends ChangeOperation {
      * @return <code>true</code> if the changed resource is a file, otherwise <code>false</code>
      */
     public boolean isFileChange() {
-        return target == Target.FILE;
+        return target.equals(Target.FILE.toString());
     }
     
     /**

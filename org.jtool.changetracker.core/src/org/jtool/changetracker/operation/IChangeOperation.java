@@ -20,7 +20,7 @@ public interface IChangeOperation {
      * The type of a change operation.
      */
     public enum Type {
-        DOCUMENT, COPY, FILE, COMMAND, REFACTOR;
+        DOCUMENT, COPY, FILE, COMMAND, REFACTOR, RESOURCE;
     }
     
     /**
@@ -155,6 +155,12 @@ public interface IChangeOperation {
     * @return <code>true</code> if the change operation is related to refactoring, otherwise <code>false</code>
     */
     public boolean isRefactor();
+    
+    /**
+     * Tests if this change operation is related to a resource change.
+     * @return <code>true</code> if the change operation is related to a resource change, otherwise <code>false</code>
+     */
+    public boolean isResource();
     
     /**
      * Tests if this change operation is performed on a resource represented by a branch and a path.

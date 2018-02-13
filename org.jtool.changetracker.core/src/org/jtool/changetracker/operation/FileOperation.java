@@ -103,7 +103,7 @@ public class FileOperation extends ChangeOperation {
     }
     
     /**
-     * Returns the path of the source or destination for the rename or move.
+     * Sets the path of the source or destination for the rename or move.
      * @param the source or destination path for the rename or move
      */
     public void setSrcDstPath(String sdpath) {

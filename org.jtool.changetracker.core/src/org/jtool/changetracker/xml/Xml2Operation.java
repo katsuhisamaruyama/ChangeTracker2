@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -13,6 +13,7 @@ import org.jtool.changetracker.operation.DocumentOperation;
 import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.operation.CommandOperation;
 import org.jtool.changetracker.operation.RefactoringOperation;
+import org.jtool.changetracker.operation.ResourceOperation;
 import org.jtool.changetracker.repository.CTPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -184,6 +185,8 @@ public class Xml2Operation {
             return getCommandOperation(elem);
         } else if (elemName.equals(XmlConstants.RefactorOperationElem)) {
             return getRefactoringOperation(elem);
+        }  else if (elemName.equals(XmlConstants.ResourceOperationElem)) {
+            return getResourceOperation(elem);
         }
         return null;
     }
@@ -265,6 +268,20 @@ public class Xml2Operation {
         op.setArguments(elem.getAttribute(XmlConstants.ArgumentAttr));
         String code = getFirstChildText(elem.getElementsByTagName(XmlConstants.CodeElem));
         op.setSelectedText(code);
+        return op;
+    }
+    
+    /**
+     * Obtains a resource operation from the DOM element.
+     * @param node the DOM element
+     * @return the resource operation
+     */
+    private static ResourceOperation getResourceOperation(Element elem) {
+        OperationAttribute attr = new OperationAttribute(elem);
+        ResourceOperation op = new ResourceOperation(attr.time, attr.pathinfo, attr.action, attr.author);
+        op.setDescription(attr.desc);
+        op.setTarget(elem.getAttribute(XmlConstants.TargetAttr));
+        op.setSrcDstPath(elem.getAttribute(XmlConstants.SrcDstPathAttr));
         return op;
     }
     

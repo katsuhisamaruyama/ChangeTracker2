@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -14,6 +14,7 @@ import org.jtool.changetracker.operation.DocumentOperation;
 import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.operation.CommandOperation;
 import org.jtool.changetracker.operation.RefactoringOperation;
+import org.jtool.changetracker.operation.ResourceOperation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
@@ -94,6 +95,9 @@ public class Operation2Xml {
         } else if (operation.isRefactor()) {
             Element opElem = appendRefactoringOperationElement(doc, (RefactoringOperation)operation);
             parent.appendChild(opElem);
+        } else if (operation.isResource()) {
+            Element opElem = appendResourceOperationElement(doc, (ResourceOperation)operation);
+            parent.appendChild(opElem);
         } else {
             CTConsole.println("Unknown operation");
         }
@@ -120,53 +124,53 @@ public class Operation2Xml {
     /**
      * Creates a DOM element corresponding to a document operation.
      * @param the DOM instance that has the XML representation
-     * @param operation the document operation
+     * @param op the document operation
      * @return the DOM element corresponding to the document operation
      */
-    private static Element appendDocumentOperationElement(Document doc, DocumentOperation operation) {
+    private static Element appendDocumentOperationElement(Document doc, DocumentOperation op) {
         Element elem = doc.createElement(XmlConstants.DocumentOperationElem);
-        setOperationElement(doc, elem, operation);
+        setOperationElement(doc, elem, op);
         
-        elem.setAttribute(XmlConstants.OffsetAttr, String.valueOf(operation.getStart()));
+        elem.setAttribute(XmlConstants.OffsetAttr, String.valueOf(op.getStart()));
         Element insElem = doc.createElement(XmlConstants.InsertedElem);
         elem.appendChild(insElem);
-        insElem.appendChild(doc.createTextNode(operation.getInsertedText()));
+        insElem.appendChild(doc.createTextNode(op.getInsertedText()));
         Element delElem = doc.createElement(XmlConstants.DeletedElem);
         elem.appendChild(delElem);
-        delElem.appendChild(doc.createTextNode(operation.getDeletedText()));
+        delElem.appendChild(doc.createTextNode(op.getDeletedText()));
         return elem;
     }
     
     /**
      * Creates a DOM element corresponding to a copy operation.
      * @param the DOM instance that has the XML representation
-     * @param operation the copy operation
+     * @param op the copy operation
      * @return the DOM element corresponding to the copy operation
      */
-    private static Element appendCopyOperationElement(Document doc, CopyOperation operation) {
+    private static Element appendCopyOperationElement(Document doc, CopyOperation op) {
         Element elem = doc.createElement(XmlConstants.CopyOperationElem);
-        setOperationElement(doc, elem, operation);
+        setOperationElement(doc, elem, op);
         
-        elem.setAttribute(XmlConstants.OffsetAttr, String.valueOf(operation.getStart()));
+        elem.setAttribute(XmlConstants.OffsetAttr, String.valueOf(op.getStart()));
         Element copiedElem = doc.createElement(XmlConstants.CopiedElem);
         elem.appendChild(copiedElem);
-        copiedElem.appendChild(doc.createTextNode(operation.getCopiedText()));
+        copiedElem.appendChild(doc.createTextNode(op.getCopiedText()));
         return elem;
     }
     
     /**
      * Creates a DOM element corresponding to a file operation.
      * @param the DOM instance that has the XML representation
-     * @param operation the file operation
+     * @param op the file operation
      * @return the DOM element corresponding to the file operation
      */
-    private static Element appendFileOperationElement(Document doc, FileOperation operation) {
+    private static Element appendFileOperationElement(Document doc, FileOperation op) {
         Element elem = doc.createElement(XmlConstants.FileOperationElem);
-        setOperationElement(doc, elem, operation);
+        setOperationElement(doc, elem, op);
         
-        elem.setAttribute(XmlConstants.CharsetAttr, operation.getCharset());
-        elem.setAttribute(XmlConstants.SrcDstPathAttr, operation.getSrcDstPath());
-        String code = operation.getCode();
+        elem.setAttribute(XmlConstants.CharsetAttr, op.getCharset());
+        elem.setAttribute(XmlConstants.SrcDstPathAttr, op.getSrcDstPath());
+        String code = op.getCode();
         if (code != null) {
             Element codeElem = doc.createElement(XmlConstants.CodeElem);
             elem.appendChild(codeElem);
@@ -178,33 +182,48 @@ public class Operation2Xml {
     /**
      * Creates a DOM element corresponding to a command operation.
      * @param the DOM instance that has the XML representation
-     * @param operation the command operation
+     * @param op the command operation
      * @return the DOM element corresponding to the command operation
      */
-    private static Element appendCommandOperationElement(Document doc, CommandOperation operation) {
+    private static Element appendCommandOperationElement(Document doc, CommandOperation op) {
         Element elem = doc.createElement(XmlConstants.CommandOperationElem);
-        setOperationElement(doc, elem, operation);
+        setOperationElement(doc, elem, op);
         
-        elem.setAttribute(XmlConstants.CommandIdAttr, operation.getCommandId());
+        elem.setAttribute(XmlConstants.CommandIdAttr, op.getCommandId());
         return elem;
     }
     
     /**
-     * Creates a DOM element corresponding to a command operation.
+     * Creates a DOM element corresponding to a refactoring operation.
      * @param the DOM instance that has the XML representation
-     * @param operation the command operation
-     * @return the DOM element corresponding to the command operation
+     * @param op the refactoring operation
+     * @return the DOM element corresponding to the refactoring operation
      */
-    private static Element appendRefactoringOperationElement(Document doc, RefactoringOperation operation) {
+    private static Element appendRefactoringOperationElement(Document doc, RefactoringOperation op) {
         Element elem = doc.createElement(XmlConstants.RefactorOperationElem);
-        setOperationElement(doc, elem, operation);
+        setOperationElement(doc, elem, op);
         
-        elem.setAttribute(XmlConstants.NameAttr, operation.getName());
-        elem.setAttribute(XmlConstants.OffsetAttr, String.valueOf(operation.getSelectionStart()));
-        elem.setAttribute(XmlConstants.ArgumentAttr, operation.getArgumentText());
+        elem.setAttribute(XmlConstants.NameAttr, op.getName());
+        elem.setAttribute(XmlConstants.OffsetAttr, String.valueOf(op.getSelectionStart()));
+        elem.setAttribute(XmlConstants.ArgumentAttr, op.getArgumentText());
         Element selElem = doc.createElement(XmlConstants.SelectedElem);
         elem.appendChild(selElem);
-        selElem.appendChild(doc.createTextNode(operation.getSelectedText()));
+        selElem.appendChild(doc.createTextNode(op.getSelectedText()));
+        return elem;
+    }
+    
+    /**
+     * Creates a DOM element corresponding to a resource operation.
+     * @param the DOM instance that has the XML representation
+     * @param op the resource operation
+     * @return the DOM element corresponding to the resource operation
+     */
+    private static Element appendResourceOperationElement(Document doc, ResourceOperation op) {
+        Element elem = doc.createElement(XmlConstants.ResourceOperationElem);
+        setOperationElement(doc, elem, op);
+        
+        elem.setAttribute(XmlConstants.TargetAttr, op.getTarget());
+        elem.setAttribute(XmlConstants.SrcDstPathAttr, op.getSrcDstPath());
         return elem;
     }
 }

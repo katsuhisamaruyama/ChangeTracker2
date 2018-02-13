@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -20,6 +20,7 @@ public class XmlConstants {
     public static final String FileOperationElem     = "fileOperation";
     public static final String CommandOperationElem  = "commandOperation";
     public static final String RefactorOperationElem = "refactoringOperation";
+    public static final String ResourceOperationElem = "resourceOperation";
     
     public static final String InsertedElem = "inserted";
     public static final String DeletedElem  = "deleted";
@@ -45,4 +46,5 @@ public class XmlConstants {
     public static final String CommandIdAttr  = "commandId";
     public static final String NameAttr       = "name";
     public static final String ArgumentAttr   = "args";
+    public static final String TargetAttr     = "target";
 }

@@ -362,6 +362,15 @@ public abstract class ChangeOperation implements IChangeOperation {
     }
     
     /**
+     * Tests if this change operation is related to refactoring.
+     * @return <code>true</code> if the change operation is related to refactoring, otherwise <code>false</code>
+     */
+    @Override
+    public boolean isResource() {
+         return type == Type.RESOURCE;
+    }
+    
+    /**
      * Tests if this change operation is performed on a resource represented by a branch and a path.
      * @param branch the branch of the resource
      * @param path the path of the resource

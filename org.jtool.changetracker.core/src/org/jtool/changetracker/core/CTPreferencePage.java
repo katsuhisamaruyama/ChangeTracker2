@@ -110,7 +110,7 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
     /**
      * Returns the absolute location of a directory that contains history files.
      * @param the relative path of the directory
-     * @return the directory location, or <code>null</code> if the directory does not exist
+     * @return the path of the directory location
      */
     public static String getLocation(String path) {
         IPath workspaceDir = ResourcesPlugin.getWorkspace().getRoot().getLocation();
@@ -121,11 +121,7 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
         } else {
             location = new Path(path).toOSString();
         }
-        
-        if (checkLocation(location)) {
-            return location;
-        }
-        return null;
+        return location;
     }
     
     /**
@@ -169,7 +165,7 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
      * @return the default directory location.
      */
     public static String getDefaultLoaction() {
-        String location = getLocation(WORKSPACE_PATH_PREFIX + File.separator + DEFAULT_DIRECTORY_PATH);
+        String location = getLocation(WORKSPACE_PATH_PREFIX + File.separatorChar + DEFAULT_DIRECTORY_PATH);
         
         File file = new File(location);
         if (!file.exists()) {
