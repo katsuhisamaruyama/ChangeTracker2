@@ -7,9 +7,6 @@
 package org.jtool.changetracker.operation;
 
 import org.jtool.changetracker.repository.CTPath;
-import org.jtool.macrorecorder.macro.ResourceMacro.Action;
-import org.jtool.macrorecorder.macro.ResourceMacro.Target;
-
 import java.time.ZonedDateTime;
 
 /**
@@ -178,8 +175,6 @@ public class ResourceOperation extends ChangeOperation {
                 buf.append(" from [" + srcDstPath + "]");
             }
         }
-        
-        buf.append(" code=[" + getShortText(code) + "]");
         return buf.toString();
     }
 }

@@ -14,6 +14,7 @@ import org.jtool.changetracker.operation.CopyOperation;
 import org.jtool.changetracker.operation.FileOperation;
 import org.jtool.changetracker.operation.CommandOperation;
 import org.jtool.changetracker.operation.RefactoringOperation;
+import org.jtool.changetracker.operation.ResourceOperation;
 import org.jtool.changetracker.repository.CTPath;
 import org.jtool.changetracker.repository.Repository;
 import org.jtool.changetracker.repository.RepositoryManager;
@@ -192,9 +193,9 @@ public class OperationRecorder {
             return createOperation((CommandMacro)macro);
         } else if (macro instanceof RefactoringMacro) {
             return null;
-        } else if (macro instanceof CodeCompletionMacro) {
-            return null;
         } else if (macro instanceof ResourceMacro) {
+            return createOperation((ResourceMacro)macro);
+        } else if (macro instanceof CodeCompletionMacro) {
             return null;
         } else if (macro instanceof GitMacro) {
             return null;
@@ -285,8 +286,6 @@ public class OperationRecorder {
         return op;
     }
     
-   
-    
     /**
      * Creates a file operation from a file macro.
      * @param macro the file macro
@@ -295,38 +294,39 @@ public class OperationRecorder {
     private ChangeOperation createOperation(FileMacro macro) {
         String action = "";
         if (macro.isAdd()) {
-            action = FileOperation.Action.ADD.toString();
+            action = FileOperation.Action.ADDED.toString();
         } else if (macro.isDelete()) {
-            action = FileOperation.Action.REMOVE.toString();
+            action = FileOperation.Action.REMOVED.toString();
         } else if (macro.isOpen()) {
-            action = FileOperation.Action.OPEN.toString();
+            action = FileOperation.Action.OPENED.toString();
         } else if (macro.isClose()) {
-            action = FileOperation.Action.CLOSE.toString();
+            action = FileOperation.Action.CLOSED.toString();
         } else if (macro.isSave()) {
-            action = FileOperation.Action.SAVE.toString();
+            action = FileOperation.Action.SAVED.toString();
         } else if (macro.isActivate()) {
-            action = FileOperation.Action.ACTIVATE.toString();
+            action = FileOperation.Action.ACTIVATED.toString();
         } else if (macro.isRefactor()) {
-            action = FileOperation.Action.REFACTOR.toString();
+            action = FileOperation.Action.REFACTORED.toString();
         } else if (macro.isMoveFrom()) {
-            action = FileOperation.Action.MOVE_FROM.toString();
+            action = FileOperation.Action.MOVED_FROM.toString();
         } else if (macro.isMoveTo()) {
-            action = FileOperation.Action.MOVE_TO.toString();
+            action = FileOperation.Action.MOVED_TO.toString();
         } else if (macro.isRenameFrom()) {
-            action = FileOperation.Action.MOVE_FROM.toString();
+            action = FileOperation.Action.RENAMED_FROM.toString();
         } else if (macro.isRenameTo()) {
-            action = FileOperation.Action.RENAME_TO.toString();
+            action = FileOperation.Action.RENAMED_TO.toString();
         } else if (macro.isContentChange()) {
-            action = FileOperation.Action.CONTENT_CHANGE.toString();
+            action = FileOperation.Action.CONTENT_CHANGED.toString();
         } else if (macro.isGitAdded()) {
-            action = FileOperation.Action.GIT_ADD.toString();
+            action = FileOperation.Action.ADDED_GIT_INDEX_CHANGED.toString();
         } else if (macro.isGitRemoved()) {
-            action = FileOperation.Action.GIT_REMOVE.toString();
+            action = FileOperation.Action.REMOVED_GIT_INDEX_CHANGED.toString();
         } else if (macro.isGitModified()) {
-            action = FileOperation.Action.GIT_MODIFY.toString();
+            action = FileOperation.Action.MODIFIED_GIT_INDEX_CHANGED.toString();
         } else {
             return null;
         }
+        
         CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
         FileOperation op = new FileOperation(macro.getTime(), pathinfo, action.toString());
@@ -358,15 +358,16 @@ public class OperationRecorder {
         String action = "";
         if (macro.isBegin()) {
             if (macro.isUndo()) {
-                action = RefactoringOperation.Action.UNDO.toString();
+                action = RefactoringOperation.Action.UNDONE.toString();
             } else if (macro.isRedo()) {
-                action = RefactoringOperation.Action.REDO.toString();
+                action = RefactoringOperation.Action.REDONE.toString();
             } else {
-                action = RefactoringOperation.Action.EXECUTE.toString();
+                action = RefactoringOperation.Action.PERFORMED.toString();
             }
         } else {
             return null;
         }
+        
         CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
                 macro.getPath(), macro.getBranch());
         RefactoringOperation op = new RefactoringOperation(macro.getTime(), pathinfo, action);
@@ -374,6 +375,49 @@ public class OperationRecorder {
         op.setSelectionStart(macro.getSelectionStart());
         op.setSelectedText(macro.getSelectionText());
         op.setArguments(macro.getArguments());
+        return op;
+    }
+    
+    /**
+     * Creates a resource operation from a resource macro.
+     * @param macro the resource macro
+     * @return the created operation, or <code>null</code> when an unknown or unneeded macro was found
+     */
+    private ResourceOperation createOperation(ResourceMacro macro) {
+        String action = "";
+        if (macro.isAdd()) {
+            action = ResourceOperation.Action.ADDED.toString();
+        } else if (macro.isRemove()) {
+            action = ResourceOperation.Action.REMOVED.toString();
+        } else if (macro.isChange()) {
+            action = ResourceOperation.Action.CHANGED.toString();
+        } else if (macro.isRenameFrom()) {
+            action = ResourceOperation.Action.RENAMED_FROM.toString();
+        } else if (macro.isRenameTo()) {
+            action = ResourceOperation.Action.RENAMED_TO.toString();
+        } else if (macro.isMoveFrom()) {
+            action = ResourceOperation.Action.MOVED_FROM.toString();
+        } else if (macro.isMoveTo()) {
+            action = ResourceOperation.Action.MOVED_TO.toString();
+        }  else {
+            return null;
+        }
+        
+        ResourceOperation.Target target = ResourceOperation.Target.NONE;
+        if (macro.isFileChange()) {
+            target = ResourceOperation.Target.FILE;
+        } else if  (macro.isPackageChange()) {
+            target = ResourceOperation.Target.PACKAGE;
+        } else if  (macro.isProjectChange()) {
+            target = ResourceOperation.Target.PROJECT;
+        }  else {
+            return null;
+        }
+        
+        CTPath pathinfo = new CTPath(macro.getProjectName(), macro.getPackageName(), macro.getFileName(),
+                macro.getPath(), macro.getBranch());
+        ResourceOperation op = new ResourceOperation(macro.getTime(), pathinfo, action, target);
+        op.setSrcDstPath(macro.getSrcDstPath());
         return op;
     }
     
@@ -396,7 +440,7 @@ public class OperationRecorder {
         print(op);
         if (op.isFile()) {
             FileOperation fop = (FileOperation)op;
-            if (fop.isRemoved() || fop.isClosed() || fop.isSaved()) {
+            if (fop.isDelete() || fop.isClose() || fop.isSave()) {
                 storeChangeOerations(key);
             }
         }

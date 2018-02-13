@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -124,7 +124,6 @@ public class MacroReceiver implements IMacroHandler {
         if (!onRecording) {
             IMacroRecorder macroRecorder = MacroRecorder.getInstance();
             macroRecorder.addMacroListener(this);
-            macroRecorder.start();
         }
     }
     
@@ -135,7 +134,6 @@ public class MacroReceiver implements IMacroHandler {
         if (onRecording) {
             IMacroRecorder macroRecorder = MacroRecorder.getInstance();
             macroRecorder.removeMacroListener(this);
-            macroRecorder.stop();
         }
     }
 }
