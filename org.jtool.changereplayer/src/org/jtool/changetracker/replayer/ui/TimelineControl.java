@@ -225,9 +225,9 @@ public class TimelineControl {
             IChangeOperation op = ops.get(idx);
             if (op.isFile()) {
                 FileOperation fop = (FileOperation)op;
-                if (fop.isOpened() || fop.isAdded()) {
+                if (fop.isOpen() || fop.isAdd()) {
                     from = op;
-                } else if (fop.isClosed() || fop.isRemoved() || idx == ops.size() - 1) {
+                } else if (fop.isClose() || fop.isDelete() || idx == ops.size() - 1) {
                     to = op;
                     fileOpenedRanges.add(new FileOpenedRange(from, to));
                 }
