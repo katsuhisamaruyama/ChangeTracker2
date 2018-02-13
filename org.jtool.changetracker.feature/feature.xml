@@ -138,25 +138,32 @@ This Agreement is governed by the laws of the State of New York and the intellec
          id="org.jtool.changetracker.core"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jtool.changetracker.recorder"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jtool.changetracker.replayer"
          download-size="0"
          install-size="0"
-         version="1.0.0.qualifier"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jtool.changetracker.sample"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jtool.macrorecorder"
          download-size="0"
          install-size="0"
          version="0.0.0"
