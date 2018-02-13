@@ -26,12 +26,16 @@ public class CTConsole {
     /**
      * The stream of the dedicated console.
      */
-    private static MessageConsoleStream consoleStream;
+    private static MessageConsoleStream consoleStream = getConsoleStream();
     
     /**
-     * Shows the dedicated console.
+     * Shows the console and creates its stream.
      */
-    private static void showConsole() {
+    private static MessageConsoleStream getConsoleStream() {
+        ConsolePlugin consolePlugin = ConsolePlugin.getDefault();
+        if (consolePlugin == null) {
+            return null;
+        }
         IConsoleManager consoleManager = ConsolePlugin.getDefault().getConsoleManager();
         IConsole[] consoles = consoleManager.getConsoles();
         
@@ -47,7 +51,7 @@ public class CTConsole {
         
         consoleManager.addConsoles(new MessageConsole[] { console });
         consoleManager.showConsoleView(console);
-        consoleStream = console.newMessageStream();
+        return console.newMessageStream();
     }
     
     /**
@@ -55,10 +59,11 @@ public class CTConsole {
      * @param msg the message to be displayed
      */
     public static void print(String msg) {
-        if (consoleStream == null) {
-            showConsole();
+        if (consoleStream != null) {
+            consoleStream.print(msg);
+        } else {
+            System.err.println(msg);
         }
-        consoleStream.print(msg);
     }
     
     /**
@@ -66,9 +71,10 @@ public class CTConsole {
      * @param msg the message to be displayed
      */
     public static void println(String msg) {
-        if (consoleStream == null) {
-            showConsole();
+        if (consoleStream != null) {
+            consoleStream.println(msg);
+        } else {
+            System.err.print(msg);
         }
-        consoleStream.println(msg);
     }
 }

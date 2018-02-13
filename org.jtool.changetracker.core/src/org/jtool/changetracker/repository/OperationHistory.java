@@ -142,10 +142,10 @@ public class OperationHistory {
      */
     public int getRestorationIndexAfter(int index) {
         for (int idx = index; idx < operations.size(); idx++) {
-            IChangeOperation operation = operations.get(idx);
-            if (operation.isFile()) {
-                FileOperation foperation = (FileOperation)operation;
-                if (foperation.getCode() != null) {
+            IChangeOperation op = operations.get(idx);
+            if (op.isFile()) {
+                FileOperation fop = (FileOperation)op;
+                if (fop.getCode() != null) {
                     return idx;
                 }
             }
@@ -301,7 +301,7 @@ public class OperationHistory {
      * @return the contents of restored source code, <code>null</code> if the restoration fails
      */
     public String getCode(String curCode, int curIndex, int index) {
-        IChangeOperation op  = getOperations().get(index);
+        IChangeOperation op  = operations.get(index);
         if (op.isFile()) {
             return ((FileOperation)op).getCode();
         }
@@ -334,7 +334,9 @@ public class OperationHistory {
      * Compacts the history of change operations.
      */
     public void compact() {
-        operations = OperationCompactor.compact(operations);
+        if (operations.size() > 0) {
+            operations = OperationCompactor.compact(operations);
+        }
     }
     
     /**

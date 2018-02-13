@@ -482,10 +482,10 @@ public abstract class ChangeOperation implements IChangeOperation {
         final int LESS_LEN = 20;
         
         String text2;
-        if (text.length() < LESS_LEN + 1) {
+        if (text.length() < LESS_LEN) {
             text2 = text;
         } else {
-            text2 = text.substring(0, LESS_LEN + 1) + "...";
+            text2 = text.substring(0, LESS_LEN) + "...";
         }
         
         return text2.replace('\n', '~');
