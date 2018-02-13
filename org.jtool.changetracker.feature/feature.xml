@@ -116,22 +116,29 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <update label="ChangeTracker v2 for Eclipse" url="https://github.com/katsuhisamaruyama/ChangeTracker2"/>
    </url>
 
+   <includes
+         id="org.jtool.macrorecorder.feature"
+         version="0.0.0"/>
+
    <requires>
-      <import feature="org.jtool.macrorecorder.feature" version="1.0.0.qualifier"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.core.resources" version="3.11.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.jdt.core" version="3.12.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.ui.console" version="3.6.200" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.ide" version="3.12.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.editors" version="3.10.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jdt.core" version="3.12.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jdt.ui" version="3.12.0" match="greaterOrEqual"/>
       <import plugin="org.apache.commons.io" version="2.2.0" match="greaterOrEqual"/>
       <import plugin="org.apache.commons.compress" version="1.6.0" match="greaterOrEqual"/>
-      <import plugin="org.jtool.macrorecorder" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.ui.editors" version="3.10.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.ui.workbench.texteditor" version="3.10.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.jdt.ui" version="3.12.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.ui.ide" version="3.12.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.jface.text" version="3.11.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.compare" version="3.6.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jface.text" version="3.11.0" match="greaterOrEqual"/>
+      <import plugin="org.jtool.macrorecorder" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor" version="3.10.0" match="greaterOrEqual"/>
+      <import feature="org.jtool.macrorecorder.feature" version="1.0.0.qualifier"/>
+      <import plugin="org.eclipse.pde" version="3.13.2" match="greaterOrEqual"/>
+      <import plugin="org.jtool.changetracker.core" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.jtool.changetracker.replayer" version="1.0.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
@@ -157,13 +164,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
    <plugin
          id="org.jtool.changetracker.sample"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jtool.macrorecorder"
          download-size="0"
          install-size="0"
          version="0.0.0"
