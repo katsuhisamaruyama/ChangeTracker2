@@ -44,6 +44,7 @@ public class ResourceOperation extends ChangeOperation {
      * @param time the time when the file operation was performed
      * @param pathinfo information about path of a resource on which the file operation was performed
      * @param action the action of the file operation
+     * @param target the kind of the target of the resource
      * @param author the author's name
      */
     public ResourceOperation(ZonedDateTime time, CTPath pathinfo, String action, Target target, String author) {
@@ -55,6 +56,7 @@ public class ResourceOperation extends ChangeOperation {
      * Creates an instance storing information about this file operation.
      * @param time the time when the file operation was performed
      * @param pathinfo information about path of a resource on which the file operation was performed
+     * @param target the kind of the target of the resource
      * @param action the action of the file operation
      */
     public ResourceOperation(ZonedDateTime time, CTPath pathinfo, String action, Target target) {
