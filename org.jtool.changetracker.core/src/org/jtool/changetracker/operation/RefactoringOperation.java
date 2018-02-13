@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -21,7 +21,7 @@ public class RefactoringOperation extends ChangeOperation {
      * The action of a command operation.
      */
     public enum Action {
-        EXECUTE, UNDO, REDO;
+        PERFORMED, UNDONE, REDONE;
     }
     
     /**
@@ -186,7 +186,7 @@ public class RefactoringOperation extends ChangeOperation {
      * @return <code>true</code> if this this refactoring operation represents the normal refactoring, otherwise <code>false</code>
      */
     public boolean isNormal() {
-        return action.equals(CommandOperation.Action.EXECUTE.toString());
+        return action.equals(Action.PERFORMED.toString());
     }
     
     /**
@@ -194,7 +194,7 @@ public class RefactoringOperation extends ChangeOperation {
      * @return <code>true</code> if this this refactoring operation undoes a past refactoring, otherwise <code>false</code>
      */
     public boolean isUndo() {
-        return action.equals(Action.UNDO.toString());
+        return action.equals(Action.UNDONE.toString());
     }
     
     /**
@@ -202,7 +202,7 @@ public class RefactoringOperation extends ChangeOperation {
      * @return <code>true</code> if this refactoring operation redoes a past refactoring, otherwise <code>false</code>
      */
     public boolean isRedo() {
-        return action.equals(Action.REDO.toString());
+        return action.equals(Action.REDONE.toString());
     }
     
     /**

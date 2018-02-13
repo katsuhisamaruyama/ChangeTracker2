@@ -249,17 +249,17 @@ public class Xml2OperationOR {
      */
     static String parseFileAction(String str) {
         if ("NEW".equals(str)) {
-            return FileOperation.Action.ADD.toString();
+            return FileOperation.Action.ADDED.toString();
         } else if ("OPEN".equals(str)) {
-            return FileOperation.Action.OPEN.toString();
+            return FileOperation.Action.OPENED.toString();
         } else if ("CLOSE".equals(str)) {
-            return FileOperation.Action.CLOSE.toString();
+            return FileOperation.Action.CLOSED.toString();
         } else if ("SAVE".equals(str)) {
-            return FileOperation.Action.SAVE.toString();
+            return FileOperation.Action.SAVED.toString();
         } else if ("DELETE".equals(str)) {
-            return FileOperation.Action.REMOVE.toString();
+            return FileOperation.Action.REMOVED.toString();
         } else if ("ACT".equals(str)) {
-            return FileOperation.Action.ACTIVATE.toString();
+            return FileOperation.Action.ACTIVATED.toString();
         }
         return "NONE";
     }

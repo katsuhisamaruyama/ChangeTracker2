@@ -282,18 +282,18 @@ public class Xml2OperationCT {
      * @return the file action, or <code>NONE</code> if none
      */
     static String parseFileAction(String str) {
-        if ("ADD".equals(str) || "ADDED".equals(str) || "NEW".equals(str)) {
-            return FileOperation.Action.ADD.toString();
+        if ("ADDED".equals(str) || "ADDED".equals(str) || "NEW".equals(str)) {
+            return FileOperation.Action.ADDED.toString();
         } else if ("OPEN".equals(str) || "OPENED".equals(str)) {
-            return FileOperation.Action.OPEN.toString();
+            return FileOperation.Action.OPENED.toString();
         } else if ("CLOSE".equals(str) || "CLOSED".equals(str)) {
-            return FileOperation.Action.CLOSE.toString();
+            return FileOperation.Action.CLOSED.toString();
         } else if ("SAVE".equals(str) || "SAVED".equals(str)) {
-            return FileOperation.Action.SAVE.toString();
+            return FileOperation.Action.SAVED.toString();
         } else if ("DELETE".equals(str) || "DELETED".equals(str)) {
-            return FileOperation.Action.REMOVE.toString();
+            return FileOperation.Action.REMOVED.toString();
         } else if ("ACT".equals(str) || "ACTIVATE".equals(str) || "ACTIVATED".equals(str)) {
-            return FileOperation.Action.ACTIVATE.toString();
+            return FileOperation.Action.ACTIVATED.toString();
         }
         return "NONE";
     }
@@ -341,19 +341,19 @@ public class Xml2OperationCT {
     static String parseResourceAction(String target, String str) {
         if ("JFILE".equals(target)) {
             if ("ADD".equals(str) || "ADDED".equals(str)) {
-                return FileOperation.Action.ADD.toString();
+                return FileOperation.Action.ADDED.toString();
             } else if ("REMOVE".equals(str) || "REMOVED".equals(str)) {
-                return FileOperation.Action.REMOVE.toString();
+                return FileOperation.Action.REMOVED.toString();
             } else if ("MOVE_FROM".equals(str) || "MOVED_FROM".equals(str)) {
-                return FileOperation.Action.MOVE_FROM.toString();
+                return FileOperation.Action.MOVED_FROM.toString();
             } else if ("MOVE_TO".equals(str) || "MOVED_TO".equals(str)) {
-                return FileOperation.Action.MOVE_TO.toString();
+                return FileOperation.Action.MOVED_TO.toString();
             } else if ("DELETE".equals(str) || "DELETED".equals(str)) {
-                return FileOperation.Action.REMOVE.toString();
+                return FileOperation.Action.REMOVED.toString();
             } else if ("RENAME_FROM".equals(str) || "RENAMED_FROM".equals(str)) {
-                return FileOperation.Action.RENAME_FROM.toString();
+                return FileOperation.Action.RENAMED_FROM.toString();
             } else if ("RENAME_TO".equals(str) || "RENAMED_TO".equals(str)) {
-                return FileOperation.Action.RENAME_TO.toString();
+                return FileOperation.Action.RENAMED_TO.toString();
             }
         }
         return null;

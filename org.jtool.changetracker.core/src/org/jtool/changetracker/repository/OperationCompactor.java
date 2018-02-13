@@ -126,7 +126,7 @@ class OperationCompactor {
                 if (op2.isFile()) {
                     FileOperation fop1 = (FileOperation)op1;
                     FileOperation fop2 = (FileOperation)op2;
-                    if (op1.getPath().equals(op2.getPath()) && fop1.isOpened() && fop2.isClosed()) {
+                    if (op1.getPath().equals(op2.getPath()) && fop1.isOpen() && fop2.isClose()) {
                         ops.remove(idx);
                         ops.remove(idx);
                         idx--;
@@ -150,7 +150,7 @@ class OperationCompactor {
                 if (op2.isFile()) {
                     FileOperation fop1 = (FileOperation)op1;
                     FileOperation fop2 = (FileOperation)op2;
-                    if (op1.getPath().equals(op2.getPath()) && fop1.isSaved() && fop2.isSaved()) {
+                    if (op1.getPath().equals(op2.getPath()) && fop1.isSave() && fop2.isSave()) {
                         ops.remove(idx);
                         idx--;
                     }
@@ -174,10 +174,10 @@ class OperationCompactor {
                     FileOperation fop1 = (FileOperation)op1;
                     FileOperation fop2 = (FileOperation)op2;
                     if (op1.getPath().equals(op2.getPath())) {
-                        if (fop1.isActivated()) {
+                        if (fop1.isActivate()) {
                             ops.remove(idx - 1);
                             idx--;
-                        } else if (fop2.isActivated()) {
+                        } else if (fop2.isActivate()) {
                             ops.remove(idx);
                             idx--;
                         }

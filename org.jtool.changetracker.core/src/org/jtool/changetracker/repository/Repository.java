@@ -232,11 +232,11 @@ public class Repository {
      * @param pathinfo information about path of the resource
      */
     private void createResourceInfo(FileOperation op, CTPath pathinfo) {
-        if (op.isAdded()) {
+        if (op.isAdd()) {
             CTProject projectInfo = createProject(pathinfo);
             CTPackage packageInfo = createPackage(pathinfo, projectInfo);
             createFile(pathinfo, op, packageInfo);
-        } else if (op.isMovedFrom() || op.isRenamedFrom()) {
+        } else if (op.isMoveFrom() || op.isRenameFrom()) {
             eraseFile(pathinfo);
             CTProject projectInfo = createProject(pathinfo);
             CTPackage packageInfo = createPackage(pathinfo, projectInfo);
@@ -247,7 +247,7 @@ public class Repository {
                 fromFileInfo.setFileInfoTo(fileInfo);
                 fileInfo.setFileInfoFrom(fromFileInfo);
             }
-        } else if (op.isRemoved() || op.isMovedTo() || op.isRenamedTo()) {
+        } else if (op.isDelete() || op.isMoveTo() || op.isRenameTo()) {
             eraseFile(pathinfo);
         }
     }
