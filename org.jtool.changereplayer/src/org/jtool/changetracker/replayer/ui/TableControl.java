@@ -229,22 +229,22 @@ public class TableControl {
      */
     protected String createDocumentOperationTextualRepresentation(DocumentOperation op) {
         StringBuilder buf = new StringBuilder();
-        if (!ICodeOperation.Action.TYPING.equals(op.getAction())) {
-            buf.append(op.getAction().toString());
-        }
         buf.append(op.getAction().toString());
-        buf.append(" ");
-        buf.append(String.valueOf(op.getStart()));
-        buf.append(" ");
-        if (op.getInsertedText().length() > 0) {
-            buf.append("ins[");
-            buf.append(getShortText(op.getInsertedText()));
-            buf.append("] ");
-        }
-        if (op.getDeletedText().length() > 0) {
-            buf.append("del[");
-            buf.append(getShortText(op.getDeletedText()));
-            buf.append("]");
+        if (ICodeOperation.Action.TYPING.toString().equals(op.getAction())) {
+        buf.append(op.getAction());
+            buf.append(" ");
+            buf.append(String.valueOf(op.getStart()));
+            buf.append(" ");
+            if (op.getInsertedText().length() > 0) {
+                buf.append("ins[");
+                buf.append(getShortText(op.getInsertedText()));
+                buf.append("] ");
+            }
+            if (op.getDeletedText().length() > 0) {
+                buf.append("del[");
+                buf.append(getShortText(op.getDeletedText()));
+                buf.append("]");
+            }
         }
         return buf.toString();
     }
@@ -256,7 +256,7 @@ public class TableControl {
      */
     protected String createCopyOperationTextualRepresentation(CopyOperation op) {
         StringBuilder buf = new StringBuilder();
-        buf.append(op.getAction().toString());
+        buf.append(op.getAction());
         buf.append(" ");
         buf.append(String.valueOf(op.getStart()));
         buf.append(" copied[");
@@ -272,7 +272,7 @@ public class TableControl {
      */
     protected String createFileOperationTextualRepresentation(FileOperation op) {
         StringBuilder buf = new StringBuilder();
-        buf.append(op.getAction().toString());
+        buf.append(op.getAction());
         return buf.toString();
     }
     
@@ -283,7 +283,7 @@ public class TableControl {
      */
     protected String createCommandOperationTextualRepresentation(CommandOperation op) {
         StringBuilder buf = new StringBuilder();
-        buf.append(op.getAction().toString());
+        buf.append(op.getAction());
         buf.append(" ");
         buf.append(op.getCommandId());
         return buf.toString();
