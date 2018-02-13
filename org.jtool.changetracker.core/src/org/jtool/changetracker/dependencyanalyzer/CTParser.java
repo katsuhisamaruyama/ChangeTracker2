@@ -24,6 +24,7 @@ class CTParser {
     /**
      * The Java compilier information
      */
+    @SuppressWarnings("deprecation")
     private static int JLS_LEVEL = AST.JLS8;
     private static String JC_VERSION = JavaCore.VERSION_1_8;
     

@@ -20,10 +20,10 @@ import java.util.ArrayList;
 public class DependencyDetector {
     
     /**
-     * Generates a parseable snapshot. 
+     * Generates a parse-able snapshot. 
      * @param finfo information about a file that has the snapshot
      * @param index the index number of the change operation that generates the snapshot
-     * @return the generated parseable snapshot, or <code>null</code> the generation fails
+     * @return the generated parse-able snapshot, or <code>null</code> the generation fails
      */
     public static ParseableSnapshot parse(CTFile finfo, int index) {
         ParseableSnapshot psn = finfo.getLastSnapshot();
@@ -37,11 +37,11 @@ public class DependencyDetector {
     }
     
     /**
-     * Generates a parseable snapshot. 
+     * Generates a parse-able snapshot. 
      * @param finfo information about a file that has the snapshot
      * @param index the index number of the change operation that generates the snapshot
      * @param code the contents of the snapshot
-     * @return the generated parseable snapshot, or <code>null</code> the generation fails
+     * @return the generated parse-able snapshot, or <code>null</code> the generation fails
      */
     public static ParseableSnapshot parse(CTFile finfo, int index, String code) {
         CTParser parser = new CTParser();
