@@ -22,6 +22,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.io.File;
 import java.time.ZonedDateTime;
 
@@ -117,7 +119,18 @@ public class Xml2Operation {
                 files.addAll(getHistoryFiles(f.getPath()));
             }
         }
+        
+        sortFiles(files);
         return files;
+    }
+    
+    private static void sortFiles(List<File> files) {
+        Collections.sort(files, new Comparator<File>() {
+            
+            public int compare(File file1, File file2) {
+                return file1.getPath().compareTo(file2.getPath());
+            }
+        });
     }
     
     /**

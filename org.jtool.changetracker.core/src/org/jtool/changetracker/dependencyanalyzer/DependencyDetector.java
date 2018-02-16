@@ -33,7 +33,11 @@ public class DependencyDetector {
         } else {
             code = finfo.getCode(index);
         }
-        return parse(finfo, index, code);
+        
+        if (code != null) {
+            return parse(finfo, index, code);
+        }
+        return null;
     }
     
     /**
