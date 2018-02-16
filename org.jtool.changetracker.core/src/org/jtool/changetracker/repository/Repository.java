@@ -163,7 +163,7 @@ public class Repository {
      * Stores change operations into a history file.
      * @param ops the collection of the change operations
      */
-    private void storeChangeOperationsIntoHistoryFile(List<IChangeOperation> ops) {
+    public void storeChangeOperationsIntoHistoryFile(List<IChangeOperation> ops) {
         if (ops.size() == 0) {
             return;
         }
@@ -179,22 +179,11 @@ public class Repository {
     }
     
     /**
-     * Stores change operations related to the same file into this repository.
-     * @param ops the collection of the change operations to be stored
-     */
-    private void addOperations(List<? extends IChangeOperation> ops) {
-        if (ops == null || ops.size() == 0) {
-            return;
-        }
-        addOperationAll(ops);
-    }
-    
-    /**
      * Add change operations to this repository.
      * @param ops the collection of the change operations to be added
      */
-    private void addOperationAll(List<? extends IChangeOperation> ops) {
-        if (ops.size() == 0) {
+    public void addOperationAll(List<? extends IChangeOperation> ops) {
+        if (ops == null || ops.size() == 0) {
             return;
         }
         
@@ -215,7 +204,7 @@ public class Repository {
      * Adds a change operation to this repository.
      * @param op the code change operation to be added
      */
-    private void addOperation(IChangeOperation op) {
+    public void addOperation(IChangeOperation op) {
         CTPath pathinfo = new CTPath(op);
         if (op.isFile()) {
             createResourceInfo((FileOperation)op, pathinfo);
@@ -274,8 +263,7 @@ public class Repository {
      * @param pkginfo information about a package related to the change operation
      * @param finfo information about a file related to the change operation
      */
-    private void addOperation(IChangeOperation op,
-            CTProject prjinfo, CTPackage pkginfo, CTFile finfo) {
+    private void addOperation(IChangeOperation op, CTProject prjinfo, CTPackage pkginfo, CTFile finfo) {
         finfo.addOperation(op);
         if (op instanceof ChangeOperation) {
             ((ChangeOperation)op).setFile(finfo);
@@ -332,7 +320,7 @@ public class Repository {
     public void readHistoryFiles(List<File> files, IProgressMonitor monitor) throws InterruptedException {
         for (File file : files) {
             String path = file.getAbsolutePath();
-            addOperations(Xml2Operation.getOperations(path));
+            addOperationAll(Xml2Operation.getOperations(path));
             
             if (monitor.isCanceled()) {
                 clear();

@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.replayer.ui;
 
-import org.jtool.changetracker.replayer.Activator;
+import org.jtool.changetracker.core.Activator;
 import org.jtool.changetracker.repository.Repository;
 import org.jtool.changetracker.repository.CTProject;
 import org.jtool.changetracker.repository.CTPackage;
@@ -53,11 +53,6 @@ public class ChangeExplorerView extends ViewPart {
      * The instance that manages the repositories that store change operations.
      */
     protected RepositoryManager repositoryManager;
-    
-    /**
-     * The instance that visualizes change operations.
-     */
-    protected static OperationVisualizer operationVisualizer2;
     
     /**
      * The current repository that is focused on.
