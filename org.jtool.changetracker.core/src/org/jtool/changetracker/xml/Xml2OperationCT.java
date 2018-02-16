@@ -156,7 +156,10 @@ public class Xml2OperationCT {
         } else if (elemName.equals(CopyOperationElem)) {
             ops.add(getCopyOperation(elem));
         } else if (elemName.equals(FileOperationElem)) {
-            ops.add(getFileOperation(elem));
+            FileOperation fop = getFileOperation(elem);
+            if (fop != null) {
+                ops.add(fop);
+            }
         } else if (elemName.equals(MenuOperationElem)) {
             ops.add(getCommandOperation(elem));
         } else if (elemName.equals(ResourceOperationElem)) {
@@ -268,9 +271,9 @@ public class Xml2OperationCT {
         String author = elem.getAttribute(XmlConstants.AuthorAttr);
         
         FileOperation op = new FileOperation(time, pathinfo, action, author);
-        String code = Xml2Operation.getFirstChildText(elem.getElementsByTagName(XmlConstants.CodeElem));
-        if (code == null) {
-            code = "";
+        String code = Xml2Operation.getFirstChildCode(elem.getElementsByTagName(XmlConstants.CodeElem));
+        if (code != null) {
+            return null;
         }
         op.setCode(code);
         return op;

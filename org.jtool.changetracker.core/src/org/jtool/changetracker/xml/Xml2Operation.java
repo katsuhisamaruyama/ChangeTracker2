@@ -61,7 +61,7 @@ public class Xml2Operation {
         if (version.endsWith(HISTORY_VERSION2_EXT)) {
             return getOperations(doc); // ChangeTracker-v2
         } else if (version.endsWith(HISTORY_VERSION1_EXT)) {
-            return Xml2OperationCT.getOperations(doc); // ChangeTracker-v2
+            return Xml2OperationCT.getOperations(doc); // ChangeTracker-v1
         } else {
             return Xml2OperationOR.getOperations(doc); // OperationRecorder
         }
@@ -247,7 +247,7 @@ public class Xml2Operation {
         op.setCompoundTime(attr.ctime);
         op.setCharset(elem.getAttribute(XmlConstants.CharsetAttr));
         op.setSrcDstPath(elem.getAttribute(XmlConstants.SrcDstPathAttr));
-        String code = getFirstChildText(elem.getElementsByTagName(XmlConstants.CodeElem));
+        String code = getFirstChildCode(elem.getElementsByTagName(XmlConstants.CodeElem));
         op.setCode(code);
         return op;
     }
@@ -279,7 +279,10 @@ public class Xml2Operation {
         op.setName(elem.getAttribute(XmlConstants.NameAttr));
         op.setSelectionStart(Integer.parseInt(elem.getAttribute(XmlConstants.OffsetAttr)));
         op.setArguments(elem.getAttribute(XmlConstants.ArgumentAttr));
-        String code = getFirstChildText(elem.getElementsByTagName(XmlConstants.CodeElem));
+        String code = getFirstChildCode(elem.getElementsByTagName(XmlConstants.CodeElem));
+        if (code != null) {
+            return null;
+        }
         op.setSelectedText(code);
         return op;
     }
@@ -307,6 +310,22 @@ public class Xml2Operation {
         if (nodeList == null || nodeList.getLength() == 0) {
             return "";
         }
+        String text = getFirstChildText(nodeList.item(0));
+        if (text == null) {
+            return "";
+        }
+        return text;
+    }
+    
+    /**
+     * Obtains the code of stored in the first child of a node list.
+     * @param nodeList the node list of nodes store the text
+     * @return the text string of code, <code>null</code> if no text was found
+     */
+    static String getFirstChildCode(NodeList nodeList) {
+        if (nodeList == null || nodeList.getLength() == 0) {
+            return null;
+        }
         return getFirstChildText(nodeList.item(0));
     }
     
@@ -315,21 +334,21 @@ public class Xml2Operation {
      * @param node the node that stores the text
      * @return the text string, <code>null</code> if no text element was found
      */
-    static String getFirstChildText(Node node) {
+    private static String getFirstChildText(Node node) {
         if (node == null) {
-            return "";
+            return null;
         }
         
         NodeList nodes = node.getChildNodes();
         if (nodes == null || nodes.getLength() == 0) {
-            return "";
+            return null;
         }
         
         Node child = nodes.item(0);
         if (child.getNodeType() == Node.TEXT_NODE) {
             return ((Text)child).getNodeValue();
         }
-        return "";
+        return null;
     }
     
     /**

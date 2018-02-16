@@ -111,16 +111,14 @@ public class Xml2OperationOR {
             return ops;
         }
         NodeList developers = doc.getElementsByTagName(DeveloperElem);
-        if (developers == null) {
+        developer = Xml2Operation.getFirstChildText(developers);
+        if (developer.length() == 0) {
             developer = "Unknown";
-        } else {
-            developer = Xml2Operation.getFirstChildText(developers);
         }
         NodeList paths = doc.getElementsByTagName(FileElem);
-        if (paths == null) {
+        path = Xml2Operation.getFirstChildText(paths);
+        if (path.length() == 0) {
             path = "Unknown";
-        } else {
-            path = Xml2Operation.getFirstChildText(paths);
         }
         
         NodeList childOperations = operationsElem.getChildNodes();
@@ -150,7 +148,10 @@ public class Xml2OperationOR {
         } else if (elemName.equals(CopyOperationElem)) {
             ops.add(getCopyOperation(elem));
         } else if (elemName.equals(FileOperationElem)) {
-            ops.add(getFileOperation(elem));
+            FileOperation fop = getFileOperation(elem);
+            if (fop != null) {
+                ops.add(fop);
+            }
         } else if (elemName.equals(MenuOperationElem)) {
             ops.add(getCommandOperation(elem));
         }
@@ -231,11 +232,11 @@ public class Xml2OperationOR {
         String action = parseFileAction(elem.getAttribute(TypeAttr));
         
         FileOperation op = new FileOperation(time, pathinfo, action, developer);
-        String code = Xml2Operation.getFirstChildText(elem.getElementsByTagName(XmlConstants.CodeElem));
+        String code = Xml2Operation.getFirstChildCode(elem.getElementsByTagName(XmlConstants.CodeElem));
         if (code == null) {
-            code = Xml2Operation.getFirstChildText(elem.getElementsByTagName(SourceCodeElem));
+            code = Xml2Operation.getFirstChildCode(elem.getElementsByTagName(SourceCodeElem));
             if (code == null) {
-                code = "";
+                return null;
             }
         }
         op.setCode(code);
