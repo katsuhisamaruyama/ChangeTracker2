@@ -329,6 +329,7 @@ public class Xml2Operation {
         if (nodeList == null || nodeList.getLength() == 0) {
             return null;
         }
+        
         return getFirstChildText(nodeList.item(0));
     }
     
@@ -343,10 +344,10 @@ public class Xml2Operation {
         }
         
         NodeList nodes = node.getChildNodes();
-        if (nodes == null || nodes.getLength() == 0) {
-            return null;
-        }
         
+        if (nodes == null || nodes.getLength() == 0) {
+            return "";
+        }
         Node child = nodes.item(0);
         if (child.getNodeType() == Node.TEXT_NODE) {
             return ((Text)child).getNodeValue();
