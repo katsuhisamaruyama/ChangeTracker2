@@ -62,7 +62,7 @@ public class CTConsole {
         if (consoleStream != null) {
             consoleStream.print(msg);
         } else {
-            System.err.println(msg);
+            System.err.print(msg);
         }
     }
     
@@ -74,7 +74,7 @@ public class CTConsole {
         if (consoleStream != null) {
             consoleStream.println(msg);
         } else {
-            System.err.print(msg);
+            System.err.println(msg);
         }
     }
 }
