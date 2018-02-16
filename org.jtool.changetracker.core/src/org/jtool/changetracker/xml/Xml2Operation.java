@@ -248,6 +248,9 @@ public class Xml2Operation {
         op.setCharset(elem.getAttribute(XmlConstants.CharsetAttr));
         op.setSrcDstPath(elem.getAttribute(XmlConstants.SrcDstPathAttr));
         String code = getFirstChildCode(elem.getElementsByTagName(XmlConstants.CodeElem));
+        if (code == null) {
+            return null;
+        }
         op.setCode(code);
         return op;
     }
