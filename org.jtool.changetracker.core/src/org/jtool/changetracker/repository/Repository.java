@@ -329,6 +329,7 @@ public class Repository {
             }
             monitor.worked(1);
         }
+        
         restoreCodeOnFileOperation();
         compactOperations();
         checkOperationConsistency();
