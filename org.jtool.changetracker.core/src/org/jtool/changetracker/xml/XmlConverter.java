@@ -65,13 +65,9 @@ public class XmlConverter {
                 String timeString = String.valueOf(ZonedDateTime.now().toInstant().toEpochMilli());
                 String dirpath = path + File.separatorChar + "_converted-" + timeString;
                 XmlFileManager.makeDir(new File(dirpath));
-                List<File> files = Xml2Operation.getHistoryFiles(path);
-                boolean result = convert(files, dirpath);
-                if (result) {
-                    CTDialog.informationDialog("Convert Format", "The converted files are stored in " + dirpath);
-                } else {
-                    XmlFileManager.deleteDir(new File(dirpath));
-                }
+                
+                convert(dirpath);
+                CTDialog.informationDialog("Convert Format", "The converted files are stored in " + dirpath);
             }
             
             /**
@@ -86,48 +82,26 @@ public class XmlConverter {
     
     /**
      * Converts change operations that are stored in the operation history files.
-     * @param files the collection of the operation history files
      * @param dirpath the path of the directory that contains the converted files
-     * @return <code>true</code> if conversion succeeded, otherwise <code>false</code>
      */
-    private boolean convert(List<File> files, final String dirpath) {
+    private void convert(String dirpath) {
         Repository repo = new Repository(dirpath);
+        List<File> files = Xml2Operation.getHistoryFiles(dirpath);
+        for (File file : files) {
+            String path = file.getAbsolutePath();
+            repo.addOperationAll(Xml2Operation.getOperations(path));
+        }
         
-        UIJob job = new UIJob("Convert") {
-            
-            /**
-             * Run the job in the UI thread.
-             * @param monitor the progress monitor to use to display progress
-             */
-            @Override
-            public IStatus runInUIThread(IProgressMonitor monitor) {
-                try {
-                    List<File> files = Xml2Operation.getHistoryFiles(dirpath);
-                    monitor.beginTask("Reading change operations from history files", files.size() * 2);
-                    repo.readHistoryFiles(files, monitor);
-                    Map<FileOperation, String> map = storeCodeOnFileOperation(repo.getOperations());
-                    for (File file : files) {
-                        List<IChangeOperation> ops = Xml2Operation.getOperations(file.getAbsolutePath());
-                        restoreCodeOnFileOperation(map, ops);
-                        int index = file.getName().lastIndexOf(Xml2Operation.XML_FILE_EXTENTION);
-                        Operation2Xml.storeOperations(ops, dirpath + File.separatorChar + file.getName().substring(0, index));
-                        monitor.worked(1);
-                    }
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
-                } finally {
-                    monitor.done();
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.setUser(true);
-        job.schedule();
-        try {
-            job.join();
-            return job.getResult().equals(Status.OK_STATUS);
-        } catch (InterruptedException e) { /* empty */ }
-        return false;
+        repo.restoreCodeOnFileOperation();
+        repo.compactOperations();
+        
+        Map<FileOperation, String> map = storeCodeOnFileOperation(repo.getOperations());
+        for (File file : files) {
+            List<IChangeOperation> ops = Xml2Operation.getOperations(file.getAbsolutePath());
+            restoreCodeOnFileOperation(map, ops);
+            int index = file.getName().lastIndexOf(Xml2Operation.XML_FILE_EXTENTION);
+            Operation2Xml.storeOperations(ops, dirpath + File.separatorChar + file.getName().substring(0, index));
+        }
     }
     
     /**

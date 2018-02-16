@@ -340,9 +340,10 @@ public class OperationHistory {
     }
     
     /**
-     * Checks change operations were consistently performed.
+     * Checks if recorded change operations are consistent with restored code.
+     * @return <code>true</code> if all the change operations are consistent with the restored code, otherwise <code>false</code>
      */
-    void checkOperationConsistency() {
+    boolean checkOperationConsistency() {
         boolean success = true;
         int lastCheckedIndex = -1;
         for (int idx = indexOfAlreadyChecked + 1; idx < operations.size(); idx++) {
@@ -381,6 +382,8 @@ public class OperationHistory {
         if (success) {
             indexOfAlreadyChecked = lastCheckedIndex;
         }
+        
+        return success;
     }
     
     /**

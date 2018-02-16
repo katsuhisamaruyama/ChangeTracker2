@@ -181,10 +181,11 @@ public class Repository {
     /**
      * Add change operations to this repository.
      * @param ops the collection of the change operations to be added
+     * @return <code>true</code> if all the added change operations are valid, otherwise <code>false</code>
      */
-    public void addOperationAll(List<? extends IChangeOperation> ops) {
+    public boolean addOperationAll(List<? extends IChangeOperation> ops) {
         if (ops == null || ops.size() == 0) {
-            return;
+            return false;
         }
         
         IChangeOperation op = ops.get(0);
@@ -196,15 +197,17 @@ public class Repository {
         CTPackage packageInfo = createPackage(pathinfo, projectInfo);
         CTFile fileInfo = createFile(pathinfo, op,  packageInfo);
         for (int idx = 0; idx < ops.size(); idx++) {
-            addOperation(ops.get(idx), projectInfo, packageInfo, fileInfo);
+            addOperationWithoutConsustencyCheck(ops.get(idx), projectInfo, packageInfo, fileInfo);
         }
+        return fileInfo.getOperationHistory().checkOperationConsistency();
     }
     
     /**
      * Adds a change operation to this repository.
      * @param op the code change operation to be added
+     * @return <code>true</code> if the added change operation is valid, otherwise <code>false</code>
      */
-    public void addOperation(IChangeOperation op) {
+    public boolean addOperation(IChangeOperation op) {
         CTPath pathinfo = new CTPath(op);
         if (op.isFile()) {
             createResourceInfo((FileOperation)op, pathinfo);
@@ -212,7 +215,7 @@ public class Repository {
         CTProject projectInfo = createProject(pathinfo);
         CTPackage packageInfo = createPackage(pathinfo, projectInfo);
         CTFile fileInfo = createFile(pathinfo, op, packageInfo);
-        addOperation(op, projectInfo, packageInfo, fileInfo);
+        return addOperation(op, projectInfo, packageInfo, fileInfo);
     }
     
     /**
@@ -262,8 +265,30 @@ public class Repository {
      * @param prjinfo information about a project related to the change operation
      * @param pkginfo information about a package related to the change operation
      * @param finfo information about a file related to the change operation
+     * @return <code>true</code> if the added change operation is valid, otherwise <code>false</code>
      */
-    private void addOperation(IChangeOperation op, CTProject prjinfo, CTPackage pkginfo, CTFile finfo) {
+    private boolean addOperation(IChangeOperation op, CTProject prjinfo, CTPackage pkginfo, CTFile finfo) {
+        addOperationWithoutConsustencyCheck(op, prjinfo, pkginfo, finfo);
+        
+        boolean result = finfo.getOperationHistory().checkOperationConsistency();
+        if (!result) {
+            return false;
+        }
+        
+        if (op.isDocumentOrCopy()) {
+            detectAffectedJavaConstructs((CodeOperation)op, finfo);
+        }
+        return true;
+    }
+    
+    /**
+     * Adds a change operation to the repository.
+     * @param op the change operation to be stored
+     * @param prjinfo information about a project related to the change operation
+     * @param pkginfo information about a package related to the change operation
+     * @param finfo information about a file related to the change operation
+     */
+    private void addOperationWithoutConsustencyCheck(IChangeOperation op, CTProject prjinfo, CTPackage pkginfo, CTFile finfo) {
         finfo.addOperation(op);
         if (op instanceof ChangeOperation) {
             ((ChangeOperation)op).setFile(finfo);
@@ -271,8 +296,35 @@ public class Repository {
         prjinfo.updateTimeRange(op);
         pkginfo.updateTimeRange(op);
         finfo.updateTimeRange(op);
-        if (op.isDocumentOrCopy()) {
-            detectAffectedJavaConstructs((CodeOperation)op, finfo);
+    }
+    
+    /**
+     * Detects Java constructs that a change operation affects.
+     * @param op the change operation
+     * @param finfo information about a file that contains the Java constructs
+     */
+    private void detectAffectedJavaConstructs(CodeOperation op, CTFile finfo) {
+        int index = finfo.getOperationIndexAt(op.getTime());
+        ParseableSnapshot sn = DependencyDetector.parse(finfo, index);
+        
+        if (sn != null) {
+            ParseableSnapshot psn = finfo.getLastSnapshot();
+            finfo.addSnapshot(sn);
+            
+            List<IChangeOperation> ops;
+            if (psn != null) {
+                if (psn.getIndex() < 0) {
+                    ops = finfo.getOperations();
+                } else {
+                    ops = finfo.getOperationsAfter(psn.getTime());
+                    ops.remove(0);
+                }
+            } else {
+                ops = finfo.getOperations();
+            }
+            List<CodeOperation> cops = DependencyDetector.getCodeOperations(ops);
+            DependencyDetector.detectBackwardChangeEdges(psn, cops);
+            DependencyDetector.detectForwardChangeEdges(sn, cops);
         }
     }
     
@@ -317,7 +369,7 @@ public class Repository {
      * @param monitor the progress monitor to use to display progress and receive requests for cancellation
      * @throws Exception if a request to cancel or any failure is detected
      */
-    public void readHistoryFiles(List<File> files, IProgressMonitor monitor) throws InterruptedException {
+    private void readHistoryFiles(List<File> files, IProgressMonitor monitor) throws InterruptedException {
         for (File file : files) {
             String path = file.getAbsolutePath();
             addOperationAll(Xml2Operation.getOperations(path));
@@ -332,36 +384,6 @@ public class Repository {
         
         restoreCodeOnFileOperation();
         compactOperations();
-        checkOperationConsistency();
-    }
-    
-    /**
-     * Detects Java constructs that a change operation affects.
-     * @param op the change operation
-     * @param finfo information about a file that contains the Java constructs
-     */
-    private void detectAffectedJavaConstructs(CodeOperation op, CTFile finfo) {
-        int index = finfo.getOperationIndexAt(op.getTime());
-        ParseableSnapshot sn = DependencyDetector.parse(finfo, index);
-        if (sn != null) {
-            ParseableSnapshot psn = finfo.getLastSnapshot();
-            finfo.addSnapshot(sn);
-            
-            List<IChangeOperation> ops;
-            if (psn != null) {
-                if (psn.getIndex() < 0) {
-                    ops = finfo.getOperations();
-                } else {
-                    ops = finfo.getOperationsAfter(psn.getTime());
-                    ops.remove(0);
-                }
-            } else {
-                ops = finfo.getOperations();
-            }
-            List<CodeOperation> cops = DependencyDetector.getCodeOperations(ops);
-            DependencyDetector.detectBackwardChangeEdges(psn, cops);
-            DependencyDetector.detectForwardChangeEdges(sn, cops);
-        }
     }
     
     /**
@@ -488,15 +510,6 @@ public class Repository {
     public void compactOperations() {
         for (CTFile finfo : getFileHistory()) {
             finfo.getOperationHistory().compact();
-        }
-    }
-    
-    /**
-     * Checks the change operations in this repository were consistently performed.
-     */
-    public void checkOperationConsistency() {
-        for (CTFile finfo : getFileHistory()) {
-            finfo.getOperationHistory().checkOperationConsistency();
         }
     }
     

@@ -16,7 +16,7 @@ import java.util.List;
  * Applies an change operation into code.
  * @author Katsuhisa Maruyama
  */
-class CodeRestorer {
+public class CodeRestorer {
     
     /**
      * Applies change operations within the time range.
@@ -24,9 +24,9 @@ class CodeRestorer {
      * @param code the code that the change operations will be applied to
      * @param from the index of the first change operation within the time range
      * @param to the index at the last change operation within the time range
-     * @return the resulting code after the application
+     * @return the resulting code after the application, or <code>null</code> if the application failed
      */
-    static String applyOperations(CTFile file, String code, int from, int to) {
+    public static String applyOperations(CTFile file, String code, int from, int to) {
         return applyOperations(file.getOperationHistory(), code, from, to);
     }
     /**
@@ -35,9 +35,9 @@ class CodeRestorer {
      * @param code the code that the change operations will be applied to
      * @param from the index of the first change operation within the time range
      * @param to the index at the last change operation within the time range
-     * @return the resulting code after the application
+     * @return the resulting code after the application, or <code>null</code> if the application failed
      */
-    static String applyOperations(OperationHistory history, String code, int from, int to) {
+    public static String applyOperations(OperationHistory history, String code, int from, int to) {
         if (from == to) {
             return code;
         }
@@ -51,12 +51,19 @@ class CodeRestorer {
                 
                 if (op.isDocument()) {
                     if (idx > history.getIndexOfAlreadyChecked()) {
-                        consistentForward(code, (DocumentOperation)op);
+                        boolean result = consistentForward(code, (DocumentOperation)op);
+                        if (!result) {
+                            return null;
+                        }
                     }
                     code = applyOperationForward(code, (DocumentOperation)op);
+                    
                 } else if (op.isCopy()) {
                     if (idx > history.getIndexOfAlreadyChecked()) {
-                        consistentCopy(code, (CopyOperation)op);
+                        boolean result = consistentCopy(code, (CopyOperation)op);
+                        if (!result) {
+                            return null;
+                        }
                     }
                 }
             }
@@ -67,12 +74,19 @@ class CodeRestorer {
                 IChangeOperation op = ops.get(idx);
                 if (op.isDocument()) {
                     if (idx > history.getIndexOfAlreadyChecked()) {
-                        consistentBackward(code, (DocumentOperation)op);
+                        boolean result = consistentBackward(code, (DocumentOperation)op);
+                        if (!result) {
+                            return null;
+                        }
                     }
                     code = applyOperationBackward(code, (DocumentOperation)op);
+                    
                 } else if (op.isCopy()) {
                     if (idx > history.getIndexOfAlreadyChecked()) {
-                        consistentCopy(code, (CopyOperation)op);
+                        boolean result = consistentCopy(code, (CopyOperation)op);
+                        if (!result) {
+                            return null;
+                        }
                     }
                 }
             }
@@ -86,7 +100,7 @@ class CodeRestorer {
      * @param op the operation to be applied
      * @return <code>true</code> if the application is consistent, otherwise <code>false</code>
      */
-    static boolean consistentForward(String code, DocumentOperation op) {
+    public static boolean consistentForward(String code, DocumentOperation op) {
         if (code == null) {
             return false;
         }
@@ -94,17 +108,18 @@ class CodeRestorer {
         String dtext = op.getDeletedText();
         int start = op.getStart();
         int end = start + dtext.length();
-        if (dtext.length() > 0) {
-            String rtext = code.substring(start, end);
-            if (rtext == null || !rtext.equals(dtext)) {
-                CTConsole.println("Cannot delete text: " + op.toString());
-                return false;
-            }
+        
+        if (start > code.length() || end > code.length()) {
+            CTConsole.println("Cannot insert/delete text: " + op.toString());
+            return false;
         }
         
-        if (code.length() < start) {
-            CTConsole.println("Cannot insert/delete text : " + op.toString());
-            return false;
+        if (dtext.length() > 0) {
+            String text = code.substring(start, end);
+            if (!text.equals(dtext)) {
+                CTConsole.println("Cannot find deleted text: " + op.toString());
+                return false;
+            }
         }
         return true;
     }
@@ -115,7 +130,7 @@ class CodeRestorer {
      * @param op the change operation to be applied
      * @return the resulting code after the application
      */
-    static String applyOperationForward(String code, DocumentOperation op) {
+    public static String applyOperationForward(String code, DocumentOperation op) {
         int start = op.getStart();
         int end = start + op.getDeletedText().length();
         StringBuilder postCode = new StringBuilder(code);
@@ -129,7 +144,7 @@ class CodeRestorer {
      * @param op the operation to be applied
      * @return <code>true</code> if the application is consistent, otherwise <code>false</code>
      */
-    static boolean consistentBackward(String code, DocumentOperation op) {
+    public static boolean consistentBackward(String code, DocumentOperation op) {
         if (code == null) {
             return false;
         }
@@ -137,16 +152,18 @@ class CodeRestorer {
         String itext = op.getInsertedText();
         int start = op.getStart();
         int end = start + itext.length();
+        
+        if (start > code.length() || end > code.length()) {
+            CTConsole.println("Cannot insert/delete text: " + op.toString());
+            return false;
+        }
+        
         if (itext.length() > 0) {
-            String rtext = code.substring(start, end);
-            if (rtext == null || !rtext.equals(itext)) {
-                CTConsole.println("Cannot insert text: " + op.toString());
+            String text = code.substring(start, end);
+            if (!text.equals(itext)) {
+                CTConsole.println("Cannot find inserted text: " + op.toString());
                 return false;
             }
-        }
-        if (code.length() - itext.length() + op.getDeletedText().length() < start) {
-            CTConsole.println("Cannot insert/delete text : " + op.toString());
-            return false;
         }
         return true;
     }
@@ -157,7 +174,7 @@ class CodeRestorer {
      * @param op the change operation to be applied
      * @return the resulting code after the application
      */
-    static String applyOperationBackward(String code, DocumentOperation op) {
+    public static String applyOperationBackward(String code, DocumentOperation op) {
         int start = op.getStart();
         int end = start + op.getInsertedText().length();
         StringBuilder postCode = new StringBuilder(code);
@@ -171,18 +188,24 @@ class CodeRestorer {
      * @param op the copy operation
      * @return <code>true</code> if the application is consistent, otherwise <code>false</code>
      */
-    static boolean consistentCopy(String code, CopyOperation op) {
+    public static boolean consistentCopy(String code, CopyOperation op) {
         if (code == null) {
             return false;
         }
         
         String ctext = op.getCopiedText();
+        int start = op.getStart();
+        int end = start + ctext.length();
+        
+        if (start > code.length() || end > code.length()) {
+            CTConsole.println("Cannot copy text: " + op.toString());
+            return false;
+        }
+        
         if (ctext.length() > 0) {
-            int start = op.getStart();
-            int end = start + ctext.length();
-            String rtext = code.substring(start, end);
-            if (rtext == null || !rtext.equals(ctext)) {
-                CTConsole.println("Cannot copy text: " + op.toString());
+            String text = code.substring(start, end);
+            if (!text.equals(ctext)) {
+                CTConsole.println("Cannot find copied text: " + op.toString());
                 return false;
             }
         }
