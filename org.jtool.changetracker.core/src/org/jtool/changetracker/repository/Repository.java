@@ -296,6 +296,10 @@ public class Repository {
         prjinfo.updateTimeRange(op);
         pkginfo.updateTimeRange(op);
         finfo.updateTimeRange(op);
+        
+        if (op.isFile()) {
+            finfo.getOperationHistory().restoreCodeOnFileOperation((FileOperation)op);
+        }
     }
     
     /**
@@ -382,7 +386,6 @@ public class Repository {
             monitor.worked(1);
         }
         
-        restoreCodeOnFileOperation();
         compactOperations();
     }
     
@@ -492,15 +495,6 @@ public class Repository {
         RepositoryEvent evt = new RepositoryEvent(this, type);
         for (IRepositoryListener listener : listeners) {
             listener.changed(evt);
-        }
-    }
-    
-    /**
-     * Restores the contents of source code on file operations.
-     */
-    public void restoreCodeOnFileOperation() {
-        for (CTFile finfo : getFileHistory()) {
-            finfo.getOperationHistory().restoreCodeOnFileOperation();
         }
     }
     

@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Converts the XML representation into the history of change operations recorded by OperationRecorder.
@@ -35,7 +36,7 @@ public class Xml2OperationOR {
     private static final String FileElem                = "file";
     private static final String SourceCodeElem          = "sourceCode";
     private static final String NormalOperationElem     = "normalOperation";
-    private static final String CompoundedOperationElem = "compoundedOperations";
+    private static final String CompoundedOperationElem = "compoundOperation";
     private static final String CopyOperationElem       = "copyOperation";
     private static final String FileOperationElem       = "fileOperation";
     private static final String MenuOperationElem       = "menuOperation";
@@ -148,10 +149,7 @@ public class Xml2OperationOR {
         } else if (elemName.equals(CopyOperationElem)) {
             ops.add(getCopyOperation(elem));
         } else if (elemName.equals(FileOperationElem)) {
-            FileOperation fop = getFileOperation(elem);
-            if (fop != null) {
-                ops.add(fop);
-            }
+            ops.add(getFileOperation(elem));
         } else if (elemName.equals(MenuOperationElem)) {
             ops.add(getCommandOperation(elem));
         }
@@ -193,12 +191,12 @@ public class Xml2OperationOR {
         for (int i = 0; i < childList.getLength(); i++) {
             if (childList.item(i).getNodeType() == Node.ELEMENT_NODE) {
                 for (IChangeOperation op : getOperation((Element)childList.item(i))) {
-                    if (time == null) {
-                        time = op.getTime();
-                    }
                     if (op instanceof ChangeOperation) {
                         ((ChangeOperation)op).setCompoundTime(time);
                         ops.add(op);
+                        
+                        ((ChangeOperation)op).setTime(time);
+                        time = time.plus(1, ChronoUnit.MILLIS);
                     }
                 }
             }
@@ -236,7 +234,7 @@ public class Xml2OperationOR {
         if (code == null) {
             code = Xml2Operation.getFirstChildCode(elem.getElementsByTagName(SourceCodeElem));
             if (code == null) {
-                return null;
+                code = "";
             }
         }
         op.setCode(code);

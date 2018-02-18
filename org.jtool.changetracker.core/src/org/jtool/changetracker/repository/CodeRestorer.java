@@ -105,19 +105,26 @@ public class CodeRestorer {
             return false;
         }
         
-        String dtext = op.getDeletedText();
         int start = op.getStart();
-        int end = start + dtext.length();
-        
-        if (start > code.length() || end > code.length()) {
-            CTConsole.println("Cannot insert/delete text: " + op.toString());
-            return false;
+        String itext = op.getInsertedText();
+        String dtext = op.getDeletedText();
+        if (itext.length() > 0) {
+            if (start > code.length()) {
+                CTConsole.println("F: Cannot insert text: " + op.toString());
+                return false;
+            }
         }
         
         if (dtext.length() > 0) {
+            int end = start + dtext.length();
+            if (start > code.length() || end > code.length()) {
+                CTConsole.println("F:  Cannot delete text: " + op.toString());
+                return false;
+            }
+            
             String text = code.substring(start, end);
             if (!text.equals(dtext)) {
-                CTConsole.println("Cannot find deleted text: " + op.toString());
+                CTConsole.println("F:  Cannot find deleted text: " + op.toString());
                 return false;
             }
         }
@@ -149,19 +156,30 @@ public class CodeRestorer {
             return false;
         }
         
-        String itext = op.getInsertedText();
         int start = op.getStart();
-        int end = start + itext.length();
-        
-        if (start > code.length() || end > code.length()) {
-            CTConsole.println("Cannot insert/delete text: " + op.toString());
-            return false;
+        String itext = op.getInsertedText();
+        String dtext = op.getDeletedText();
+        if (dtext.length() > 0) {
+            if (start > code.length()) {
+                CTConsole.println("B: Cannot delete text: " + op.toString());
+                return false;
+            }
         }
         
         if (itext.length() > 0) {
+            
+            System.out.println("CODE = " + code.length());
+            System.out.println("END = " + (start + itext.length()));
+            
+            int end = start + itext.length();
+            if (start > code.length() || end > code.length()) {
+                CTConsole.println("B: Cannot insert text: " + op.toString());
+                return false;
+            }
+            
             String text = code.substring(start, end);
             if (!text.equals(itext)) {
-                CTConsole.println("Cannot find inserted text: " + op.toString());
+                CTConsole.println("B: Cannot find inserted text: " + op.toString());
                 return false;
             }
         }

@@ -309,22 +309,18 @@ public class OperationHistory {
     }
     
     /**
-     * Restores the contents of source code on file operations. 
+     * Restores the contents of source code on file operations.
+     * @param fop the file operation
      */
-    public void restoreCodeOnFileOperation() {
-        for (int idx = 0; idx < operations.size(); idx++) {
-            IChangeOperation op = operations.get(idx);
-            if (op.isFile()) {
-                FileOperation fop = (FileOperation)op;
-                if (fop.getCode() == null || fop.getCode().length() == 0) {
-                    if (idx > 0) {
-                        String code = getCode(idx - 1);
-                        if (code != null) {
-                            fop.setCode(code);
-                        }
-                    } else {
-                        fop.setCode("");
-                    }
+    void restoreCodeOnFileOperation(FileOperation fop) {
+        if (fop.getCode() == null || fop.getCode().length() == 0) {
+            int idx = getOperationIndexAt(fop.getTime());
+            if (idx > 0) {
+                String code = getCode(idx - 1);
+                if (code != null) {
+                    fop.setCode(code);
+                } else {
+                    fop.setCode("");
                 }
             }
         }

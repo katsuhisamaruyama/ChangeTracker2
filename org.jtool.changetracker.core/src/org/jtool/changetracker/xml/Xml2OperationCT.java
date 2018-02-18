@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.io.File;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.ZoneId;
 
 /**
@@ -157,9 +158,7 @@ public class Xml2OperationCT {
             ops.add(getCopyOperation(elem));
         } else if (elemName.equals(FileOperationElem)) {
             FileOperation fop = getFileOperation(elem);
-            if (fop != null) {
-                ops.add(fop);
-            }
+            ops.add(fop);
         } else if (elemName.equals(MenuOperationElem)) {
             ops.add(getCommandOperation(elem));
         } else if (elemName.equals(ResourceOperationElem)) {
@@ -236,6 +235,9 @@ public class Xml2OperationCT {
                     if (op instanceof ChangeOperation) {
                         ((ChangeOperation)op).setCompoundTime(time);
                         ops.add(op);
+                        
+                        ((ChangeOperation)op).setTime(time);
+                        time = time.plus(1, ChronoUnit.MILLIS);
                     }
                 }
             }
@@ -273,7 +275,7 @@ public class Xml2OperationCT {
         FileOperation op = new FileOperation(time, pathinfo, action, author);
         String code = Xml2Operation.getFirstChildCode(elem.getElementsByTagName(XmlConstants.CodeElem));
         if (code != null) {
-            return null;
+            code = "";
         }
         op.setCode(code);
         return op;

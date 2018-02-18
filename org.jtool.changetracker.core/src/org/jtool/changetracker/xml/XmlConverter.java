@@ -13,16 +13,12 @@ import org.jtool.changetracker.repository.Repository;
 import org.jtool.changetracker.xml.XmlFileManager;
 import org.jtool.changetracker.xml.Xml2Operation;
 import org.jtool.changetracker.xml.Operation2Xml;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.ui.progress.UIJob;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +88,6 @@ public class XmlConverter {
             repo.addOperationAll(Xml2Operation.getOperations(path));
         }
         
-        repo.restoreCodeOnFileOperation();
         repo.compactOperations();
         
         Map<FileOperation, String> map = storeCodeOnFileOperation(repo.getOperations());
