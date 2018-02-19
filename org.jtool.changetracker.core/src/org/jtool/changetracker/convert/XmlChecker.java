@@ -74,6 +74,8 @@ public class XmlChecker {
             repo.addOperationAll(Xml2Operation.getOperations(path));
         }
         
-        return repo.checkOperationConsistency();
+        boolean result = repo.checkOperationConsistency();
+        repo.compactOperations();
+        return result;
     }
 }
