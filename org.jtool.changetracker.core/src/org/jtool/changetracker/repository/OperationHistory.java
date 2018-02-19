@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -9,7 +9,7 @@ package org.jtool.changetracker.repository;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.operation.FileOperation;
-import org.jtool.changetracker.core.CTConsole;
+import org.jtool.changetracker.convert.ConsistencyCheker;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.ZonedDateTime;
@@ -24,11 +24,6 @@ public class OperationHistory {
      * The change operations stored in the history.
      */
     private List<IChangeOperation> operations = new ArrayList<IChangeOperation>();;
-    
-    /**
-     * The index number of the last change operation that was already checked.
-     */
-    private int indexOfAlreadyChecked = -1;
     
     /**
      * Create an empty instance.
@@ -154,6 +149,19 @@ public class OperationHistory {
     }
     
     /**
+     * Finds a restoration point immediately before or after when the specified change operation was performed.
+     * @param index the index number of the change operation
+     * @return the index number of the file operation at the restoration point, or <code>-1</code> if none
+     */
+    public int getRestorationIndex(int index) {
+        int findex = getRestorationIndexBefore(index);
+        if (findex != -1) {
+            return findex;
+        }
+        return getRestorationIndexAfter(index);
+    }
+    
+    /**
      * Finds the last change operation that was performed at the specified time or immediately before within the time range.
      * @param from the index number of the starting change operation within the time range
      * @param to the index number of the ending change operation within the time range
@@ -276,15 +284,12 @@ public class OperationHistory {
     }
     
     /**
-     * Restores the contents of source code restored at the time when a specified change operation was performed.
+     * Obtains the contents of source code restored at the time when a specified change operation was performed.
      * @param index the index of the code change operation at the restoration point
      * @return the contents of the restored source code, <code>null</code> if the restoration fails
      */
     public String getCode(int index) {
-        int findex = getRestorationIndexBefore(index);
-        if (findex == -1) {
-            findex = getRestorationIndexAfter(index);
-        }
+        int findex = getRestorationIndex(index);
         if (findex == -1) {
             return null;
         }
@@ -294,7 +299,7 @@ public class OperationHistory {
     }
     
     /**
-     * Restores the contents of source code restored at the time when a specified change operation was performed.
+     * Obtains the contents of source code restored at the time when a specified change operation was performed.
      * @param curCode the contents of the current code
      * @param curIndex the index of the current code
      * @param index the index of the code change operation at the restoration point
@@ -336,58 +341,11 @@ public class OperationHistory {
     }
     
     /**
-     * Checks if recorded change operations are consistent with restored code.
+     * Checks if change operations are consistent with restored code.
      * @return <code>true</code> if all the change operations are consistent with the restored code, otherwise <code>false</code>
      */
-    boolean checkOperationConsistency() {
-        boolean success = true;
-        int lastCheckedIndex = -1;
-        for (int idx = indexOfAlreadyChecked + 1; idx < operations.size(); idx++) {
-            IChangeOperation op = operations.get(idx);
-            if (op.isFile()) {
-                int fidx = getRestorationIndexBefore(idx - 1);
-                if (fidx != -1) {
-                    FileOperation fop = (FileOperation)operations.get(fidx);
-                    String fromCode = fop.getCode();
-                    String toCode = ((FileOperation)op).getCode();
-                    String predCode = CodeRestorer.applyOperations(this, fromCode, fidx, idx - 1);
-                    String nextCode = CodeRestorer.applyOperations(this, toCode, idx, fidx);
-                    
-                    if (!toCode.equals(predCode)) {
-                        CTConsole.println("Inconsistent with change operations: " +
-                                fop.getFormatedTime() + " (" + fop.getTimeAsLong() + ") - " +
-                                op.getFormatedTime() + " (" + op.getTimeAsLong() + ") by forward restoration");
-                        success = false;
-                    }
-                    if (!fromCode.equals(nextCode)) {
-                        CTConsole.println("Inconsistent with change operations: " +
-                                fop.getFormatedTime() + " (" + fop.getTimeAsLong() + ") - " +
-                                op.getFormatedTime() + " (" + op.getTimeAsLong() + ") by backward restoration");
-                        success = false;
-                    }
-                }
-                lastCheckedIndex = idx;
-            } else if (op.isDocument() || op.isCopy()) {
-                String code = getCode(idx);
-                if (code == null) {
-                    CTConsole.println("Failure of restration: " + op.getTimeAsLong() + " " + op.toString());
-                }
-            }
-        }
-        
-        if (success) {
-            indexOfAlreadyChecked = lastCheckedIndex;
-        }
-        
-        return success;
-    }
-    
-    /**
-     * Tests if the inconsistency of the change operations was already checked.
-     * @return <code>true</code> the inconsistency was already checked, otherwise <code>false</code>
-     */
-    int getIndexOfAlreadyChecked() {
-        return indexOfAlreadyChecked;
+    public boolean checkOperationConsistency() {
+        return ConsistencyCheker.run(this);
     }
     
     /**

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -179,35 +179,20 @@ public class Repository {
     }
     
     /**
-     * Add change operations to this repository.
+     * Add change operations to this repository and detects Java constructs that affects the added operations.
      * @param ops the collection of the change operations to be added
-     * @return <code>true</code> if all the added change operations are valid, otherwise <code>false</code>
      */
-    public boolean addOperationAll(List<? extends IChangeOperation> ops) {
-        if (ops == null || ops.size() == 0) {
-            return false;
-        }
-        
-        IChangeOperation op = ops.get(0);
-        CTPath pathinfo = new CTPath(op);
-        if (op.isFile()) {
-            createResourceInfo((FileOperation)op, pathinfo);
-        }
-        CTProject projectInfo = createProject(pathinfo);
-        CTPackage packageInfo = createPackage(pathinfo, projectInfo);
-        CTFile fileInfo = createFile(pathinfo, op,  packageInfo);
+    public void addOperationAll(List<? extends IChangeOperation> ops) {
         for (int idx = 0; idx < ops.size(); idx++) {
-            addOperationWithoutConsustencyCheck(ops.get(idx), projectInfo, packageInfo, fileInfo);
+            addOperation(ops.get(idx));
         }
-        return fileInfo.getOperationHistory().checkOperationConsistency();
     }
     
     /**
      * Adds a change operation to this repository.
      * @param op the code change operation to be added
-     * @return <code>true</code> if the added change operation is valid, otherwise <code>false</code>
      */
-    public boolean addOperation(IChangeOperation op) {
+    public void addOperation(IChangeOperation op) {
         CTPath pathinfo = new CTPath(op);
         if (op.isFile()) {
             createResourceInfo((FileOperation)op, pathinfo);
@@ -215,7 +200,22 @@ public class Repository {
         CTProject projectInfo = createProject(pathinfo);
         CTPackage packageInfo = createPackage(pathinfo, projectInfo);
         CTFile fileInfo = createFile(pathinfo, op, packageInfo);
-        return addOperation(op, projectInfo, packageInfo, fileInfo);
+        
+        fileInfo.addOperation(op);
+        if (op instanceof ChangeOperation) {
+            ((ChangeOperation)op).setFile(fileInfo);
+        }
+        projectInfo.updateTimeRange(op);
+        packageInfo.updateTimeRange(op);
+        fileInfo.updateTimeRange(op);
+        
+        if (op.isFile()) {
+            fileInfo.getOperationHistory().restoreCodeOnFileOperation((FileOperation)op);
+        }
+        
+        if (op.isDocumentOrCopy()) {
+            detectAffectedJavaConstructs((CodeOperation)op);
+        }
     }
     
     /**
@@ -260,54 +260,11 @@ public class Repository {
     }
     
     /**
-     * Adds a change operation to the repository.
-     * @param op the change operation to be stored
-     * @param prjinfo information about a project related to the change operation
-     * @param pkginfo information about a package related to the change operation
-     * @param finfo information about a file related to the change operation
-     * @return <code>true</code> if the added change operation is valid, otherwise <code>false</code>
-     */
-    private boolean addOperation(IChangeOperation op, CTProject prjinfo, CTPackage pkginfo, CTFile finfo) {
-        addOperationWithoutConsustencyCheck(op, prjinfo, pkginfo, finfo);
-        
-        boolean result = finfo.getOperationHistory().checkOperationConsistency();
-        if (!result) {
-            return false;
-        }
-        
-        if (op.isDocumentOrCopy()) {
-            detectAffectedJavaConstructs((CodeOperation)op, finfo);
-        }
-        return true;
-    }
-    
-    /**
-     * Adds a change operation to the repository.
-     * @param op the change operation to be stored
-     * @param prjinfo information about a project related to the change operation
-     * @param pkginfo information about a package related to the change operation
-     * @param finfo information about a file related to the change operation
-     */
-    private void addOperationWithoutConsustencyCheck(IChangeOperation op, CTProject prjinfo, CTPackage pkginfo, CTFile finfo) {
-        finfo.addOperation(op);
-        if (op instanceof ChangeOperation) {
-            ((ChangeOperation)op).setFile(finfo);
-        }
-        prjinfo.updateTimeRange(op);
-        pkginfo.updateTimeRange(op);
-        finfo.updateTimeRange(op);
-        
-        if (op.isFile()) {
-            finfo.getOperationHistory().restoreCodeOnFileOperation((FileOperation)op);
-        }
-    }
-    
-    /**
      * Detects Java constructs that a change operation affects.
      * @param op the change operation
-     * @param finfo information about a file that contains the Java constructs
      */
-    private void detectAffectedJavaConstructs(CodeOperation op, CTFile finfo) {
+    private void detectAffectedJavaConstructs(CodeOperation op) {
+        CTFile finfo = op.getFile();
         int index = finfo.getOperationIndexAt(op.getTime());
         ParseableSnapshot sn = DependencyDetector.parse(finfo, index);
         
@@ -505,6 +462,21 @@ public class Repository {
         for (CTFile finfo : getFileHistory()) {
             finfo.getOperationHistory().compact();
         }
+    }
+    
+    /**
+     * Checks if change operations are consistent with restored code.
+     * @return <code>true</code> if all the change operations are consistent with the restored code, otherwise <code>false</code>
+     */
+    public boolean checkOperationConsistency() {
+        boolean success = true;
+        for (CTFile finfo : getFileHistory()) {
+            boolean result = finfo.getOperationHistory().checkOperationConsistency();
+            if (!result) {
+                success = false;
+            }
+        }
+        return success;
     }
     
     /**

@@ -1,10 +1,10 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
 
-package org.jtool.changetracker.xml;
+package org.jtool.changetracker.convert;
 
 import org.jtool.changetracker.core.CTDialog;
 import org.jtool.changetracker.operation.IChangeOperation;
@@ -47,22 +47,22 @@ public class XmlConverter {
             @Override
             public void widgetSelected(SelectionEvent evt) {
                 DirectoryDialog dialog = new DirectoryDialog(parent.getShell());
-                String path = dialog.open();
-                if (path == null) {
+                String dirpath = dialog.open();
+                if (dirpath == null) {
                     return;
                 }
                 
-                if (Xml2Operation.isChangeTrackerVersion2(path)) {
+                if (Xml2Operation.isChangeTrackerVersion2(dirpath)) {
                     CTDialog.errorDialog("Convert Format",
                             "No need to convert since the XML format is compatible with ChangeTracker v2");
                     return;
                 }
                 
                 String timeString = String.valueOf(ZonedDateTime.now().toInstant().toEpochMilli());
-                String dirpath = path + File.separatorChar + "_converted-" + timeString;
-                XmlFileManager.makeDir(new File(dirpath));
+                String convertedPath = dirpath + File.separatorChar + "_converted-" + timeString;
+                XmlFileManager.makeDir(new File(convertedPath));
                 
-                convert(dirpath);
+                convert(dirpath, convertedPath);
                 CTDialog.informationDialog("Convert Format", "The converted files are stored in " + dirpath);
             }
             
@@ -80,7 +80,7 @@ public class XmlConverter {
      * Converts change operations that are stored in the operation history files.
      * @param dirpath the path of the directory that contains the converted files
      */
-    private void convert(String dirpath) {
+    private void convert(String dirpath, String convertedPath) {
         Repository repo = new Repository(dirpath);
         List<File> files = Xml2Operation.getHistoryFiles(dirpath);
         for (File file : files) {
@@ -95,7 +95,7 @@ public class XmlConverter {
             List<IChangeOperation> ops = Xml2Operation.getOperations(file.getAbsolutePath());
             restoreCodeOnFileOperation(map, ops);
             int index = file.getName().lastIndexOf(Xml2Operation.XML_FILE_EXTENTION);
-            Operation2Xml.storeOperations(ops, dirpath + File.separatorChar + file.getName().substring(0, index));
+            Operation2Xml.storeOperations(ops, convertedPath + File.separatorChar + file.getName().substring(0, index));
         }
     }
     

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -7,7 +7,8 @@
 package org.jtool.changetracker.core;
 
 import org.jtool.changetracker.xml.XmlFileManager;
-import org.jtool.changetracker.xml.XmlConverter;
+import org.jtool.changetracker.convert.XmlChecker;
+import org.jtool.changetracker.convert.XmlConverter;
 import org.jtool.changetracker.xml.ZipArchiveExporter;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -79,11 +80,15 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
         super.createContents(parent);
         Composite area = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
+        layout.numColumns = 3;
         area.setLayout(layout);
         
         ZipArchiveExporter exporter = new ZipArchiveExporter();
         exporter.createAction(area);
+        
+        XmlChecker checker = new XmlChecker();
+        checker.createAction(area);
+        
         XmlConverter converter = new XmlConverter();
         converter.createAction(area);
         return area;
