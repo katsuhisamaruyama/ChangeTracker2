@@ -345,6 +345,7 @@ public class OperationHistory {
      * @return <code>true</code> if all the change operations are consistent with the restored code, otherwise <code>false</code>
      */
     public boolean checkOperationConsistency() {
+        sort();
         return ConsistencyCheker.run(this);
     }
     
