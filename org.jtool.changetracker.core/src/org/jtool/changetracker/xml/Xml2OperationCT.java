@@ -19,8 +19,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.io.File;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -35,16 +37,37 @@ public class Xml2OperationCT {
     /**
      *  The elements and attributes appearing in XML documents for ChangeTracker-v1.
      */
-    private static final String NormalOperationElem   = "normalOperation";
-    private static final String CompoundOperationElem = "compoundOperation";
-    private static final String CopyOperationElem     = "copyOperation";
-    private static final String FileOperationElem     = "fileOperation";
-    private static final String MenuOperationElem     = "menuOperation";
-    private static final String ResourceOperationElem = "resourceOperation";
-    private static final String FileAttr              = "file";
-    private static final String LabelAttr             = "label";
-    private static final String TargetAttr            = "target";
-    private static final String APathAttr             = "apath";
+    public static final String NormalOperationElem   = "normalOperation";
+    public static final String CompoundOperationElem = "compoundOperation";
+    public static final String CopyOperationElem     = "copyOperation";
+    public static final String FileOperationElem     = "fileOperation";
+    public static final String MenuOperationElem     = "menuOperation";
+    public static final String ResourceOperationElem = "resourceOperation";
+    public static final String FileAttr              = "file";
+    public static final String LabelAttr             = "label";
+    public static final String TargetAttr            = "target";
+    public static final String APathAttr             = "apath";
+    
+    /**
+     * A counter that counts change operations with the same time
+     */
+    private static Map<String, Integer> timeCount;
+    
+    /**
+     * Converts a <code>long</code> value into time information.
+     * @param time the <code>long</code> value that represents time. 
+     * @return the time with zone information
+     */
+    static ZonedDateTime getTime(String timeStr) {
+        int plus = 0;
+        Integer count = timeCount.get(timeStr);
+        if (count != null) {
+            plus = count.intValue();
+        }
+        timeCount.put(timeStr, new Integer(plus + 1));
+        long time = Long.parseLong(timeStr) + plus;
+        return Xml2OperationCT.getTime(time);
+    }
     
     /**
      * Converts a <code>long</code> value into time information.
@@ -120,6 +143,8 @@ public class Xml2OperationCT {
      * @return the collection of the change operations
      */
     static List<IChangeOperation> getOperations(Document doc) {
+        timeCount = new HashMap<String, Integer>();
+        
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
         NodeList operationList = doc.getElementsByTagName(XmlConstants.OperationsElem);
         if (operationList == null) {
@@ -151,21 +176,34 @@ public class Xml2OperationCT {
         
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
         if (elemName.equals(NormalOperationElem)) {
-            ops.add(getDocumentOperation(elem));
+            addOperation(ops, getDocumentOperation(elem));
         } else if (elemName.equals(CompoundOperationElem)) {
-            ops.addAll(getCompoundOperation(elem));
+            for (IChangeOperation op : getCompoundOperation(elem)) {
+                addOperation(ops, op);
+            }
         } else if (elemName.equals(CopyOperationElem)) {
-            ops.add(getCopyOperation(elem));
+            addOperation(ops, getCopyOperation(elem));
         } else if (elemName.equals(FileOperationElem)) {
-            FileOperation fop = getFileOperation(elem);
-            ops.add(fop);
+            addOperation(ops, getFileOperation(elem));
         } else if (elemName.equals(MenuOperationElem)) {
-            ops.add(getCommandOperation(elem));
+            addOperation(ops, getCommandOperation(elem));
         } else if (elemName.equals(ResourceOperationElem)) {
-            ops.add(getResourceOperation(elem));
+            addOperation(ops, getResourceOperation(elem));
         }
         return ops;
     }
+    
+    /**
+     * Adds a change operation into the collection
+     * @param ops the collection of change operations
+     * @param op the operation to be added
+     */
+    private static void addOperation(List<IChangeOperation> ops, IChangeOperation op) {
+        if (op != null) {
+            ops.add(op);
+        }
+    }
+    
     
     /**
      * Creates information about the path of a resource on which a change operation was performed.
@@ -186,7 +224,7 @@ public class Xml2OperationCT {
      * @return the document operation
      */
     private static DocumentOperation getDocumentOperation(Element elem) {
-        ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
+        ZonedDateTime time = getTime(elem.getAttribute(XmlConstants.TimeAttr));
         CTPath pathinfo = createPathInfo(elem);
         String action = parseDocumentAction(elem.getAttribute(XmlConstants.ActionAttr));
         String author = elem.getAttribute(XmlConstants.AuthorAttr);
@@ -226,7 +264,7 @@ public class Xml2OperationCT {
      * @return the collection of change operations in the compound operation
      */
     private static List<IChangeOperation> getCompoundOperation(Element elem) {
-        ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
+        ZonedDateTime time = getTime(elem.getAttribute(XmlConstants.TimeAttr));
         NodeList childList = elem.getChildNodes();
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
         for (int i = 0; i < childList.getLength(); i++) {
@@ -234,10 +272,9 @@ public class Xml2OperationCT {
                 for (IChangeOperation op : getOperation((Element)childList.item(i))) {
                     if (op instanceof ChangeOperation) {
                         ((ChangeOperation)op).setCompoundTime(time);
-                        ops.add(op);
-                        
+                        time = time.plus(1, ChronoUnit.NANOS);
                         ((ChangeOperation)op).setTime(time);
-                        time = time.plus(1, ChronoUnit.MILLIS);
+                        ops.add(op);
                     }
                 }
             }
@@ -251,7 +288,7 @@ public class Xml2OperationCT {
      * @return the copy operation
      */
     private static CopyOperation getCopyOperation(Element elem) {
-        ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
+        ZonedDateTime time = getTime(elem.getAttribute(XmlConstants.TimeAttr));
         CTPath pathinfo = createPathInfo(elem);
         String author = elem.getAttribute(XmlConstants.AuthorAttr);
         
@@ -267,7 +304,7 @@ public class Xml2OperationCT {
      * @return the file operation
      */
     private static FileOperation getFileOperation(Element elem) {
-        ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
+        ZonedDateTime time = getTime(elem.getAttribute(XmlConstants.TimeAttr));
         CTPath pathinfo = createPathInfo(elem);
         String action = parseFileAction(elem.getAttribute(XmlConstants.ActionAttr));
         String author = elem.getAttribute(XmlConstants.AuthorAttr);
@@ -309,7 +346,7 @@ public class Xml2OperationCT {
      * @return the command operation
      */
     private static CommandOperation getCommandOperation(Element elem) {
-        ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
+        ZonedDateTime time = getTime(elem.getAttribute(XmlConstants.TimeAttr));
         CTPath pathinfo = createPathInfo(elem);
         String author = elem.getAttribute(XmlConstants.AuthorAttr);
         
@@ -329,7 +366,7 @@ public class Xml2OperationCT {
         if (action != null) {
             return null;
         }
-        ZonedDateTime time = getTime(Long.parseLong(elem.getAttribute(XmlConstants.TimeAttr)));
+        ZonedDateTime time = getTime(elem.getAttribute(XmlConstants.TimeAttr));
         CTPath pathinfo = createPathInfo(elem);
         
         String author = elem.getAttribute(XmlConstants.AuthorAttr);

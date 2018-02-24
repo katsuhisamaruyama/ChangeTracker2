@@ -33,17 +33,21 @@ public class Operation2Xml {
      * @param operations the collections of change operations to be converted
      * @param filename the name of the history file, or <code>null</code> when failures in writing a file
      */
-    public static void storeOperations(List<IChangeOperation> operations, String filename) {
-        Document doc = convert(operations);
-        XmlFileManager.writeXML(doc, filename + Xml2Operation.XML_FILE_EXTENTION);
+    public static boolean storeOperations(List<IChangeOperation> operations, String filename) {
+        Document doc = getXML(operations);
+        if (doc == null) {
+            return false;
+        }
+        XmlFileManager.writeXML(doc, filename);
+        return true;
     }
     
     /**
      * Converts the change operations into the XML representation.
      * @param operations the collections of change operations to be converted
-     * @return the DOM instance that has the XML representation
+     * @return the DOM instance that has the XML representation, or <code>null</code> if the conversion failed
      */
-    private static Document convert(List<IChangeOperation> operations) {
+    private static Document getXML(List<IChangeOperation> operations) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();

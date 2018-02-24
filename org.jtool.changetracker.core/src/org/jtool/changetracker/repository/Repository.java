@@ -168,13 +168,11 @@ public class Repository {
             return;
         }
         
-        try {
-            long time = ops.get(0).getTimeAsLong();
-            String filename = location + File.separatorChar + String.valueOf(time);
-            Operation2Xml.storeOperations(ops, filename);
-        } catch (Exception e) {
-            CTConsole.println("Failed to store change operations into a history file: " + e.toString());
-            e.printStackTrace();
+        long time = ops.get(0).getTimeAsLong();
+        String filename = location + File.separatorChar + String.valueOf(time) + Xml2Operation.XML_FILE_EXTENTION;
+        boolean result = Operation2Xml.storeOperations(ops, filename);
+        if (!result) {
+            CTConsole.println("Failed to store change operations into a history file: " + filename);
         }
     }
     

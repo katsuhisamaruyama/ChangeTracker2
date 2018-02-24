@@ -102,9 +102,19 @@ public class Xml2Operation {
      * @return the collection of all the descendant files
      */
     public static List<File> getHistoryFiles(String path) {
+        return getHistoryFiles(path, null);
+    }
+    
+    /**
+     * Returns all descendant history files of a directory.
+     * @param path the path of the directory
+     * @param prefix a character that indicates the prefix of the name of a directory excluded
+     * @return the collection of all the descendant files
+     */
+    public static List<File> getHistoryFiles(String path, String prefix) {
         List<File> files = new ArrayList<File>();
         String name = getFileName(path);
-        if (name.startsWith("_") || name.startsWith(".")) {
+        if ((prefix != null && name.startsWith(prefix)) || name.startsWith(".")) {
             return files;
         }
         
@@ -116,7 +126,7 @@ public class Xml2Operation {
         } else if (dir.isDirectory() ) {
             File[] children = dir.listFiles();
             for (File f : children) {
-                files.addAll(getHistoryFiles(f.getPath()));
+                files.addAll(getHistoryFiles(f.getPath(), prefix));
             }
         }
         
