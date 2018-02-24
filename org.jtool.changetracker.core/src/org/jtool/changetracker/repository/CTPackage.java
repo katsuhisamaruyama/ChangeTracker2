@@ -32,7 +32,7 @@ public class CTPackage extends CTResource {
      * @param pathinfo information about path of this package
      * @param pinfo the information about a project containing this package
      */
-    CTPackage(CTPath pathinfo, CTProject pinfo) {
+    public CTPackage(CTPath pathinfo, CTProject pinfo) {
         super(pathinfo.getPackageName(), pathinfo.getQualifiedPackageName());
         projectInfo = pinfo;
     }

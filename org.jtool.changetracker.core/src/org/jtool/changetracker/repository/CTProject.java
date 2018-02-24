@@ -32,7 +32,7 @@ public class CTProject extends CTResource {
      * Creates an instance that stores information about this project.
      * @param pathinfo information about path of this project
      */
-    CTProject(CTPath pathinfo) {
+    public CTProject(CTPath pathinfo) {
         super(pathinfo.getProjectName(), pathinfo.getQualifiedProjectName());
         this.branch = pathinfo.getBranch();
     }

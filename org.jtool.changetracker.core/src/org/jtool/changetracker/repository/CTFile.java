@@ -65,7 +65,7 @@ public class CTFile extends CTResource {
      * @param prjinfo the information about a package containing this file
      * @param pkginfo the information about a package containing this file
      */
-    CTFile(CTPath pathinfo, CTProject prjinfo, CTPackage pkginfo) {
+    public CTFile(CTPath pathinfo, CTProject prjinfo, CTPackage pkginfo) {
         super(pathinfo.getFileName(), pathinfo.getQualifiedName());
         this.path = pathinfo.getPath();
         this.projectInfo = prjinfo;
