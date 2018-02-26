@@ -26,10 +26,10 @@ public class DependencyDetector {
      * @return the generated parse-able snapshot, or <code>null</code> the generation fails
      */
     public static ParseableSnapshot parse(CTFile finfo, int index) {
-        ParseableSnapshot psn = finfo.getLastSnapshot();
+        ParseableSnapshot lastsn = finfo.getLastSnapshot();
         String code;
-        if (psn != null) {
-            code = finfo.getCode(psn.getCode(), psn.getIndex(), index);
+        if (lastsn != null) {
+            code = finfo.getCode(lastsn.getCode(), lastsn.getIndex(), index);
         } else {
             code = finfo.getCode(index);
         }
