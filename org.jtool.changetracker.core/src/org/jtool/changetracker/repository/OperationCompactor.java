@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -16,14 +16,14 @@ import java.util.ArrayList;
  * Compacts change operations.
  * @author Katsuhisa Maruyama
  */
-class OperationCompactor {
+public class OperationCompactor {
     
     /**
      * Compacts change operations.
      * @param ops the change operations
      * @return the collection of change operations after the compaction
      */
-    static List<IChangeOperation> compact(List<IChangeOperation> ops) {
+    public static List<IChangeOperation> compact(List<IChangeOperation> ops) {
         List<IChangeOperation> retops = new ArrayList<IChangeOperation>(ops);
         retops = remove(retops);
         retops = merge(retops);

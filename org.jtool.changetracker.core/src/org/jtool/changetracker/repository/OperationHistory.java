@@ -9,7 +9,6 @@ package org.jtool.changetracker.repository;
 import org.jtool.changetracker.operation.IChangeOperation;
 import org.jtool.changetracker.operation.ChangeOperation;
 import org.jtool.changetracker.operation.FileOperation;
-import org.jtool.changetracker.convert.ConsistencyCheker;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.ZonedDateTime;
@@ -328,15 +327,6 @@ public class OperationHistory {
                     fop.setCode("");
                 }
             }
-        }
-    }
-    
-    /**
-     * Compacts the history of change operations.
-     */
-    public void compact() {
-        if (operations.size() > 0) {
-            operations = OperationCompactor.compact(operations);
         }
     }
     

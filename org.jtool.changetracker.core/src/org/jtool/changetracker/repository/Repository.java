@@ -211,9 +211,7 @@ public class Repository {
             fileInfo.getOperationHistory().restoreCodeOnFileOperation((FileOperation)op);
         }
         
-        if (op.isDocumentOrCopy()) {
-            detectAffectedJavaConstructs((CodeOperation)op);
-        }
+        detectAffectedJavaConstructs(fileInfo, op);
     }
     
     /**
@@ -258,33 +256,34 @@ public class Repository {
     }
     
     /**
-     * Detects Java constructs that a change operation affects.
+     * Detects Java constructs within a snapshot that a change operation affects.
+     * @param finfo file information about the change operation
      * @param op the change operation
      */
-    private void detectAffectedJavaConstructs(CodeOperation op) {
-        CTFile finfo = op.getFile();
+    private void detectAffectedJavaConstructs(CTFile finfo, IChangeOperation op) {
         int index = finfo.getOperationIndexAt(op.getTime());
         ParseableSnapshot sn = DependencyDetector.parse(finfo, index);
-        
-        if (sn != null) {
-            ParseableSnapshot psn = finfo.getLastSnapshot();
-            finfo.addSnapshot(sn);
-            
-            List<IChangeOperation> ops;
-            if (psn != null) {
-                if (psn.getIndex() < 0) {
-                    ops = finfo.getOperations();
-                } else {
-                    ops = finfo.getOperationsAfter(psn.getTime());
-                    ops.remove(0);
-                }
-            } else {
-                ops = finfo.getOperations();
-            }
-            List<CodeOperation> cops = DependencyDetector.getCodeOperations(ops);
-            DependencyDetector.detectBackwardChangeEdges(psn, cops);
-            DependencyDetector.detectForwardChangeEdges(sn, cops);
+        if (sn == null) {
+            return;
         }
+        
+        finfo.addSnapshot(sn);
+        
+        ParseableSnapshot lastsn = finfo.getLastSnapshot();
+        List<IChangeOperation> ops;
+        if (lastsn != null) {
+            if (lastsn.getIndex() < 0) {
+                ops = finfo.getOperations();
+            } else {
+                ops = finfo.getOperationsAfter(lastsn.getTime());
+                ops.remove(0);
+            }
+        } else {
+            ops = finfo.getOperations();
+        }
+        List<CodeOperation> cops = DependencyDetector.getCodeOperations(ops);
+        DependencyDetector.detectBackwardChangeEdges(lastsn, cops);
+        DependencyDetector.detectForwardChangeEdges(sn, cops);
     }
     
     /**
@@ -331,7 +330,13 @@ public class Repository {
     private void readHistoryFiles(List<File> files, IProgressMonitor monitor) throws InterruptedException {
         for (File file : files) {
             String path = file.getAbsolutePath();
-            addOperationAll(Xml2Operation.getOperations(path));
+            
+            List<IChangeOperation> ops = Xml2Operation.getOperations(path);
+            if (ops.size() > 0) {
+                ops = OperationCompactor.compact(ops);
+            }
+            
+            addOperationAll(ops);
             
             if (monitor.isCanceled()) {
                 clear();
@@ -340,8 +345,6 @@ public class Repository {
             }
             monitor.worked(1);
         }
-        
-        compactOperations();
     }
     
     /**
@@ -450,15 +453,6 @@ public class Repository {
         RepositoryEvent evt = new RepositoryEvent(this, type);
         for (IRepositoryListener listener : listeners) {
             listener.changed(evt);
-        }
-    }
-    
-    /**
-     * Compacts the history of change operations.
-     */
-    public void compactOperations() {
-        for (CTFile finfo : getFileHistory()) {
-            finfo.getOperationHistory().compact();
         }
     }
     
