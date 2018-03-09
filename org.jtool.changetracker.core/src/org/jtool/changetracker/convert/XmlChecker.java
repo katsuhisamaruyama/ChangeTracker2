@@ -7,6 +7,8 @@
 package org.jtool.changetracker.convert;
 
 import org.jtool.changetracker.core.CTDialog;
+import org.jtool.changetracker.operation.IChangeOperation;
+import org.jtool.changetracker.repository.OperationCompactor;
 import org.jtool.changetracker.repository.Repository;
 import org.jtool.changetracker.xml.Xml2Operation;
 import org.eclipse.swt.SWT;
@@ -23,6 +25,12 @@ import java.io.File;
  * @author Katsuhisa Maruyama
  */
 public class XmlChecker {
+    
+    /**
+     * Creates an empty instance.
+     */
+    public XmlChecker() {
+    }
     
     /**
      * Creates the action that checks change operations stored into a repository.
@@ -62,20 +70,24 @@ public class XmlChecker {
     }
     
     /**
-     * Converts change operations that are stored in the operation history files.
+     * Checks change operations that are stored in the operation history files.
      * @param dirpath the path of the directory that contains the converted files
      * @return <code>true</code> if all the change operations are consistent with the restored code, otherwise <code>false</code>
      */
     private boolean check(String dirpath) {
-        Repository repo = new Repository(dirpath);
+        Repository repository = new Repository(dirpath);
         List<File> files = Xml2Operation.getHistoryFiles(dirpath);
         for (File file : files) {
             String path = file.getAbsolutePath();
-            repo.addOperationAll(Xml2Operation.getOperations(path));
+            
+            List<IChangeOperation> ops = Xml2Operation.getOperations(path);
+            if (ops.size() > 0) {
+                ops = OperationCompactor.compact(ops);
+            }
+            
+            repository.addOperationAll(ops);
         }
         
-        boolean result = repo.checkOperationConsistency();
-        repo.compactOperations();
-        return result;
+        return repository.checkOperationConsistency();
     }
 }

@@ -8,11 +8,11 @@ package org.jtool.changetracker.convert;
 
 import org.jtool.changetracker.core.CTDialog;
 import org.jtool.changetracker.operation.IChangeOperation;
-import org.jtool.changetracker.operation.FileOperation;
+import org.jtool.changetracker.repository.OperationCompactor;
 import org.jtool.changetracker.repository.Repository;
 import org.jtool.changetracker.xml.XmlFileManager;
-import org.jtool.changetracker.xml.Xml2Operation;
 import org.jtool.changetracker.xml.Operation2Xml;
+import org.jtool.changetracker.xml.Xml2Operation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -32,7 +32,13 @@ import java.time.ZonedDateTime;
 public class XmlConverter {
     
     /**
-     * Creates the action that converts from operation history in the old format into one in the new format.
+     * Creates an empty instance.
+     */
+    public XmlConverter() {
+    }
+    
+    /**
+     * Creates the action that converts the old format of change operations into the new format.
      * @param parent the parent control
      */
     public void createAction(Composite parent) {
@@ -77,58 +83,33 @@ public class XmlConverter {
     }
     
     /**
-     * Converts change operations that are stored in the operation history files.
-     * @param dirpath the path of the directory that contains the converted files
+     * Converts the format of change operations stored in a source directory and stores the converted ones into a target directory.
+     * @param dirpath the source directory
+     * @param convertedPath the target directory
      */
-    private void convert(String dirpath, String convertedPath) {
-        Repository repo = new Repository(dirpath);
-        List<File> files = Xml2Operation.getHistoryFiles(dirpath);
+    public void convert(String dirpath, String convertedPath) {
+        Map<String, List<IChangeOperation> > fileMap = new HashMap<>();
+        
+        Repository repository = new Repository(dirpath);
+        List<File> files = Xml2Operation.getHistoryFiles(dirpath, "_");
         for (File file : files) {
             String path = file.getAbsolutePath();
-            repo.addOperationAll(Xml2Operation.getOperations(path));
+            
+            List<IChangeOperation> ops = Xml2Operation.getOperations(path);
+            if (ops.size() > 0) {
+                ops = OperationCompactor.compact(ops);
+            }
+            
+            repository.addOperationAll(ops);
+            fileMap.put(file.getAbsolutePath(), ops);
         }
         
-        repo.compactOperations();
+        repository.checkOperationConsistency();
         
-        Map<FileOperation, String> map = storeCodeOnFileOperation(repo.getOperations());
         for (File file : files) {
-            List<IChangeOperation> ops = Xml2Operation.getOperations(file.getAbsolutePath());
-            restoreCodeOnFileOperation(map, ops);
-            int index = file.getName().lastIndexOf(Xml2Operation.XML_FILE_EXTENTION);
-            Operation2Xml.storeOperations(ops, convertedPath + File.separatorChar + file.getName().substring(0, index));
-        }
-    }
-    
-    /**
-     * Stores the contents of source code on file operations.
-     * @param the collection of all change operations
-     * @return the map that contains pairs of a file operation and its contents of source code
-     */
-    private Map<FileOperation, String> storeCodeOnFileOperation(List<IChangeOperation> ops) {
-        Map<FileOperation, String> map = new HashMap<FileOperation, String>();
-        for (int idx = 0; idx < ops.size(); idx++) {
-            IChangeOperation op = ops.get(idx);
-            if (op.isFile()) {
-                FileOperation fop = (FileOperation)op;
-                map.put(fop, fop.getCode());
-            }
-        }
-        return map;
-    }
-    
-    /**
-     * Restores the contents of source code on file operations. 
-     * @param map the map that contains pairs of a file operation and its contents of source code
-     * @param ops the collection of change operations that contains the file operations with the restored source code
-     */
-    private void restoreCodeOnFileOperation(Map<FileOperation, String> map, List<IChangeOperation> ops) {
-        for (int idx = 0; idx < ops.size(); idx++) {
-            IChangeOperation op = ops.get(idx);
-            if (op.isFile()) {
-                FileOperation fop = (FileOperation)op;
-                String code = map.get(fop);
-                fop.setCode(code);
-            }
+            List<IChangeOperation> ops = fileMap.get(file.getAbsolutePath());
+            String filename = convertedPath + File.separatorChar + file.getName();
+            Operation2Xml.storeOperations(ops, filename);
         }
     }
 }
