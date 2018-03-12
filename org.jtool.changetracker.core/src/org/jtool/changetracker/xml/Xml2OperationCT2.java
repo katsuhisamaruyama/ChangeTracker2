@@ -30,12 +30,6 @@ import java.time.ZonedDateTime;
 class Xml2OperationCT2 {
     
     /**
-     * Initializes this converter.
-     */
-    static void init() {
-    }
-    
-    /**
      * Obtains change operations from the XML representation.
      * @param doc the DOM instance that has the XML representation
      * @return the collection of the change operations

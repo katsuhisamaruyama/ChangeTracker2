@@ -54,12 +54,6 @@ public class Xml2OperationCT {
     private static Map<String, Integer> timeCount;
     
     /**
-     * Initializes this converter.
-     */
-    static void init() {
-    }
-    
-    /**
      * Converts a <code>long</code> value into time information.
      * @param time the <code>long</code> value that represents time. 
      * @return the time with zone information

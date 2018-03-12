@@ -328,7 +328,6 @@ public class Repository {
      * @throws Exception if a request to cancel or any failure is detected
      */
     private void readHistoryFiles(List<File> files, IProgressMonitor monitor) throws InterruptedException {
-        Xml2Operation.init();
         for (File file : files) {
             String path = file.getAbsolutePath();
             

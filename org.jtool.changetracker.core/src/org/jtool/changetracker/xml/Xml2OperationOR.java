@@ -19,7 +19,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.util.List;
-import java.util.Stack;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -72,25 +71,6 @@ public class Xml2OperationOR {
     private static Map<String, Integer> timeCount;
     
     /**
-     * A stack that stores document operations for undoing.
-     */
-    private static Stack<DocumentOperation> undoStack;
-    
-    /**
-     * A stack that stores document operations for redoing.
-     */
-    private static Stack<DocumentOperation> redoStack;
-    
-    /**
-     * Initializes this converter.
-     */
-    static void init() {
-        timeCount = new HashMap<String, Integer>();
-        undoStack = new Stack<DocumentOperation>();
-        redoStack = new Stack<DocumentOperation>();
-    }
-    
-    /**
      * Converts a <code>long</code> value into time information.
      * @param time the <code>long</code> value that represents time. 
      * @return the time with zone information
@@ -137,6 +117,8 @@ public class Xml2OperationOR {
      * @return the collection of the change operations
      */
     static List<IChangeOperation> getOperations(Document doc) {
+        timeCount = new HashMap<String, Integer>();
+        
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
         NodeList operationList = doc.getElementsByTagName(XmlConstants.OperationsElem);
         if (operationList == null) {
@@ -178,41 +160,25 @@ public class Xml2OperationOR {
         
         List<IChangeOperation> ops = new ArrayList<IChangeOperation>();
         if (elemName.equals(NormalOperationElem)) {
-            DocumentOperation op = getDocumentOperation(elem);
-            addOperation(ops, op);
-            undoStack.push(op);
+            addOperation(ops, getDocumentOperation(elem));
             
         } else if (elemName.equals(CompoundedOperationElem)) {
             for (IChangeOperation op : getCompoundOperation(elem)) {
                 addOperation(ops, op);
-                if (op.isDocument()) {
-                    undoStack.push((DocumentOperation)op);
-                }
             }
             
         } else if (elemName.equals(CopyOperationElem)) {
             addOperation(ops,getCopyOperation(elem));
             
         } else if (elemName.equals(FileOperationElem)) {
-            addOperation(ops,getFileOperation(elem));
+            addOperation(ops, getFileOperation(elem));
             
         } else if (elemName.equals(MenuOperationElem)) {
             CommandOperation op = getCommandOperation(elem);
-            
-            if (op != null && op.getCommandId().endsWith("undo")) {
-                DocumentOperation dop = getUndoRedoOperation(op, undoStack, ICodeOperation.Action.UNDO.toString());
-                if (dop != null) {
+            if (op != null) {
+                if (!op.getCommandId().endsWith("undo") && !op.getCommandId().endsWith("redo")) {
                     addOperation(ops, op);
-                    addOperation(ops, dop);
                 }
-            } else if (op != null && op.getCommandId().endsWith("redo")) {
-                DocumentOperation dop = getUndoRedoOperation(op, redoStack, ICodeOperation.Action.REDO.toString());
-                if (dop != null) {
-                    addOperation(ops, op);
-                    addOperation(ops, dop);
-                }
-            } else {
-                addOperation(ops, op);
             }
         }
         return ops;
@@ -353,34 +319,6 @@ public class Xml2OperationOR {
         
         CommandOperation op = new CommandOperation(time, pathinfo, CommandOperation.Action.EXECUTE.toString(), developer);
         op.setCommandId(elem.getAttribute(LabelAttr));
-        return op;
-    }
-    
-    /**
-     * Obtains a document operation corresponding to undoing or redoing.
-     * @param cop the commend operation for the undo or redo action
-     * @param stack a stack that contains the target of undoing or redoing
-     * @param action action string that represents the undo or redo action
-     * @return the document operation corresponding to undoing or redoing
-     */
-    private static DocumentOperation getUndoRedoOperation(CommandOperation cop, Stack<DocumentOperation> stack, String action) {
-        if (stack.isEmpty()) {
-            return null;
-        }
-        DocumentOperation dop = stack.pop();
-        if (dop == null) {
-            return null;
-        }
-        
-        ZonedDateTime time = cop.getTime().plus(1, ChronoUnit.NANOS);
-        CTPath pathinfo = new CTPath(dop.getProjectName(), dop.getPackageName(), dop.getFileName(), dop.getPath(), BRANCH);
-        DocumentOperation op = new DocumentOperation(time, pathinfo, action, developer);
-        op.setStart(dop.getStart());
-        op.setInsertedText(dop.getDeletedText());
-        op.setDeletedText(dop.getDeletedText());
-        redoStack.push(op);
-        
-        System.out.println(action + " " + op.toString());
         return op;
     }
 }

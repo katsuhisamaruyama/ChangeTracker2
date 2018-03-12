@@ -37,15 +37,6 @@ public class Xml2Operation {
     static final String HISTORY_VERSION2 = "2.0" + HISTORY_VERSION2_EXT;
     
     /**
-     * Initializes converters for all versions.
-     */
-    public static void init() {
-        Xml2OperationCT2.init();
-        Xml2OperationCT.init();
-        Xml2OperationOR.init();
-    }
-    
-    /**
      * Obtains change operations from the XML representation.
      * @param path the path name of a file to be read
      * @return the collection of the change operations, or empty set when failures in reading a file
