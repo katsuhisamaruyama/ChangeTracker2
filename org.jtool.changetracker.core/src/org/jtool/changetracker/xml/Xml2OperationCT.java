@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -29,7 +29,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.ZoneId;
 
 /**
- * Converts the XML representation into the history of change operations recorded by ChangeTracker-v1.
+ * Converts the XML representation of ChangeTracker-v1 into the history of change operations.
  * @author Katsuhisa Maruyama
  */
 public class Xml2OperationCT {
@@ -52,6 +52,12 @@ public class Xml2OperationCT {
      * A counter that counts change operations with the same time
      */
     private static Map<String, Integer> timeCount;
+    
+    /**
+     * Initializes this converter.
+     */
+    static void init() {
+    }
     
     /**
      * Converts a <code>long</code> value into time information.
