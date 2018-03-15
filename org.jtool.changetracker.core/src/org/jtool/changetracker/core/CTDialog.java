@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -8,8 +8,11 @@ package org.jtool.changetracker.core;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import java.lang.reflect.InvocationTargetException;
+
 
 /**
  * Displays a dialog with a message.
@@ -49,11 +52,18 @@ public class CTDialog {
     }
     
     /**
-     * Obtains a progress monitor dialog for the workbench window.
-     * @return the progress monitor dialog
+     * Displays a progress monitor dialog for the workbench window.
+     * @param runnable a runnable task
      */
-    public static ProgressMonitorDialog getProgressMonitorDialog() {
+    public static void getProgressMonitorDialog(IRunnableWithProgress runnable) {
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        return new ProgressMonitorDialog(window.getShell());
+        ProgressMonitorDialog dialog = new ProgressMonitorDialog(window.getShell());
+        try {
+            dialog.run(true, true, runnable);
+        } catch (InvocationTargetException e) {
+            CTDialog.errorDialog("InvocationTargetException", e.getCause().getMessage());
+        } catch (InterruptedException e) {
+            CTDialog.informationDialog("InterruptedException", e.getCause().getMessage());
+        }
     }
 }
