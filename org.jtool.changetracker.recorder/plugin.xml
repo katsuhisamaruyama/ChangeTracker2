@@ -19,8 +19,7 @@
    <extension
          point="org.jtool.macrorecorder.handlers">
       <handler
-            class="org.jtool.changetracker.recorder.MacroReceiver"
-            commandId="org.jtool.changetracker.recorder.MacroReceiver">
+            class="org.jtool.changetracker.recorder.MacroReceiver">
       </handler>
    </extension>
 </plugin>
