@@ -27,6 +27,7 @@ public class CodeRestorer {
     public static String applyOperations(CTFile file, String code, int from, int to) {
         return applyOperations(file.getOperationHistory(), code, from, to);
     }
+    
     /**
      * Applies change operations within the time range.
      * @param history the history that contains the change operations
