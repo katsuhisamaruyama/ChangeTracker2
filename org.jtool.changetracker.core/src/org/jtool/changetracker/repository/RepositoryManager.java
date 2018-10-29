@@ -55,6 +55,14 @@ public class RepositoryManager {
     }
     
     /**
+     * Returns the collection of the repository handlers that are loaded from the extension point.
+     * @return the collection of the repository handlers
+     */
+    public Set<IRepositoryHandler> getRepositoryHandlers() {
+        return repositoryHandlers;
+    }
+    
+    /**
      * Initializes the whole information about the main repository.
      */
     public void initialize() {
