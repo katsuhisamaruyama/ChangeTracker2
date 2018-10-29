@@ -1,22 +1,21 @@
 # ChangeTracker v2
 
-ChangeTracker is an Eclipse plugin that provides modules about
-change operations.  
+ChangeTracker is an Eclipse plugin that provides modules related to change operations.  
 
-org.jtool.changetracker.core: manages change operations and their
-repositories.  
+__org.jtool.changetracker.core__
+* Defines changes perations and thier repositoy, and manages, converts, and analyzes change operations stored in the repositories.  Operation history slices are also provided.
 
-org.jtool.changetracker.recorder: records change operations that
-are converted from change macros.  
+__org.jtool.changetracker.recorder__
+* Stores change operations that are converted from change macros into the repository.  
 
-org.jtool.changetracker.replayer: provides UI that replays change
-operations.  
+__org.jtool.changetracker.replayer__
+* Provides UI that replays change operations stored in the repositories.  
 
 
 ## Requirement
 
 JDK 1.8 
-[Eclipse](https://www.eclipse.org/) 4.6 (Neon) and later  
+[Eclipse](https://www.eclipse.org/) 4.7 (Oxygen) and later  
 
 ## License
 
