@@ -6,7 +6,7 @@
 
 package org.jtool.changetracker.replayer.ui;
 
-import org.jtool.changetracker.core.Activator;
+import org.jtool.changetracker.replayer.Activator;
 import org.jtool.changetracker.repository.Repository;
 import org.jtool.changetracker.repository.CTProject;
 import org.jtool.changetracker.repository.CTPackage;
