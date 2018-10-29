@@ -6,11 +6,14 @@
 
 package org.jtool.changetracker.replayer;
 
+import java.util.Set;
+
 import org.jtool.changetracker.replayer.ui.CodeAnimatingView;
 import org.jtool.changetracker.replayer.ui.CodeComparingView;
 import org.jtool.changetracker.replayer.ui.HistoryView;
 import org.jtool.changetracker.replayer.ui.OperationVisualizer;
 import org.jtool.changetracker.repository.IRepositoryHandler;
+import org.jtool.changetracker.repository.RepositoryManager;
 
 /**
  * Replays operation changes.
@@ -28,9 +31,12 @@ public class OperationReplayer extends OperationVisualizer implements IRepositor
      * Invoked to initialize this handler before receiving repository change events.
      */
     public void initialize() {
-        addView(HistoryView.ID);
-        addView(CodeComparingView.ID);
-        addView(CodeAnimatingView.ID);
+        Set<IRepositoryHandler> handlers = RepositoryManager.getInstance().getRepositoryHandlers();
+        if (handlers.size() == 1) {
+            addView(HistoryView.ID);
+            addView(CodeComparingView.ID);
+            addView(CodeAnimatingView.ID);
+        }
     }
     
     /**
