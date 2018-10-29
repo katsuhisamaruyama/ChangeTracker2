@@ -49,13 +49,6 @@
 
    <element name="handler">
       <complexType>
-         <attribute name="commandId" type="string" use="default" value="org.eclipse.changetracker.repository.handler">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
@@ -80,8 +73,7 @@
  &lt;extension
          point=&quot;org.jtool.changetracker.repository.handlers&quot;&gt;
       &lt;handler
-            class=&quot;org.jtool.changetracker.replayer.OperationReplayer&quot;
-            commandId=&quot;org.jtool.changetracker.replayer.OperationReplayer&quot;&gt;
+            class=&quot;org.jtool.changetracker.replayer.OperationReplayer&quot;&gt;
       &lt;/handler&gt;
 &lt;/extension&gt;
 &lt;/pre&gt;
@@ -139,7 +131,7 @@ public interface IRepositoryHandler extends IRepositoryChangedListener {
          <meta.section type="copyright"/>
       </appinfo>
       <documentation>
-         Copyright 2017
+         Copyright 2017-2018
 Software Science and Technology Lab.
 Department of Computer Science, Ritsumeikan University
       </documentation>
