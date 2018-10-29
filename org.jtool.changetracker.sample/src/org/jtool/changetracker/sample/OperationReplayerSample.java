@@ -6,6 +6,8 @@
 
 package org.jtool.changetracker.sample;
 
+import org.jtool.changetracker.replayer.ui.CodeAnimatingView;
+import org.jtool.changetracker.replayer.ui.CodeComparingView;
 import org.jtool.changetracker.replayer.ui.HistoryView;
 import org.jtool.changetracker.replayer.ui.OperationVisualizer;
 import org.jtool.changetracker.repository.IRepositoryHandler;
@@ -28,8 +30,7 @@ public class OperationReplayerSample extends OperationVisualizer implements IRep
      */
     public void initialize() {
         addView(HistoryView.ID);
-        // addView(CodeComparingViewSample.ID);
-        // addView(CodeAnimatingViewSample.ID);
+        addView(CodeAnimatingViewSample.ID);
     }
     
     /**
