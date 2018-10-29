@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -82,6 +82,11 @@ public class CodeComparingView extends CodeChangeView {
             }
         };
         compareView.setContent(compareView.getViewer().getControl());
+        
+        if (getFile() != null) {
+            updateCodeViewer();
+        }
+        
         return compareView;
     }
     

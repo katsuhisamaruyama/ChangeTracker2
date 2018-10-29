@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2018
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -97,6 +97,10 @@ public class CodeAnimatingView extends CodeChangeView {
         
         StyledText styledText = sourceViewer.getTextWidget();
         styledText.setFont(JFaceResources.getFont(PreferenceConstants.EDITOR_TEXT_FONT));
+        
+        if (getFile() != null) {
+            updateCodeViewer();
+        }
         
         return sourceViewer.getControl();
     }

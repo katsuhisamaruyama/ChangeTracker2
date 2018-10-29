@@ -476,7 +476,7 @@ public class OperationVisualizer implements IRepositoryListener {
      * Removes a view to be opened when a repository handler is activated.
      * @param viewid the identification string
      */
-    public void removeiew(String viewid) {
+    public void removeView(String viewid) {
         ViewManager.getInstance().addView(viewid);
     }
     
