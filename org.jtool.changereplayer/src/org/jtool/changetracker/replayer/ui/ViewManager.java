@@ -93,11 +93,19 @@ public class ViewManager {
     }
     
     /**
-     * Adds the identification string for indicating a view to be opened.
+     * Adds a view to be opened when a repository handler is activated.
      * @param viewid the identification string
      */
     void addView(String viewid) {
         views.add(viewid);
+    }
+    
+    /**
+     * Removes a view to be opened when a repository handler is activated.
+     * @param viewid the identification string
+     */
+    void removeView(String viewid) {
+        views.remove(viewid);
     }
     
     /**
@@ -188,6 +196,7 @@ public class ViewManager {
                 changeExplorerView.refresh();
             }
             fire(ViewStateChangedEvent.Type.RESET);
+            
         } else if (type.equals(RepositoryEvent.Type.OPERATION_ADD)) {
             if (changeExplorerView != null) {
                 changeExplorerView.update();
