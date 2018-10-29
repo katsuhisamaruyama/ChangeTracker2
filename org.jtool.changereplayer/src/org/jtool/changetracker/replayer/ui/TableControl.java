@@ -231,7 +231,6 @@ public class TableControl {
         StringBuilder buf = new StringBuilder();
         buf.append(op.getAction().toString());
         if (ICodeOperation.Action.TYPING.toString().equals(op.getAction())) {
-        buf.append(op.getAction());
             buf.append(" ");
             buf.append(String.valueOf(op.getStart()));
             buf.append(" ");
