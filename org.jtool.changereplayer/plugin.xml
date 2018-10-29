@@ -59,8 +59,7 @@
    <extension
          point="org.jtool.changetracker.repository.handlers">
       <handler
-            class="org.jtool.changetracker.replayer.OperationReplayer"
-            commandId="org.jtool.changetracker.replayer.OperationReplayer">
+            class="org.jtool.changetracker.replayer.OperationReplayer">
       </handler>
    </extension>
    
