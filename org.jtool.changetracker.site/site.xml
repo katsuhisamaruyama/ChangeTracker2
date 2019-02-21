@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.jtool.changetracker.feature_1.0.0.201810291833.jar" id="org.jtool.changetracker.feature" version="1.0.0.201810291833"/>
+   <feature url="features/org.jtool.macrorecorder.feature_1.1.1.201902211526.jar" id="org.jtool.macrorecorder.feature" version="1.1.1.201902211526"/>
    <category-def name="org.jtool.changetracker" label="ChangeTracker v2">
       <description>
          ChangeTracker v2

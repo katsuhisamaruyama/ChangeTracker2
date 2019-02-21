@@ -2,7 +2,7 @@
 <feature
       id="org.jtool.changetracker.feature"
       label="ChangeTracker v2 for Eclipse"
-      version="1.0.0.qualifier"
+      version="1.0.1.qualifier"
       provider-name="FSE@Ristumeikan Univ.">
 
    <description>
