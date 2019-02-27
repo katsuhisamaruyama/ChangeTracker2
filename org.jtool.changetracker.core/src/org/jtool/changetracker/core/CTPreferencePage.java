@@ -183,6 +183,7 @@ public class CTPreferencePage extends FieldEditorPreferencePage implements IWork
                 location = location + "#";
                 file = new File(location);
             }
+            XmlFileManager.makeDir(file);
         }
         
         return location;
