@@ -116,10 +116,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <update label="ChangeTracker v2 for Eclipse" url="https://github.com/katsuhisamaruyama/ChangeTracker2"/>
    </url>
 
-   <includes
-         id="org.jtool.macrorecorder.feature"
-         version="1.1.1.qualifier"/>
-
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.core.resources" version="3.11.0" match="greaterOrEqual"/>
@@ -136,28 +132,34 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.eclipse.pde" version="3.12.0" match="greaterOrEqual"/>
       <import plugin="org.jtool.macrorecorder" version="1.1.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui.workbench.texteditor" version="3.10.0" match="greaterOrEqual"/>
-      <import feature="org.jtool.macrorecorder.feature" version="1.1.1.qualifier" match="greaterOrEqual"/>
    </requires>
 
    <plugin
          id="org.jtool.changetracker.core"
          download-size="0"
          install-size="0"
-         version="2.0.1.qualifier"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jtool.changetracker.recorder"
          download-size="0"
          install-size="0"
-         version="2.0.1.qualifier"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jtool.changetracker.replayer"
          download-size="0"
          install-size="0"
-         version="2.0.1.qualifier"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jtool.macrorecorder"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
          unpack="false"/>
 
 </feature>
