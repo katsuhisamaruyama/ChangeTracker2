@@ -2,11 +2,11 @@
 <feature
       id="org.jtool.changetracker.feature"
       label="ChangeTracker v2 for Eclipse"
-      version="1.0.1.qualifier"
+      version="2.0.1.qualifier"
       provider-name="FSE@Ristumeikan Univ.">
 
    <description>
-      ChangeTracker is an Eclipse plugin that provides modules about
+      ChangeTracker (v2) is an Eclipse plugin that provides modules about
 change operations.
 org.jtool.changetracker.core: manages change operations and their
 repositories
@@ -17,7 +17,7 @@ operations
    </description>
 
    <copyright>
-      Copyright 2017
+      Copyright 2017-2019
 Software Science and Technology Lab.
 Department of Computer Science, Ritsumeikan University
    </copyright>
@@ -118,7 +118,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
    <includes
          id="org.jtool.macrorecorder.feature"
-         version="0.0.0"/>
+         version="1.1.1.qualifier"/>
 
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
@@ -133,40 +133,31 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.apache.commons.compress" version="1.6.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.compare" version="3.6.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.jface.text" version="3.11.0" match="greaterOrEqual"/>
-      <import plugin="org.jtool.macrorecorder" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.pde" version="3.12.0" match="greaterOrEqual"/>
+      <import plugin="org.jtool.macrorecorder" version="1.1.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui.workbench.texteditor" version="3.10.0" match="greaterOrEqual"/>
-      <import feature="org.jtool.macrorecorder.feature" version="1.0.0.qualifier"/>
-      <import plugin="org.eclipse.pde" version="3.13.2" match="greaterOrEqual"/>
-      <import plugin="org.jtool.changetracker.core" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="org.jtool.changetracker.replayer" version="1.0.0" match="greaterOrEqual"/>
+      <import feature="org.jtool.macrorecorder.feature" version="1.1.1.qualifier" match="greaterOrEqual"/>
    </requires>
 
    <plugin
          id="org.jtool.changetracker.core"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="2.0.1.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.jtool.changetracker.recorder"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="2.0.1.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.jtool.changetracker.replayer"
          download-size="0"
          install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jtool.changetracker.sample"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
+         version="2.0.1.qualifier"
          unpack="false"/>
 
 </feature>
