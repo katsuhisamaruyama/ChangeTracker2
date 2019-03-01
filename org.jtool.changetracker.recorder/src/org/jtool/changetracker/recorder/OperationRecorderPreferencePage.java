@@ -28,11 +28,6 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
     static final String REPOSITORY_LOCATION_FOR_RECORDING = "repository.location.recording";
     
     /**
-     * The field editor that specifies location of a repository. 
-     */
-    private CTDirectoryFieldEditor fieldEditor;
-    
-    /**
      * Displays change operations on the console for debugging.
      */
     static final String DISPLAY_OPERATIONS = "display.opetrations";
@@ -56,7 +51,7 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
      */
     @Override
     public void createFieldEditors() {
-        fieldEditor = new CTDirectoryFieldEditor(REPOSITORY_LOCATION_FOR_RECORDING,
+        CTDirectoryFieldEditor fieldEditor = new CTDirectoryFieldEditor(REPOSITORY_LOCATION_FOR_RECORDING,
                 "Repository: ", getFieldEditorParent()) {
             
             /**
@@ -64,8 +59,8 @@ public class OperationRecorderPreferencePage extends FieldEditorPreferencePage i
              */
             @Override
             protected void doStore() {
-                if (!getLocation().equals(fieldEditor.getStringValue())) {
-                    String location = CTPreferencePage.getLocation(fieldEditor.getStringValue());
+                if (!getLocation().equals(getStringValue())) {
+                    String location = CTPreferencePage.getLocation(getStringValue());
                     if (location != null) {
                         super.doStore();
                         OperationRecorder.getInstance().changeRepository(location);
