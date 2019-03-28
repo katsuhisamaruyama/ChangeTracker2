@@ -202,6 +202,8 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
      * Opens this view.
      */
     protected void open() {
+        this.setPartName(getFile().getName());
+        
         update();
     }
     
