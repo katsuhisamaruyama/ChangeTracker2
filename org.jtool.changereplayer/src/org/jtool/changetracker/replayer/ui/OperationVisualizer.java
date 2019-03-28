@@ -59,11 +59,6 @@ public class OperationVisualizer implements IRepositoryListener {
     protected Set<String> views = new HashSet<String>();
     
     /**
-     * The collection of listeners that receives an event the replay state change.
-     */
-    protected Set<ViewStateChangedListener> listeners = new HashSet<ViewStateChangedListener>();
-    
-    /**
      * A flag that indicates if change operations are ready to be visualized.
      */
     protected boolean readyToVisualize = false;
