@@ -169,13 +169,7 @@ public class ViewManager {
      * Closes this operation visualizer.
      */
     void close() {
-        IWorkbenchPage workbenchPage = Activator.getWorkbenchPage();
-        for (String viewid : views) {
-            IViewPart view = workbenchPage.findView(viewid);
-            if (view != null) {
-                hideView(view);
-            }
-        }
+        operationVisualizer.close();
     }
     
     /**
