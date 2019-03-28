@@ -9,7 +9,7 @@
              icon="icons/cr.gif"
              id="org.jtool.changetracker.sample.CodeAnimatingViewSample"
              name="CodeAnimatingView+"
-             restorable="true">
+             restorable="false">
        </view>
    </extension>
    <extension
