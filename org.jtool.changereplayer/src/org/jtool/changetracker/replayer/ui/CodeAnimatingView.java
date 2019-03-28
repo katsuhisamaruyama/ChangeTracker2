@@ -74,6 +74,7 @@ public class CodeAnimatingView extends CodeChangeView {
      * Creates a code view.
      */
     public CodeAnimatingView() {
+        super();
     }
     
     /**

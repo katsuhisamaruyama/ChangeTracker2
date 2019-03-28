@@ -136,7 +136,7 @@ public class ButtonControl {
         btlayout.marginHeight = MARGIN;
         btlayout.marginWidth = MARGIN;
         btlayout.marginLeft = MARGIN;
-        btlayout.marginRight = MARGIN;
+        btlayout.marginRight = 0;
         btlayout.marginTop = MARGIN;
         btlayout.marginBottom = MARGIN;
         buttons.setLayout(btlayout);

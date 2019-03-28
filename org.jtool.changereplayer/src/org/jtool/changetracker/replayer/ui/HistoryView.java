@@ -67,22 +67,18 @@ public class HistoryView extends ViewPart implements ViewStateChangedListener {
         FormLayout layout = new FormLayout();
         composite.setLayout(layout);
         
-        buttonControl = new NullButtonControl(this);
+        buttonControl = new ButtonControl(this);
         buttonControl.createButtons(composite);
         
         tableControl = new TableControl(this);
         tableControl.createTable(composite);
         
-        FormData opdata = new FormData();
-        opdata.top = new FormAttachment(0, 0);
-        if (buttonControl.getControl() != null) {
-            opdata.bottom = new FormAttachment(buttonControl.getControl(), -2);
-        } else {
-            opdata.bottom = new FormAttachment(100, 0);
-        }
-        opdata.left = new FormAttachment(0, 0);
-        opdata.right = new FormAttachment(100, 0);
-        tableControl.getControl().setLayoutData(opdata);
+        FormData tcdata = new FormData();
+        tcdata.top = new FormAttachment(0, 0);
+        tcdata.bottom = new FormAttachment(buttonControl.getControl(), -2);
+        tcdata.left = new FormAttachment(0, 0);
+        tcdata.right = new FormAttachment(100, 0);
+        tableControl.getControl().setLayoutData(tcdata);
     }
     
     /**

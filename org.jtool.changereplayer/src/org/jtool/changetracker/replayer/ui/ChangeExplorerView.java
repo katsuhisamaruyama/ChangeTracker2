@@ -129,8 +129,8 @@ public class ChangeExplorerView extends ViewPart {
             public void run() {
                 DirectoryDialog dialog = new DirectoryDialog(shell);
                 String location = dialog.open();
-                Repository repo = repositoryManager.getRepository(location);
-                if (repo == null) {
+                if (location != null) {
+                    repositoryManager.getRepository(location);
                     currentRepository = repositoryManager.openRepository(location);
                     openInToolBarMenu(currentRepository.getLocation());
                 }
