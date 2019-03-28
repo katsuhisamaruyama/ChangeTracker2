@@ -29,7 +29,7 @@
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.HistoryView"
             name="Change History"
-            restorable="true">
+            restorable="false">
       </view>
    </extension>
    <extension
@@ -41,7 +41,7 @@
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.CodeComparingView"
             name="Comparing Changes"
-            restorable="true">
+            restorable="false">
       </view>
    </extension>
    <extension
@@ -53,7 +53,7 @@
             icon="icons/cr.gif"
             id="org.jtool.changetracker.replayer.ui.CodeAnimatingView"
             name="Animating Changes"
-            restorable="true">
+            restorable="false">
       </view>
    </extension>
    <extension

@@ -170,16 +170,6 @@ public class ViewManager {
      */
     void close() {
         operationVisualizer.close();
-        
-        IWorkbenchPage workbenchPage = Activator.getWorkbenchPage();
-        for (String viewid : views) {
-            IViewPart view = workbenchPage.findView(viewid);
-            if (view != null) {
-                hideView(view); // <- Eclipse's bug
-                // java.lang.NullPointerException
-                // at org.eclipse.ui.internal.handlers.LegacyHandlerService.getCurrentState(LegacyHandlerService.java:592)
-            }
-        }
     }
     
     /**
