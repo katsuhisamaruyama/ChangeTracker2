@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018
+ *  Copyright 2018-2019
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -75,6 +75,19 @@ public class CodeAnimatingView extends CodeChangeView {
      */
     public CodeAnimatingView() {
         super();
+    }
+    
+    /**
+     * Creates the part of this code animating view.
+     * @param parent the parent control
+     */
+    @Override
+    public void createPartControl(Composite parent) {
+        toolbarAction = null;
+        // toolbarAction = new ToolBarAction(this);
+        timelineControl = new TimelineControl(this);
+        
+        super.createPartControl(parent);
     }
     
     /**

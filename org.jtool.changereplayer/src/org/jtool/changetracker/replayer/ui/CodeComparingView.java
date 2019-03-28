@@ -28,6 +28,9 @@ import java.io.UnsupportedEncodingException;
 /**
  * A view that shows the results of comparing between two contents of code.
  * @author Katsuhisa Maruyama
+ * 
+ * This class is not recommended to be used since CompareViewerSwitchingPane
+ * does not seem to be suitable for real-time use.
  */
 public class CodeComparingView extends CodeChangeView {
     
@@ -47,10 +50,22 @@ public class CodeComparingView extends CodeChangeView {
     protected CompareViewerSwitchingPane compareView;
     
     /**
-     * Creates a code view.
+     * Creates a code comparing view.
      */
     public CodeComparingView() {
         super();
+    }
+    
+    /**
+     * Creates the part of this code comparing view.
+     * @param parent the parent control
+     */
+    @Override
+    public void createPartControl(Composite parent) {
+        toolbarAction = null;
+        timelineControl = null;
+        
+        super.createPartControl(parent);
     }
     
     /**

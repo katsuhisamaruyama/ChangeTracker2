@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2017-2019
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -44,7 +44,7 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
     /**
      * The actions for buttons.
      */
-    // protected ToolBarAction toolbarAction;
+    protected ToolBarAction toolbarAction;
     
     /**
      * Creates a code change view.
@@ -59,7 +59,7 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
     }
     
     /**
-     * Creates this code compare view.
+     * Creates the part of this code change view.
      * @param parent the parent control
      */
     @Override
@@ -68,16 +68,20 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
         FormLayout layout = new FormLayout();
         composite.setLayout(layout);
         
-        // toolbarAction = new ToolBarAction(this);
-        // toolbarAction.createActions();
-        
-        timelineControl = new TimelineControl(this);
-        timelineControl.createTimeline(composite);
-        
+        if (toolbarAction != null) {
+            toolbarAction.createActions();
+        }
+        if (timelineControl != null) {
+            timelineControl.createTimeline(composite);
+        }
         codeViewerControl = createCodeView(composite);
         
         FormData cvdata = new FormData();
-        cvdata.top = new FormAttachment(timelineControl.getControl(), 2);
+        if (timelineControl != null) {
+            cvdata.top = new FormAttachment(timelineControl.getControl(), 2);
+        } else {
+            cvdata.top = new FormAttachment(0, 0);
+        }
         cvdata.bottom = new FormAttachment(100, 0);
         cvdata.left = new FormAttachment(0, 0);
         cvdata.right = new FormAttachment(100, 0);
@@ -161,8 +165,12 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
                     return Status.CANCEL_STATUS;
                 }
                 selectCodeViewer();
-                timelineControl.select();
-                // toolbarAction.select();
+                if (timelineControl != null) {
+                    timelineControl.select();
+                }
+                if (toolbarAction != null) {
+                    toolbarAction.select();
+                }
                 return Status.OK_STATUS;
             }
         };
@@ -213,8 +221,12 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
                     return Status.CANCEL_STATUS;
                 }
                 updateCodeViewer();
-                timelineControl.update();
-                // toolbarAction.update();
+                if (timelineControl != null) {
+                    timelineControl.update();
+                }
+                if (toolbarAction != null) {
+                    toolbarAction.update();
+                }
                 return Status.OK_STATUS;
             }
         };
@@ -237,8 +249,12 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
                     return Status.CANCEL_STATUS;
                 }
                 resetCodeViewer();
-                timelineControl.reset();
-                // toolbarAction.reset();
+                if (timelineControl != null) {
+                    timelineControl.reset();
+                }
+                if (toolbarAction != null) {
+                    toolbarAction.reset();
+                }
                 return Status.OK_STATUS;
             }
         };
