@@ -70,7 +70,11 @@ public class CodeRestorer {
         int start = op.getStart();
         int end = start + op.getDeletedText().length();
         StringBuilder postCode = new StringBuilder(code);
-        postCode.replace(start, end, op.getInsertedText());
+        try {
+            postCode.replace(start, end, op.getInsertedText());
+        } catch (StringIndexOutOfBoundsException e) {
+            System.err.println(e.getMessage() + " " + op.getTimeAsString());
+        }
         return postCode.toString();
     }
     

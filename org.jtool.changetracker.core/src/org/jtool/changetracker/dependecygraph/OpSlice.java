@@ -100,7 +100,7 @@ public class OpSlice {
             nodes = OpSlicer.getOperationNodesInBackwardSlice(jconNode);
             title = jconNode.getQualifiedName() + " on snapshot of " + jconNode.getIndex();
         } else if (fileGraph != null && snippet != null) {
-            nodes = OpSlicer2.getOperationNodesInBackwardSlice(fileGraph, snippet);
+            nodes = OpSlicerOnCodeSnippet.getOperationNodesInBackwardSlice(fileGraph, snippet);
             title = snippet.getQualifiedName() + " on snapshot of " + snippet.getIndex();
         } else {
             title = "Cannot create an operation slice";
@@ -116,7 +116,7 @@ public class OpSlice {
             nodes = OpSlicer.getOperationNodesInForwardSlice(jconNode);
             title = jconNode.getQualifiedName() + " on snapshot of " + jconNode.getIndex();
         } else if (fileGraph != null && snippet != null) {
-            nodes = OpSlicer2.getOperationNodesInForwardSlice(fileGraph, snippet);
+            nodes = OpSlicerOnCodeSnippet.getOperationNodesInForwardSlice(fileGraph, snippet);
             title = snippet.getQualifiedName() + " on snapshot of " + snippet.getIndex();
         } else {
             title = "Cannot create an operation slice";

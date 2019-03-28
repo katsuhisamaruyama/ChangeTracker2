@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017
+ *  Copyright 2017-2019
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Stores information on a code snippet.
+ * Slices an operation history graph, starting from a Java construct node.
  * @author Katsuhisa Maruyama
  */
 public class OpSlicer {

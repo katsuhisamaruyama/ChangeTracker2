@@ -13,20 +13,20 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Stores information on a code snippet.
+ * Slices an operation history graph, starting from a code snippet.
  * @author Katsuhisa Maruyama
  */
-public class OpSlicer2 {
+public class OpSlicerOnCodeSnippet {
     
     /**
      * Obtains change operation nodes in a backward slice on a code snippet of interest.
      * @param fgraph an operation history graph for a file containing the code snippet
-     * @param snip the code snippet
+     * @param snippet the code snippet
      * @return the collection of the change operation nodes in the backward slice
      */
-    static List<OperationNode> getOperationNodesInBackwardSlice(OpGraphForFile fgraph, CodeSnippet snip) {
+    static List<OperationNode> getOperationNodesInBackwardSlice(OpGraphForFile fgraph, CodeSnippet snippet) {
         List<OperationNode> ns = new ArrayList<OperationNode>();
-        for (OperationNode node : getBackwardOperationNodes(fgraph, snip)) {
+        for (OperationNode node : getBackwardOperationNodes(fgraph, snippet)) {
             collectReachableNodesTo(ns, node);
         }
         
@@ -55,15 +55,15 @@ public class OpSlicer2 {
     /**
      * Obtains change operation nodes that affect a code snippet.
      * @param fgraph the operation graph for a file containing the code snippet
-     * @param snip the code snippet
+     * @param snippet the code snippet
      * @return the collection of the change operation nodes
      */
-    static List<OperationNode> getBackwardOperationNodes(OpGraphForFile fgraph, CodeSnippet snip) {
+    static List<OperationNode> getBackwardOperationNodes(OpGraphForFile fgraph, CodeSnippet snippet) {
         List<OperationNode> ns = new ArrayList<OperationNode>();
-        List<OperationNode> nodes = fgraph.getOperationNodesBefore(snip.getTime());
+        List<OperationNode> nodes = fgraph.getOperationNodesBefore(snippet.getTime());
         for (OperationNode node : nodes) {
-            List<CodeOperation> ops = CodeOperation.getOperations(fgraph.getFile(), node.getTime(), snip.getTime());
-            for (int o = snip.getStart(); o < snip.getStart() + snip.getLength(); o++) {
+            List<CodeOperation> ops = CodeOperation.getOperations(fgraph.getFile(), node.getTime(), snippet.getTime());
+            for (int o = snippet.getStart(); o < snippet.getStart() + snippet.getLength(); o++) {
                 int offset = DependencyDetector.adjustBackwardOffset(o, ops);
                 if (isIn(offset, node)) {
                     ns.add(node);
@@ -80,9 +80,9 @@ public class OpSlicer2 {
      * @param snippet the code snippet
      * @return the collection of the change operation nodes in the backward slice
      */
-    static List<OperationNode> getOperationNodesInForwardSlice(OpGraphForFile fgraph, CodeSnippet snip) {
+    static List<OperationNode> getOperationNodesInForwardSlice(OpGraphForFile fgraph, CodeSnippet snippet) {
         List<OperationNode> ns = new ArrayList<OperationNode>();
-        for (OperationNode node : getForwardOperationNodes(fgraph, snip)) {
+        for (OperationNode node : getForwardOperationNodes(fgraph, snippet)) {
             collectReachableNodesFrom(ns, node);
         }
         
@@ -114,12 +114,12 @@ public class OpSlicer2 {
      * @param snippet the code snippet
      * @return the collection of the change operation nodes
      */
-    static List<OperationNode> getForwardOperationNodes(OpGraphForFile fgraph, CodeSnippet snip) {
+    static List<OperationNode> getForwardOperationNodes(OpGraphForFile fgraph, CodeSnippet snippet) {
         List<OperationNode> ns = new ArrayList<OperationNode>();
-        List<OperationNode> nodes = fgraph.getOperationNodesAfter(snip.getTime());
+        List<OperationNode> nodes = fgraph.getOperationNodesAfter(snippet.getTime());
         for (OperationNode node : nodes) {
-            List<CodeOperation> ops = CodeOperation.getOperations(fgraph.getFile(), node.getTime(), snip.getTime());
-            for (int o = snip.getStart(); o < snip.getStart() + snip.getLength(); o++) {
+            List<CodeOperation> ops = CodeOperation.getOperations(fgraph.getFile(), node.getTime(), snippet.getTime());
+            for (int o = snippet.getStart(); o < snippet.getStart() + snippet.getLength(); o++) {
                 int offset = DependencyDetector.adjustForwardOffset(o, ops);
                 if (isIn(offset, node)) {
                     ns.add(node);

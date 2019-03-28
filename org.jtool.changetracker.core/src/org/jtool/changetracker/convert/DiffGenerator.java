@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018
+ *  Copyright 2018-2019
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
@@ -22,6 +22,13 @@ import java.time.temporal.ChronoUnit;
  */
 public class DiffGenerator {
     
+    /**
+     * Generates differences between two contents of source code.
+     * @param time the time of the operation that was changed the source code
+     * @param pathinfo the path information of the source code
+     * @param otext the old content of the source code
+     * @param ntext the old content of the source code
+     */
     public static void generate(ZonedDateTime time, CTPath pathinfo, String otext, String ntext) {
         List<String> oldLines = Arrays.asList(otext.split("\n"));
         List<String> newLines = Arrays.asList(ntext.split("\n"));
@@ -43,15 +50,6 @@ public class DiffGenerator {
             gap = gap + itext.length() - dtext.length();
             
             System.err.print(op.toXML());
-            /*
-            System.out.println("OP = " + op.toString());
-            System.out.println(String.format("%d", delta.getOriginal().getPosition() + 1));
-            System.out.print(dtext);
-            System.out.println("----");
-            System.out.println(String.format("%d ", delta.getRevised().getPosition() + 1));
-            System.out.print(itext);
-            System.out.println();
-            */
         }
     }
     

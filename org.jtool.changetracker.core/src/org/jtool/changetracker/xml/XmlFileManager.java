@@ -111,7 +111,7 @@ public class XmlFileManager {
      * @param e the occurred exception
      */
     private static void printException(String filename, SAXParseException e) {
-        CTConsole.println("[FATAL]file:" + filename + "line:" + e.getLineNumber() + ", " +
+        CTConsole.println("[FATAL]file: " + filename + "line:" + e.getLineNumber() + ", " +
           "column:" + e.getColumnNumber() + ", " + e.getMessage());
     }
     

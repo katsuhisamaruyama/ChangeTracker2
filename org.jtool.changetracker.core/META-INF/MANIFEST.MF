@@ -25,3 +25,4 @@ Export-Package: org.jtool.changetracker.core,
  org.jtool.changetracker.operation,
  org.jtool.changetracker.repository,
  org.jtool.changetracker.xml
+Automatic-Module-Name: org.jtool.changetracker.core
