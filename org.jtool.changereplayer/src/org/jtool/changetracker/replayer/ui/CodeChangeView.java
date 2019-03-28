@@ -44,7 +44,7 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
     /**
      * The actions for buttons.
      */
-    protected ToolBarAction toolbarAction;
+    // protected ToolBarAction toolbarAction;
     
     /**
      * Creates a code change view.
@@ -68,8 +68,8 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
         FormLayout layout = new FormLayout();
         composite.setLayout(layout);
         
-        toolbarAction = new ToolBarAction(this);
-        toolbarAction.createActions();
+        // toolbarAction = new ToolBarAction(this);
+        // toolbarAction.createActions();
         
         timelineControl = new TimelineControl(this);
         timelineControl.createTimeline(composite);
@@ -162,7 +162,7 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
                 }
                 selectCodeViewer();
                 timelineControl.select();
-                toolbarAction.select();
+                // toolbarAction.select();
                 return Status.OK_STATUS;
             }
         };
@@ -184,7 +184,6 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
                 if (!readyToVisualize()) {
                     return Status.CANCEL_STATUS;
                 }
-                toolbarAction.update();
                 return Status.OK_STATUS;
             }
         };
@@ -215,7 +214,7 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
                 }
                 updateCodeViewer();
                 timelineControl.update();
-                toolbarAction.update();
+                // toolbarAction.update();
                 return Status.OK_STATUS;
             }
         };
@@ -239,7 +238,7 @@ public abstract class CodeChangeView extends ViewPart implements ViewStateChange
                 }
                 resetCodeViewer();
                 timelineControl.reset();
-                toolbarAction.reset();
+                // toolbarAction.reset();
                 return Status.OK_STATUS;
             }
         };

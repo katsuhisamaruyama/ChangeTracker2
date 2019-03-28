@@ -1,15 +1,13 @@
 /*
- *  Copyright 2017
+ *  Copyright 2017-2019
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
 
 package org.jtool.changetracker.replayer.ui;
 
-import org.jtool.changetracker.replayer.Activator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.resource.ImageDescriptor;
 
 /**
  * Tool-bar actions that move the selection of change operations.
@@ -52,15 +50,7 @@ public class ToolBarAction {
      */
     protected Action goLastAction;
     
-    /**
-     * The icon images.
-     */
-    protected static ImageDescriptor goPrecIcon      = Activator.getImageDescriptor("icons/left1.gif");
-    protected static ImageDescriptor goSuccIcon      = Activator.getImageDescriptor("icons/right1.gif");
-    protected static ImageDescriptor fastRewindIcon  = Activator.getImageDescriptor("icons/left3.gif");
-    protected static ImageDescriptor fastForwardIcon = Activator.getImageDescriptor("icons/right3.gif");
-    protected static ImageDescriptor goFirstIcon     = Activator.getImageDescriptor("icons/left2.gif");
-    protected static ImageDescriptor goLastIcon      = Activator.getImageDescriptor("icons/right2.gif");
+    
     
     /**
      * Creates tool-bar actions.
@@ -88,7 +78,7 @@ public class ToolBarAction {
             }
         };
         goFirstAction.setToolTipText("Go to the first change operation");
-        goFirstAction.setImageDescriptor(ToolBarAction.goFirstIcon);
+        goFirstAction.setImageDescriptor(ButtonControl.goFirstIcon);
         goFirstAction.setEnabled(true);
         
         fastRewindAction = new Action("Rewind") {
@@ -105,7 +95,7 @@ public class ToolBarAction {
             }
         };
         fastRewindAction.setToolTipText("Go to the first change operation");
-        fastRewindAction.setImageDescriptor(ToolBarAction.goFirstIcon);
+        fastRewindAction.setImageDescriptor(ButtonControl.goFirstIcon);
         fastRewindAction.setEnabled(true);
         
         goPrecAction = new Action("Precedent") {
@@ -122,7 +112,7 @@ public class ToolBarAction {
             }
         };
         goPrecAction.setToolTipText("Go to the precedent change operation");
-        goPrecAction.setImageDescriptor(ToolBarAction.goPrecIcon);
+        goPrecAction.setImageDescriptor(ButtonControl.goPrecIcon);
         goPrecAction.setEnabled(true);
         
         goSuccAction = new Action("Sucessive") {
@@ -139,7 +129,7 @@ public class ToolBarAction {
             }
         };
         goSuccAction.setToolTipText("Go to the successive change operation");
-        goSuccAction.setImageDescriptor(ToolBarAction.goSuccIcon);
+        goSuccAction.setImageDescriptor(ButtonControl.goSuccIcon);
         goSuccAction.setEnabled(true);
         
         fastForwardAction = new Action("Forward") {
@@ -156,7 +146,7 @@ public class ToolBarAction {
             }
         };
         fastForwardAction.setToolTipText("Go to the successive change operation");
-        fastForwardAction.setImageDescriptor(ToolBarAction.goSuccIcon);
+        fastForwardAction.setImageDescriptor(ButtonControl.goSuccIcon);
         fastForwardAction.setEnabled(true);
         
         goLastAction = new Action("Last") {
@@ -173,7 +163,7 @@ public class ToolBarAction {
             }
         };
         goLastAction.setToolTipText("Go to the last change operation");
-        goLastAction.setImageDescriptor(ToolBarAction.goLastIcon);
+        goLastAction.setImageDescriptor(ButtonControl.goLastIcon);
         goLastAction.setEnabled(true);
         
         IToolBarManager manager = codeChangeView.getViewSite().getActionBars().getToolBarManager();

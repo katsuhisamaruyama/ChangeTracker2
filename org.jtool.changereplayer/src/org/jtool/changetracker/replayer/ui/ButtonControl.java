@@ -1,11 +1,13 @@
 /*
- *  Copyright 2017
+ *  Copyright 2017-2019
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
 
 package org.jtool.changetracker.replayer.ui;
 
+import org.jtool.changetracker.replayer.Activator;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -64,6 +66,16 @@ public class ButtonControl {
     protected Button goLastButton;
     
     /**
+     * The icon images.
+     */
+    protected static ImageDescriptor goPrecIcon      = Activator.getImageDescriptor("icons/left1.gif");
+    protected static ImageDescriptor goSuccIcon      = Activator.getImageDescriptor("icons/right1.gif");
+    protected static ImageDescriptor fastRewindIcon  = Activator.getImageDescriptor("icons/left3.gif");
+    protected static ImageDescriptor fastForwardIcon = Activator.getImageDescriptor("icons/right3.gif");
+    protected static ImageDescriptor goFirstIcon     = Activator.getImageDescriptor("icons/left2.gif");
+    protected static ImageDescriptor goLastIcon      = Activator.getImageDescriptor("icons/right2.gif");
+    
+    /**
      * The listener that receives an event related to the button selection.
      */
     protected ButtonSelectionListener buttonSelectionListener;
@@ -86,42 +98,42 @@ public class ButtonControl {
         
         goFirstButton = new Button(buttons, SWT.FLAT);
         goFirstButton.setToolTipText("Go to the first change operation");
-        goFirstButton.setImage(ToolBarAction.goFirstIcon.createImage());
+        goFirstButton.setImage(ButtonControl.goFirstIcon.createImage());
         goFirstButton.setEnabled(true);
         goFirstButton.addSelectionListener(buttonSelectionListener);
         goFirstButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
         
         fastRewindButton = new Button(buttons, SWT.FLAT);
         fastRewindButton.setToolTipText("Go to a previous change operation with a mark");
-        fastRewindButton.setImage(ToolBarAction.fastRewindIcon.createImage());
+        fastRewindButton.setImage(ButtonControl.fastRewindIcon.createImage());
         fastRewindButton.setEnabled(true);
         fastRewindButton.addSelectionListener(buttonSelectionListener);
         fastRewindButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
         
         goPrecButton = new Button(buttons, SWT.FLAT);
         goPrecButton.setToolTipText("Go to the precedent change operation");
-        goPrecButton.setImage(ToolBarAction.goPrecIcon.createImage());
+        goPrecButton.setImage(ButtonControl.goPrecIcon.createImage());
         goPrecButton.setEnabled(true);
         goPrecButton.addSelectionListener(buttonSelectionListener);
         goPrecButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
         
         goSuccButton = new Button(buttons, SWT.FLAT);
         goSuccButton.setToolTipText("Go to the successive change operation");
-        goSuccButton.setImage(ToolBarAction.goSuccIcon.createImage());
+        goSuccButton.setImage(ButtonControl.goSuccIcon.createImage());
         goSuccButton.setEnabled(true);
         goSuccButton.addSelectionListener(buttonSelectionListener);
         goSuccButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
         
         fastForwardButton = new Button(buttons, SWT.FLAT);
         fastForwardButton.setToolTipText("Go to the next change operation with a mark");
-        fastForwardButton.setImage(ToolBarAction.fastForwardIcon.createImage());
+        fastForwardButton.setImage(ButtonControl.fastForwardIcon.createImage());
         fastForwardButton.setEnabled(true);
         fastForwardButton.addSelectionListener(buttonSelectionListener);
         fastForwardButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
         
         goLastButton = new Button(buttons, SWT.FLAT);
         goLastButton.setToolTipText("Go to the last change operation");
-        goLastButton.setImage(ToolBarAction.goLastIcon.createImage());
+        goLastButton.setImage(ButtonControl.goLastIcon.createImage());
         goLastButton.setEnabled(true);
         goLastButton.addSelectionListener(buttonSelectionListener);
         goLastButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
