@@ -1,13 +1,11 @@
 /*
- *  Copyright 2017
+ *  Copyright 2017-2019
  *  Software Science and Technology Lab.
  *  Department of Computer Science, Ritsumeikan University
  */
 
 package org.jtool.changetracker.sample;
 
-import org.jtool.changetracker.replayer.ui.CodeAnimatingView;
-import org.jtool.changetracker.replayer.ui.CodeComparingView;
 import org.jtool.changetracker.replayer.ui.HistoryView;
 import org.jtool.changetracker.replayer.ui.OperationVisualizer;
 import org.jtool.changetracker.repository.IRepositoryHandler;
