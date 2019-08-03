@@ -19,7 +19,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.pde;bundle-version="3.12.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jtool.changetracker.core,
+Export-Package: org.jtool.changetracker.convert,
+ org.jtool.changetracker.core,
  org.jtool.changetracker.dependecygraph,
  org.jtool.changetracker.dependencyanalyzer,
  org.jtool.changetracker.operation,
