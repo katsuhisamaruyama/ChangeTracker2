@@ -135,6 +135,10 @@ public class OperationHistory {
      * @return the index number of the file operation at the restoration point, or <code>-1</code> if none
      */
     public int getRestorationIndexAfter(int index) {
+        if (index == -1) {
+            return -1;
+        }
+        
         for (int idx = index; idx < operations.size(); idx++) {
             IChangeOperation op = operations.get(idx);
             if (op.isFile()) {
