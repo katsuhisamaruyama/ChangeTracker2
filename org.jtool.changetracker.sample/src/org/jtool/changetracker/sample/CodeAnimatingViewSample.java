@@ -24,7 +24,7 @@ public class CodeAnimatingViewSample extends CodeAnimatingView {
     /**
      * The identification string that is used to register this view.
      */
-    public static final String ID = "org.jtool.changetracker.sample.CodeAnimatingViewSample";
+    public static final String ID = CodeAnimatingView.ID + "Sample";
     
     /**
      * Creates a code view.
