@@ -44,7 +44,6 @@ public class XmlFileManager {
      * @param filename the name of the file to be read
      * @return the contents of the file, or <code>null</code> if reading the file fails
      */
-    @SuppressWarnings("deprecation")
     public static String read(String filename) {
         File file = new File(filename);
         try {
@@ -121,7 +120,6 @@ public class XmlFileManager {
      * @param filename the name of a file which the contents are written into
      * @param contents the contents to be written, or <code>null</code> if writing the file fails
      */
-    @SuppressWarnings("deprecation")
     public static String write(String filename, String contents) {
         File file = new File(filename);
         boolean resultMakeDir = makeDir(file.getParentFile());
