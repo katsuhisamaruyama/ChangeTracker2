@@ -6,6 +6,7 @@
 
 package org.jtool.changetracker.recorder;
 
+import org.jtool.changetracker.repository.RepositoryManager;
 import org.jtool.macrorecorder.recorder.IMacroHandler;
 import org.jtool.macrorecorder.recorder.IMacroRecorder;
 import org.jtool.macrorecorder.recorder.MacroEvent;
@@ -36,12 +37,16 @@ public class MacroReceiver implements IMacroHandler {
     /**
      * A flag that indicates if the recording is on.
      */
-    private boolean onRecording = true;
+    private boolean onRecording = false;
     
     /**
      * Creates an object that records change operations.
      */
     public MacroReceiver() {
+        if (RepositoryManager.getInstance().getRepositoryHandlers().size() > 0) {
+            onRecording = true;
+        }
+        
         operationRecorder = OperationRecorder.getInstance();
         operationRecorder.setMacroReceiver(this);
     }
