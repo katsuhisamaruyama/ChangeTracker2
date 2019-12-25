@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.jtool.changetracker.core.feature_2.0.2.201912231223.jar" id="org.jtool.changetracker.core.feature" version="2.0.2.201912231223">
+   <feature url="features/org.jtool.changetracker.core.feature_2.0.2.201912251416.jar" id="org.jtool.changetracker.core.feature" version="2.0.2.201912251416">
       <category name="ChangeTracker"/>
    </feature>
-   <feature url="features/org.jtool.changetracker.recorder.feature_2.0.2.201912231223.jar" id="org.jtool.changetracker.recorder.feature" version="2.0.2.201912231223">
+   <feature url="features/org.jtool.changetracker.recorder.feature_2.0.2.201912251416.jar" id="org.jtool.changetracker.recorder.feature" version="2.0.2.201912251416">
       <category name="ChangeTracker"/>
    </feature>
-   <feature url="features/org.jtool.changetracker.replayer.feature_2.0.1.201912231223.jar" id="org.jtool.changetracker.replayer.feature" version="2.0.1.201912231223">
+   <feature url="features/org.jtool.changetracker.replayer.feature_2.0.1.201912251416.jar" id="org.jtool.changetracker.replayer.feature" version="2.0.1.201912251416">
       <category name="ChangeTracker"/>
    </feature>
    <category-def name="ChangeTracker" label="ChangeTracker v2">
